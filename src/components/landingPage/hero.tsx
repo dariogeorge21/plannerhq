@@ -8,7 +8,7 @@ export default function Hero() {
         {/* Headline */}
         <div className="text-center max-w-4xl mx-auto">
           <h1 className="text-4xl lg:text-6xl lg:leading-[1.2] font-bold tracking-tight text-[#111111]">
-            The workspace where teams think, write, and build together.
+            The workspaces where teams think, write, and build together.
           </h1>
           <p className="mt-6 text-lg lg:text-xl text-[#111111]/60 max-w-2xl mx-auto">
             Documents, tasks, meetings, AI assistance, and real-time
@@ -18,23 +18,23 @@ export default function Hero() {
           {/* CTA Buttons */}
           <div className="mt-10 flex items-center justify-center gap-4">
             <a
-              href="#"
+              href="/signup"
               className="rounded-full bg-[#111111] px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-[#111111]/90 transition-all"
             >
               Start Free
             </a>
             <a
-              href="#"
+              href="/pricing"
               className="rounded-full bg-white px-6 py-3 text-base font-semibold text-[#111111] border border-[#EAEAEA] hover:bg-[#FAFAFA] transition-all"
             >
-              Book Demo
+              Compare Pricing
             </a>
           </div>
         </div>
 
         {/* Product Screenshot Mockup */}
         <div className="mt-16 lg:mt-20 relative">
-          <div className="relative rounded-2xl border border-[#EAEAEA] shadow-xl overflow-hidden bg-[#FAFAFA]">
+          <div className="relative rounded-2xl border border-[#EAEAEA] shadow-xl bg-[#FAFAFA]">
             {/* Mockup UI */}
             <div className="grid grid-cols-12 h-[500px] lg:h-[600px]">
               {/* Sidebar */}
@@ -61,7 +61,7 @@ export default function Hero() {
               {/* Main Content Area */}
               <div className="col-span-9 bg-white p-6">
                 <div className="border-b border-[#EAEAEA] pb-4 flex justify-between items-center">
-                  <h2 className="font-semibold text-[#111111]">Product Roadmap 2025</h2>
+                  <h2 className="font-semibold text-[#111111]">Product Roadmap 2026</h2>
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-[#4F46E5] flex items-center justify-center text-white text-xs">
                       JD
@@ -125,7 +125,7 @@ export default function Hero() {
             <div className="absolute -bottom-3 -left-3 lg:-bottom-5 lg:-left-5 bg-white rounded-xl shadow-lg border border-[#EAEAEA] p-3 hidden sm:block">
               <div className="flex items-center gap-2 text-xs">
                 <Sparkles className="w-3 h-3 text-[#4F46E5]" />
-                <span>AI summarizing...</span>
+                <span>AI writing...</span>
               </div>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function Hero() {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]"></div>
-              <span>✓ Unlimited knowledge organization</span>
+              <span>✓ Rich text editing</span>
             </div>
           </div>
         </div>

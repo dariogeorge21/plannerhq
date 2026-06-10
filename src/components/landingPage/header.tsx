@@ -5,11 +5,11 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const navigation = [
-  { name: "Features", href: "#features" },
-  { name: "AI Assistant", href: "#ai-assistant" },
-  { name: "Collaboration", href: "#collaboration" },
-  { name: "Pricing", href: "#pricing" },
-  { name: "Enterprise", href: "#enterprise" },
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Services", href: "/services" },
+  { name: "Pricing", href: "/pricing" },
+  { name: "Contact Us", href: "/contact" },
 ];
 
 export default function Header() {
@@ -21,7 +21,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <div className="flex lg:flex-1">
-            <a href="#" className="-m-1.5 p-1.5">
+            <a href="/" className="-m-1.5 p-1.5">
               <span className="text-xl font-semibold tracking-tight text-[#111111]">
                 PlannerHQ
               </span>
@@ -44,13 +44,13 @@ export default function Header() {
           {/* Desktop buttons */}
           <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
             <a
-              href="#"
+              href="/login"
               className="text-sm font-medium text-[#111111]/70 hover:text-[#111111] transition-colors"
             >
               Sign In
             </a>
             <a
-              href="#"
+              href="/signup"
               className="rounded-full bg-[#111111] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#111111]/90 transition-all"
             >
               Get Started
@@ -100,13 +100,13 @@ export default function Header() {
                 ))}
                 <div className="pt-4 flex flex-col gap-3">
                   <a
-                    href="#"
+                    href="/login"
                     className="text-base font-semibold text-[#111111]/70 hover:text-[#111111]"
                   >
                     Sign In
                   </a>
                   <a
-                    href="#"
+                    href="/signup"
                     className="inline-flex justify-center rounded-full bg-[#111111] px-5 py-2 text-base font-semibold text-white shadow-sm"
                   >
                     Get Started

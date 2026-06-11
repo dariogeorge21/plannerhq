@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Container from "./Container";
 import { Button } from "../ui/button";
 
@@ -27,13 +28,12 @@ export default function CTABanner({
           </h2>
           <p className="mt-3 text-[#111111]/60">{description}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Button href={primaryLink} variant="primary">
-              {primaryText}
+            <Button asChild variant="link">
+              <Link href={primaryLink}>{primaryText}</Link>
             </Button>
             {secondaryText && secondaryLink && (
-              <Button 
-                href={secondaryLink} variant="secondary">
-                {secondaryText}
+              <Button asChild variant="secondary">
+                <Link href={secondaryLink}>{secondaryText}</Link>
               </Button>
             )}
           </div>

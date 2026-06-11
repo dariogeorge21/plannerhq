@@ -2,75 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "lucide-react";
-
-const plans = [
-  {
-    name: "Starter",
-    monthlyPrice: "Free",
-    yearlyPrice: "Free",
-    description: "For personal use and getting started.",
-    features: [
-      "Up to 3 workspaces",
-      "Up to 2 simultaneous collaborations",
-      "100MB storage",
-      "200K AI tokens",
-    ],
-    cta: "Get Started",
-    highlighted: false,
-    href: "/signup",
-  },
-  {
-    name: "Pro",
-    monthlyPrice: "$15",
-    yearlyPrice: "$12",
-    description: "Advanced collaboration for growing teams.",
-    features: [
-      "Up to 10 workspaces",
-      "Up to 10 simultaneous collaborations",
-      "Team workspaces",
-      "2 GB storage",
-      "20 sheets per workspace",
-      "500K tokens per day",
-    ],
-    cta: "Start Free Trial",
-    highlighted: true,
-    href: "/signup",
-  },
-  {
-    name: "Ultra",
-    monthlyPrice: "$30",
-    yearlyPrice: "$24",
-    description: "All-in-one solution for large teams and enterprises.",
-    features: [
-      "Up to 100 workspaces",
-      "Unlimited simultaneous collaborations",
-      "Team workspaces with advanced permissions",
-      "10 GB storage",
-      "Up to 300 sheets per workspace",
-      "20M tokens per day",
-    ],
-    cta: "Start Free Trial",
-    highlighted: false,
-    href: "/signup",
-  },
-  {
-    name: "Enterprise",
-    monthlyPrice: "Custom",
-    yearlyPrice: "Custom",
-    description: "For organizations that need scale and security.",
-    features: [
-      "Unlimited scale",
-      "SSO & SAML",
-      "Advanced permissions",
-      "Audit logs",
-      "Dedicated support",
-      "SLA agreement",
-    ],
-    cta: "Contact Sales",
-    highlighted: false,
-    href: "/contact",
-  },
-];
+import { PricingPlans } from "@/data/data";
 
 export default function Pricing() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
@@ -120,7 +52,7 @@ export default function Pricing() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch">
-          {plans.map((plan) => {
+          {PricingPlans.map((plan) => {
             const price =
               billing === "monthly"
                 ? plan.monthlyPrice

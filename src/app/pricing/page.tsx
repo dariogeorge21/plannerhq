@@ -1,14 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { ArrowRight, Check, Sparkles } from "lucide-react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Check, Sparkles, Building2, HelpCircle } from "lucide-react";
+
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import Pricing from "@/components/landingPage/pricing";
-
 import { BillingCycle, Plan, Cell } from "@/types/types";
 import { pricingPageContent } from "@/data/data";
+
+// ============================================================================
+// HELPER FUNCTIONS & COMPONENTS
+// ============================================================================
 
 function formatPlanPrice(plan: Plan, cycle: BillingCycle) {
   const value = cycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
@@ -19,214 +23,333 @@ function formatPlanPrice(plan: Plan, cycle: BillingCycle) {
 function CellContent({ cell }: { cell: Cell }) {
   if (cell.kind === "check") {
     return (
-      <span className="inline-flex items-center justify-center text-[#111111]">
-        <Check className="h-5 w-5" />
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 shadow-sm">
+        <Check className="h-3.5 w-3.5 text-emerald-600 stroke-[3]" />
       </span>
     );
   }
 
   if (cell.kind === "blank") {
-    return <span className="text-[#111111]/20">—</span>;
+    return <span className="text-neutral-300 font-bold">—</span>;
   }
 
   return (
     <div className="space-y-1">
-      {cell.lines.map((line, index) => (
-        <p
-          key={`${line}-${index}`}
-          className={
-            cell.mutedLines?.includes(index)
-              ? "text-[#111111]/45"
-              : "text-[#111111]/80"
-          }
-        >
-          {line}
-        </p>
-      ))}
+      {cell.lines.map((line, index) => {
+        const isMuted = cell.mutedLines?.includes(index);
+        return (
+          <p
+            key={`${line}-${index}`}
+            className={
+              isMuted
+                ? "text-xs font-medium text-neutral-400"
+                : "text-sm font-semibold text-neutral-700"
+            }
+          >
+            {line}
+          </p>
+        );
+      })}
     </div>
   );
 }
 
-export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>("monthly");
+// ============================================================================
+// MAIN PAGE COMPONENT
+// ============================================================================
 
-  const activeLabel = useMemo(
-    () => (billingCycle === "monthly" ? "Monthly billing" : "Yearly billing"),
-    [billingCycle]
-  );
+export default function PricingPage() {
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-white selection:bg-indigo-500/30 font-sans">
       <Header />
-      <Pricing />
-      <main className="min-h-screen bg-white text-[#111111]">
-        <section
-          id="pricing"
-          className="relative overflow-hidden py-16 lg:py-24"
-        >
-          <div className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-64 bg-gradient-to-b from-[#4F46E5]/5 to-transparent" />
-          <div className="pointer-events-none absolute left-1/2 top-16 -z-0 h-72 w-72 -translate-x-1/2 rounded-full bg-[#4F46E5]/5 blur-3xl" />
 
-          <div className="relative z-10 mx-auto max-w-[1440px] px-6 lg:px-8">
-            <div className="mx-auto max-w-4xl text-center">
-              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#EAEAEA] bg-white px-4 py-2 text-sm text-[#111111]/60 shadow-sm">
-                <Sparkles className="h-4 w-4 text-[#4F46E5]" />
-                {activeLabel}
-              </p>
+      <main className="flex-1 relative pt-24 pb-32">
+        {/* Abstract Background Elements */}
+        <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
+          <div className="absolute top-0 w-[1200px] h-[600px] bg-gradient-to-b from-indigo-500/10 via-purple-500/5 to-transparent blur-3xl rounded-full opacity-60 -translate-y-1/3" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]" />
+        </div>
 
-              <h1 className="text-4xl font-bold tracking-tight text-[#111111] lg:text-6xl">
-                {pricingPageContent.title}
-              </h1>
+        {/* Hero Section */}
+        <div className="relative z-10 max-w-4xl mx-auto px-6 lg:px-8 text-center mt-12 md:mt-20">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 rounded-full border border-indigo-500/20 bg-indigo-50/50 px-3 py-1 mb-8 shadow-sm backdrop-blur-md"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="text-xs font-bold tracking-widest text-indigo-600 uppercase">
+              Pricing & Plans
+            </span>
+          </motion.div>
 
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-[#111111]/55 lg:text-lg">
-                {pricingPageContent.subtitle}
-              </p>
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-neutral-950 text-balance"
+          >
+            {pricingPageContent.title}
+          </motion.h1>
 
-              <div className="mt-8 flex justify-center">
-                <div className="inline-flex rounded-full border border-[#EAEAEA] bg-white p-1 shadow-sm">
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-6 text-lg md:text-xl text-neutral-500 max-w-2xl mx-auto text-balance leading-relaxed"
+          >
+            {pricingPageContent.subtitle}
+          </motion.p>
+
+          {/* Billing Cycle Toggle */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-12 flex justify-center"
+          >
+            <div className="relative flex items-center p-1.5 bg-neutral-100/80 rounded-full border border-neutral-200/60 shadow-inner backdrop-blur-md">
+              {(["monthly", "yearly"] as const).map((cycle) => {
+                const isActive = billingCycle === cycle;
+                return (
                   <button
-                    type="button"
-                    onClick={() => setBillingCycle("monthly")}
-                    aria-pressed={billingCycle === "monthly"}
-                    className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
-                      billingCycle === "monthly"
-                        ? "bg-[#111111] text-white shadow-sm"
-                        : "text-[#111111]/60 hover:text-[#111111]"
+                    key={cycle}
+                    onClick={() => setBillingCycle(cycle)}
+                    className={`relative z-10 flex w-[140px] items-center justify-center py-2.5 text-sm font-bold capitalize transition-colors duration-300 ${
+                      isActive ? "text-neutral-900" : "text-neutral-500 hover:text-neutral-900"
                     }`}
                   >
-                    Monthly
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setBillingCycle("yearly")}
-                    aria-pressed={billingCycle === "yearly"}
-                    className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
-                      billingCycle === "yearly"
-                        ? "bg-[#111111] text-white shadow-sm"
-                        : "text-[#111111]/60 hover:text-[#111111]"
-                    }`}
-                  >
-                    Yearly
-                    <span className="ml-2 text-xs text-emerald-500">
-                      Save 20%
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-14">
-              <div className="grid gap-4 lg:grid-cols-4">
-                {pricingPageContent.plans.map((plan) => {
-                  const price = formatPlanPrice(plan, billingCycle);
-
-                  return (
-                    <article
-                      key={plan.key}
-                      className={`relative flex h-full flex-col rounded-3xl border bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg lg:p-8 ${
-                        plan.featured
-                          ? "border-[#4F46E5] ring-1 ring-[#4F46E5]/15"
-                          : "border-[#EAEAEA]"
-                      }`}
-                    >
-                      {plan.ribbon ? (
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#4F46E5] px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                          {plan.ribbon}
-                        </div>
-                      ) : null}
-
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h2 className="text-xl font-semibold tracking-tight">
-                              {plan.name}
-                            </h2>
-                            <p className="mt-2 text-sm leading-6 text-[#111111]/55">
-                              {plan.description}
-                            </p>
-                          </div>
-                          {plan.featured ? (
-                            <span className="rounded-full bg-[#4F46E5]/10 px-3 py-1 text-xs font-medium text-[#4F46E5]">
-                              Recommended
-                            </span>
-                          ) : null}
-                        </div>
-
-                        <div className="mt-6 flex items-end gap-2">
-                          <span className="text-4xl font-bold tracking-tight">
-                            {price.value}
-                          </span>
-                          {price.suffix ? (
-                            <span className="pb-1 text-sm text-[#111111]/50">
-                              {price.suffix}
-                            </span>
-                          ) : null}
-                        </div>
-
-                        <Link
-                          href={plan.href}
-                          className={`mt-6 inline-flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-semibold transition-all ${
-                            plan.featured
-                              ? "bg-[#111111] text-white hover:bg-[#111111]/90"
-                              : "border border-[#EAEAEA] bg-white text-[#111111] hover:bg-[#FAFAFA]"
+                    {isActive && (
+                      <motion.div
+                        layoutId="active-pill"
+                        className="absolute inset-0 z-0 bg-white rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-neutral-200/80"
+                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-2">
+                      {cycle}
+                      {cycle === "yearly" && (
+                        <span
+                          className={`text-[9px] leading-none px-1.5 py-0.5 rounded font-black uppercase tracking-wider transition-colors duration-300 ${
+                            isActive
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-neutral-200 text-neutral-500"
                           }`}
                         >
-                          <span>{plan.ctaLabel}</span>
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
+                          Save 20%
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Pricing Cards Grid */}
+        <div className="relative z-10 mx-auto mt-20 max-w-[1280px] px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 items-stretch">
+            {pricingPageContent.plans.map((plan, idx) => {
+              const isDark = plan.featured;
+              const { value, suffix } = formatPlanPrice(plan, billingCycle);
+
+              return (
+                <motion.div
+                  key={plan.key}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 + idx * 0.1 }}
+                  className={`relative flex flex-col rounded-[2rem] p-8 transition-all duration-300 ${
+                    isDark
+                      ? "bg-neutral-950 text-white shadow-2xl shadow-indigo-500/10 scale-100 lg:scale-105 z-10 border border-neutral-800"
+                      : "bg-white/80 backdrop-blur-xl text-neutral-900 border border-neutral-200/80 shadow-xl shadow-neutral-200/40 hover:shadow-2xl hover:shadow-neutral-200/60"
+                  }`}
+                >
+                  {isDark && (
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1.5 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                      {plan.ribbon}
+                    </div>
+                  )}
+
+                  <div className="mb-6 flex-1">
+                    <h3
+                      className={`text-2xl font-bold tracking-tight ${
+                        isDark ? "text-white" : "text-neutral-900"
+                      }`}
+                    >
+                      {plan.name}
+                    </h3>
+                    <p
+                      className={`mt-3 text-sm leading-relaxed h-12 ${
+                        isDark ? "text-neutral-400" : "text-neutral-500"
+                      }`}
+                    >
+                      {plan.description}
+                    </p>
+                  </div>
+
+                  <div className={`mb-8 border-b pb-8 ${isDark ? "border-neutral-800" : "border-neutral-100"}`}>
+                    <div className="flex items-baseline gap-1">
+                      {value === "Custom" ? (
+                        <span className={`text-4xl font-extrabold tracking-tight ${isDark ? "text-white" : "text-neutral-900"}`}>
+                          Custom
+                        </span>
+                      ) : (
+                        <>
+                          <AnimatePresence mode="wait">
+                            <motion.span
+                              key={value}
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 10 }}
+                              transition={{ duration: 0.2 }}
+                              className={`text-5xl font-extrabold tracking-tight ${isDark ? "text-white" : "text-neutral-900"}`}
+                            >
+                              {value}
+                            </motion.span>
+                          </AnimatePresence>
+                          <span className={`text-sm font-medium ml-1 ${isDark ? "text-neutral-400" : "text-neutral-500"}`}>
+                            /mo
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {value !== "Custom" && (
+                      <div className="h-4 mt-2">
+                        <AnimatePresence>
+                          {billingCycle === "yearly" && (
+                            <motion.p
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className={`text-xs font-semibold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}
+                            >
+                              {suffix}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
                       </div>
-                    </article>
-                  );
-                })}
+                    )}
+                  </div>
+
+                  <Link
+                    href={plan.href}
+                    className={`group relative flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-sm font-bold transition-all duration-300 active:scale-95 ${
+                      isDark
+                        ? "bg-white text-neutral-950 hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                        : "bg-neutral-950 text-white hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)]"
+                    }`}
+                  >
+                    {plan.ctaLabel}
+                    {plan.key === "enterprise" ? (
+                      <Building2 className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" />
+                    ) : (
+                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    )}
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Enterprise Trust Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="mx-auto mt-24 max-w-5xl px-6 text-center"
+        >
+          <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-8">
+            Trusted by forward-thinking teams globally
+          </p>
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 grayscale">
+            {/* Minimalist abstract logos representing trust */}
+            <div className="flex items-center gap-2 font-bold text-xl text-neutral-800">
+              <div className="w-6 h-6 rounded bg-neutral-800" /> Vellum
+            </div>
+            <div className="flex items-center gap-2 font-bold text-xl text-neutral-800">
+              <div className="w-6 h-6 rounded-full bg-neutral-800" /> Lumen
+            </div>
+            <div className="flex items-center gap-2 font-bold text-xl text-neutral-800">
+              <div className="w-6 h-6 rotate-45 bg-neutral-800" /> Aether
+            </div>
+            <div className="flex items-center gap-2 font-bold text-xl text-neutral-800">
+              <div className="w-6 h-6 rounded-tr-xl rounded-bl-xl bg-neutral-800" /> Northstar
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Detailed Comparison Table */}
+        <div className="relative z-10 mt-32 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-neutral-900">
+              Compare features side-by-side
+            </h2>
+            <p className="mt-4 text-neutral-500 font-medium">
+              Everything you need to know to make the right choice.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto pb-12 -mx-4 sm:-mx-6 lg:mx-0 px-4 sm:px-6 lg:px-0">
+            <div className="min-w-[1000px] rounded-3xl bg-white/60 border border-neutral-200/80 shadow-2xl shadow-neutral-200/50 backdrop-blur-2xl">
+              
+              {/* Table Header Sticky */}
+              <div className="sticky z-30 grid grid-cols-[minmax(280px,1.3fr)_repeat(4,minmax(180px,1fr))] items-end border-b border-neutral-200/80 bg-white/90 backdrop-blur-xl px-8 py-6 rounded-t-3xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
+                <div className="text-lg font-extrabold tracking-tight text-neutral-900">
+                  Features Overview
+                </div>
+                {pricingPageContent.plans.map((plan) => (
+                  <div key={plan.key} className="pr-6">
+                    <h4 className="text-base font-bold text-neutral-900">
+                      {plan.name}
+                    </h4>
+                    <p className="text-sm font-semibold text-indigo-600 mt-1">
+                      {formatPlanPrice(plan, billingCycle).value}
+                    </p>
+                  </div>
+                ))}
               </div>
 
-              <div className="mt-12 overflow-hidden rounded-[28px] border border-[#EAEAEA] bg-white shadow-sm">
-                <div className="overflow-x-auto">
-                  <div className="min-w-[1120px]">
-                    <div className="grid grid-cols-[minmax(260px,1.3fr)_repeat(4,minmax(185px,1fr))] border-b border-[#EAEAEA] bg-[#FAFAFA] px-6 py-4 text-sm font-medium text-[#111111]/60">
-                      <div>Feature</div>
-                      {pricingPageContent.plans.map((plan) => (
-                        <div key={plan.key} className="text-left">
-                          {plan.name}
-                        </div>
-                      ))}
+              {/* Table Body */}
+              <div className="rounded-b-3xl overflow-hidden">
+                {pricingPageContent.groups.map((group) => (
+                  <div key={group.title} className="group/section">
+                    <div className="border-b border-neutral-200/60 bg-neutral-50/80 px-8 py-4 text-xs font-black tracking-widest text-neutral-500 uppercase flex items-center gap-2">
+                      {group.title}
                     </div>
 
-                    {pricingPageContent.groups.map((group) => (
-                      <div key={group.title}>
-                        <div className="border-b border-[#EAEAEA] px-6 py-4 text-sm font-medium text-[#111111]/45">
-                          {group.title}
+                    {group.rows.map((row) => (
+                      <div
+                        key={row.label}
+                        className="grid grid-cols-[minmax(280px,1.3fr)_repeat(4,minmax(180px,1fr))] items-center border-b border-neutral-100 px-8 py-5 transition-colors hover:bg-neutral-50/50 last:border-b-0"
+                      >
+                        <div className="pr-6 flex items-center gap-2 text-sm font-semibold text-neutral-800">
+                          {row.label}
+                          <HelpCircle className="w-3.5 h-3.5 text-neutral-300 cursor-help" />
                         </div>
 
-                        {group.rows.map((row) => (
-                          <div
-                            key={row.label}
-                            className="grid grid-cols-[minmax(260px,1.3fr)_repeat(4,minmax(185px,1fr))] items-start border-b border-[#EAEAEA] px-6 py-5 transition-colors last:border-b-0 hover:bg-[#FAFAFA]/70"
-                          >
-                            <div className="pr-6 text-sm font-semibold leading-6 text-[#111111]">
-                              {row.label}
-                            </div>
-
-                            {pricingPageContent.plans.map((plan) => (
-                              <div
-                                key={plan.key}
-                                className="pr-6 text-sm leading-6 text-[#111111]/75"
-                              >
-                                <CellContent cell={row.values[plan.key]} />
-                              </div>
-                            ))}
+                        {pricingPageContent.plans.map((plan) => (
+                          <div key={plan.key} className="pr-6">
+                            <CellContent cell={row.values[plan.key]} />
                           </div>
                         ))}
                       </div>
                     ))}
                   </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
-        </section>
+        </div>
       </main>
+
       <Footer />
-    </>
+    </div>
   );
 }

@@ -173,7 +173,7 @@ export default function SignInPage() {
 
       {/* RIGHT PANEL - Visual Branding */}
       <div className="hidden lg:flex relative w-0 flex-1 bg-neutral-950 overflow-hidden items-center justify-center">
-        <ProductShowcase />      
+        <ProductShowcase theme="dark" />      
       </div>
       
       {/* Global CSS for shimmer effect */}

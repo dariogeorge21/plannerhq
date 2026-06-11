@@ -1,10 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState, useEffect, useCallback, useRef } from "react";
 
-export function ProductShowcase() {
+export function ProductShowcase({ theme }: { theme: "dark" | "light" }) {
   // ---------- Theme toggle (mockup only) ----------
-  const [mockTheme, setMockTheme] = useState<"dark" | "light">("dark");
-  const toggleTheme = () => setMockTheme((t) => (t === "dark" ? "light" : "dark"));
+    const [mockTheme, setMockTheme] = useState<"dark" | "light">(theme);    
+//   theme would be based entirely on the prop passed in, but we can allow toggling for demo purposes
+    const toggleTheme = useCallback(() => {
+        setMockTheme((theme) => (theme === "dark" ? "dark" : "light"));
+    }, []);
 
   // ---------- Window expansion ----------
   const [expanded, setExpanded] = useState(false);

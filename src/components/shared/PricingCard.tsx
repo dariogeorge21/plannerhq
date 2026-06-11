@@ -1,4 +1,5 @@
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 interface PricingCardProps {
   name: string;
@@ -51,8 +52,10 @@ export default function PricingCard({
         ))}
       </ul>
       <div className="mt-8">
-        <Button href={ctaLink} variant={highlighted ? "primary" : "secondary"} className="w-full justify-center">
-          {ctaText}
+        <Button className="w-full justify-center">
+          <Link href={ctaLink} passHref>
+            {ctaText}
+          </Link>
         </Button>
       </div>
     </div>

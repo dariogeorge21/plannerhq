@@ -65,7 +65,6 @@ export default function FeatureGrid({
         <motion.div
           key={feature.title}
           custom={idx}
-          variants={fadeUpVariant}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-20px" }}

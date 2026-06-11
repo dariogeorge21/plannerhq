@@ -65,7 +65,7 @@ export default function ContactForm() {
           required
         />
       </div>
-      <Button type="submit" variant="primary" disabled={status === "loading"}>
+      <Button type="submit" variant="default" disabled={status === "loading"}>
         {status === "loading" ? "Sending..." : "Send Message"}
       </Button>
       {status === "success" && (

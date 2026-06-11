@@ -60,7 +60,7 @@ const testimonials = [
   },
 ];
 
-export default function Testimonials() {
+export default function TestimonialsSection() {
   return (
     <section className="relative w-full overflow-hidden bg-[#FAFAFA] py-24 sm:py-32 selection:bg-indigo-500/30">
       {/* Background Decorative Elements */}

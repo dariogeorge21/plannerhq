@@ -86,7 +86,7 @@ const showcaseBlocks = [
   },
 ];
 
-export default function ProductShowcase() {
+export default function ProductsSection() {
   return (
     <section className="relative bg-white py-24 lg:py-32 overflow-hidden selection:bg-indigo-500/30">
       {/* Background Subtle Grid */}

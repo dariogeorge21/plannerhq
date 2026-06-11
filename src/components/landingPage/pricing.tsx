@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Sparkles, ArrowRight, Building2 } from "lucide-react";
 import { PricingPlans } from "@/data/data";
 
-export default function Pricing() {
+export default function PricingSection() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
 
   return (

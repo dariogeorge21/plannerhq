@@ -172,7 +172,7 @@ const features = [
   }
 ];
 
-export default function Features() {
+export default function FeaturesSection() {
   return (
     <section id="features" className="relative overflow-hidden bg-[#FAFAFA] py-24 sm:py-32 selection:bg-indigo-500/30">
       {/* Background Dot Pattern */}

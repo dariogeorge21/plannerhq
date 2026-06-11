@@ -12,7 +12,7 @@ import {
   ArrowRight
 } from "lucide-react";
 
-export default function Hero() {
+export default function HeroSection() {
   return (
     <section className="relative w-full overflow-hidden bg-[#FAFAFA] pt-24 pb-20 lg:pt-32 lg:pb-28 selection:bg-indigo-500/30">
       {/* Background Gradients & Grids */}

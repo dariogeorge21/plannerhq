@@ -56,10 +56,10 @@ export default function Footer() {
   return (
     <footer className="bg-white pt-24 pb-12 relative">
       {/* Decorative Top Border */}
-      <div className="absolute top-0 inset-x-0 h-px w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent opacity-50" />
+      <div className="absolute top-0 inset-x-0 h-px w-full bg-linear-to-r from-transparent via-neutral-300 to-transparent opacity-50" />
       
       {/* Subtle Background Glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-250 h-100 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8 mb-16">

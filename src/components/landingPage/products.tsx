@@ -85,7 +85,7 @@ export default function ProductsSection() {
   return (
     <section className="relative bg-white py-24 lg:py-32 overflow-hidden selection:bg-indigo-500/30">
       {/* Background Subtle Grid */}
-      <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]" />
+      <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[24px_24px]" />
       
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         
@@ -153,7 +153,7 @@ export default function ProductsSection() {
                         key={i}
                         className="flex items-center gap-3 text-neutral-700 font-medium"
                       >
-                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
+                        <div className="shrink-0 w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                         </div>
                         {benefit}
@@ -178,9 +178,9 @@ export default function ProductsSection() {
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 className="relative"
               >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-indigo-500/10 via-transparent to-emerald-500/10 blur-3xl rounded-full -z-10 pointer-events-none" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-linear-to-tr from-indigo-500/10 via-transparent to-emerald-500/10 blur-3xl rounded-full -z-10 pointer-events-none" />
 
-                <div className="relative rounded-[1.5rem] bg-neutral-100/50 p-2 lg:p-3 border border-neutral-200/50 shadow-sm backdrop-blur-sm">
+                <div className="relative rounded-3xl bg-neutral-100/50 p-2 lg:p-3 border border-neutral-200/50 shadow-sm backdrop-blur-sm">
                   <div className="relative rounded-2xl overflow-hidden ring-1 ring-neutral-200/50 bg-white">
                     {block.mockup}
                   </div>

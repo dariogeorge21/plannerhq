@@ -12,8 +12,8 @@ export default function PricingSection() {
     <section className="relative overflow-hidden bg-white py-24 sm:py-32 selection:bg-indigo-500/30 font-sans">
       {/* Background Decorative Gradients */}
       <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-        <div className="absolute top-0 w-[1000px] h-[500px] bg-gradient-to-b from-indigo-500/5 to-transparent blur-3xl rounded-full opacity-70 -translate-y-1/2" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]" />
+        <div className="absolute top-0 w-250 h-125 bg-linear-to-b from-indigo-500/5 to-transparent blur-3xl rounded-full opacity-70 -translate-y-1/2" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[24px_24px]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
@@ -79,8 +79,8 @@ export default function PricingSection() {
               
               {/* Active Toggle Background */}
               <div
-                className={`absolute top-1.5 bottom-1.5 w-[128px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-neutral-200/50 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                  billingCycle === "yearly" ? "translate-x-[128px] w-[160px]" : "translate-x-0"
+                className={`absolute top-1.5 bottom-1.5 w-32 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-neutral-200/50 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  billingCycle === "yearly" ? "translate-x-32 w-40" : "translate-x-0"
                 }`}
               />
             </div>
@@ -95,14 +95,14 @@ export default function PricingSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 + idx * 0.1, ease: "easeOut" }}
-              className={`relative flex flex-col h-full rounded-[2rem] bg-white transition-all duration-300 ${
+              className={`relative flex flex-col h-full rounded-4xl bg-white transition-all duration-300 ${
                 plan.highlighted
                   ? "border border-indigo-200 shadow-[0_0_40px_rgba(79,70,229,0.1)] hover:shadow-[0_0_60px_rgba(79,70,229,0.15)] ring-1 ring-indigo-50 z-10 lg:-mt-4 lg:mb-4"
                   : "border border-neutral-200/80 shadow-sm hover:shadow-xl hover:shadow-neutral-200/50 hover:-translate-y-1"
               }`}
             >
               {plan.highlighted && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1.5 bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-md tracking-wide uppercase">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1.5 bg-linear-to-r from-indigo-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-md tracking-wide uppercase">
                   {plan.highlighted && "Most Popular"}
                 </div>
               )}
@@ -167,7 +167,7 @@ export default function PricingSection() {
                 <ul className="space-y-4 flex-1 mb-10">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center mt-0.5">
+                      <div className="shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center mt-0.5">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                       </div>
                       <span className="text-sm text-neutral-600 leading-snug">

@@ -98,7 +98,7 @@ export function MissionWorkspaceMockup() {
 
   return (
     <div className="relative w-full">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent rounded-3xl blur-2xl" />
+      <div className="absolute inset-0 bg-linear-to-r from-primary/10 to-transparent rounded-3xl blur-2xl" />
       <div className="relative rounded-2xl border border-border bg-card/80 backdrop-blur-sm shadow-xl overflow-hidden">
         {/* Window chrome */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-muted/40">
@@ -134,7 +134,7 @@ export function MissionWorkspaceMockup() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-5 min-h-[380px] lg:min-h-[420px]">
+        <div className="grid grid-cols-1 sm:grid-cols-5 min-h-95 lg:min-h-105">
           {/* Document + live cursors */}
           <div className="sm:col-span-3 p-5 border-b sm:border-b-0 sm:border-r border-border relative overflow-hidden bg-background/50">
             <div className="space-y-3 relative z-0">
@@ -255,7 +255,7 @@ export function MissionWorkspaceMockup() {
                 scaleX: [0.95, 1, 0.95],
               }}
               transition={{ duration: 2.5, repeat: Infinity }}
-              className="absolute top-[88px] left-5 right-16 h-4 bg-primary/10 border border-primary/20 rounded pointer-events-none z-10"
+              className="absolute top-22 left-5 right-16 h-4 bg-primary/10 border border-primary/20 rounded pointer-events-none z-10"
             />
           </div>
 
@@ -273,7 +273,7 @@ export function MissionWorkspaceMockup() {
               />
             </div>
 
-            <div className="flex-1 p-3 space-y-2.5 overflow-hidden min-h-[140px]">
+            <div className="flex-1 p-3 space-y-2.5 overflow-hidden min-h-35">
               <AnimatePresence mode="popLayout">
                 {CHAT_MESSAGES.slice(0, visibleMessages).map((msg, i) => (
                   <motion.div

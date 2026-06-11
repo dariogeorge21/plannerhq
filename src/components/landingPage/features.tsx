@@ -16,7 +16,7 @@ const features = [
     description: "Generate, summarize, and refine content instantly with context-aware AI that adapts to your team's unique voice.",
     icon: Sparkles,
     visual: (
-      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-50/80 to-transparent">
+      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-indigo-50/80 to-transparent">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl transition-all duration-500 group-hover:bg-indigo-500/20 group-hover:scale-110" />
         <div className="relative flex w-56 flex-col gap-2.5 rounded-xl border border-indigo-100/60 bg-white/80 p-4 shadow-sm backdrop-blur-md transition-transform duration-500 group-hover:-translate-y-1">
           <div className="flex items-center gap-2">
@@ -37,9 +37,9 @@ const features = [
     description: "Work together flawlessly. See cursors, active edits, and immediate feedback without friction or sync conflicts.",
     icon: Users,
     visual: (
-      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-50/80 to-transparent">
+      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-emerald-50/80 to-transparent">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl transition-all duration-500 group-hover:bg-emerald-500/20 group-hover:scale-110" />
-        <div className="relative w-full max-w-[220px]">
+        <div className="relative w-full max-w-55">
           {/* Mock Text Block */}
           <div className="space-y-3 rounded-xl border border-neutral-100 bg-white/60 p-4 shadow-sm backdrop-blur-sm transition-transform duration-500 group-hover:-translate-y-1">
              <div className="h-2.5 w-full rounded-full bg-neutral-200/80" />
@@ -64,7 +64,7 @@ const features = [
     description: "Craft beautiful, rich documents. Embed dynamic databases, nested pages, and interactive blocks with absolute ease.",
     icon: FileText,
     visual: (
-      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-50/80 to-transparent">
+      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-blue-50/80 to-transparent">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl transition-all duration-500 group-hover:bg-blue-500/20 group-hover:scale-110" />
         <div className="relative flex h-36 w-56 overflow-hidden rounded-xl border border-neutral-200/80 bg-white shadow-sm transition-transform duration-500 group-hover:-translate-y-1 group-hover:shadow-md">
           <div className="w-14 border-r border-neutral-100 bg-neutral-50 p-2.5 space-y-2">
@@ -74,9 +74,9 @@ const features = [
           </div>
           <div className="flex-1 p-3.5 flex flex-col">
              <div className="h-3 w-20 rounded-full bg-neutral-800 mb-3" />
-             <div className="flex-1 w-full rounded-lg border border-blue-100 bg-gradient-to-br from-blue-50 to-white flex items-center justify-center relative overflow-hidden">
+             <div className="flex-1 w-full rounded-lg border border-blue-100 bg-linear-to-br from-blue-50 to-white flex items-center justify-center relative overflow-hidden">
                 <Database className="h-5 w-5 text-blue-400" />
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#3b82f612_1px,transparent_1px),linear-gradient(to_bottom,#3b82f612_1px,transparent_1px)] bg-[size:8px_8px]" />
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#3b82f612_1px,transparent_1px),linear-gradient(to_bottom,#3b82f612_1px,transparent_1px)] bg-size-[8px_8px]" />
              </div>
           </div>
         </div>
@@ -88,7 +88,7 @@ const features = [
     description: "Turn strategies into action. Prioritize work, track dependencies, set due dates, and celebrate milestones together.",
     icon: CheckCircle2,
     visual: (
-      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-50/80 to-transparent">
+      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-orange-50/80 to-transparent">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl transition-all duration-500 group-hover:bg-orange-500/20 group-hover:scale-110" />
         <div className="relative flex w-56 flex-col gap-2.5 rounded-xl border border-neutral-100 bg-white/80 p-3 shadow-sm backdrop-blur-sm transition-transform duration-500 group-hover:-translate-y-1">
           <div className="flex items-center gap-3 rounded-lg border border-neutral-100 bg-neutral-50 p-2.5 transition-colors group-hover:border-neutral-200">
@@ -117,7 +117,7 @@ const features = [
     description: "Sync calendars, auto-generate structured agendas, and capture intelligent action items without lifting a finger.",
     icon: CalendarDays,
     visual: (
-      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-rose-50/80 to-transparent">
+      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-rose-50/80 to-transparent">
          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-rose-500/10 rounded-full blur-3xl transition-all duration-500 group-hover:bg-rose-500/20 group-hover:scale-110" />
          <div className="relative w-56 overflow-hidden rounded-xl border border-neutral-200/80 bg-white shadow-sm transition-transform duration-500 group-hover:-translate-y-1">
             <div className="border-b border-neutral-100 bg-neutral-50 px-3 py-2.5 flex items-center justify-between">
@@ -144,7 +144,7 @@ const features = [
     description: "Protect your data with granular access controls, automatic backups, SSO integration, and comprehensive audit trails.",
     icon: ShieldCheck,
     visual: (
-      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-100/80 to-transparent">
+      <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-slate-100/80 to-transparent">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-slate-400/10 rounded-full blur-3xl transition-all duration-500 group-hover:bg-slate-400/20 group-hover:scale-110" />
         <div className="relative flex w-56 flex-col gap-0 overflow-hidden rounded-xl border border-neutral-200/80 bg-white shadow-sm transition-transform duration-500 group-hover:-translate-y-1">
            <div className="flex items-center justify-between border-b border-neutral-100 p-3 bg-white">
@@ -176,7 +176,7 @@ export default function FeaturesSection() {
   return (
     <section id="features" className="relative overflow-hidden bg-[#FAFAFA] py-24 sm:py-32 selection:bg-indigo-500/30">
       {/* Background Dot Pattern */}
-      <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+      <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
@@ -198,7 +198,7 @@ export default function FeaturesSection() {
           {features.map((feature, idx) => (
             <div
               key={idx}
-              className="group relative flex flex-col overflow-hidden rounded-[2rem] border border-neutral-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1"
+              className="group relative flex flex-col overflow-hidden rounded-4xl border border-neutral-200/80 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1"
             >
               {/* Feature Abstract Visual Area */}
               <div className="relative h-56 w-full border-b border-neutral-100 bg-neutral-50/30 overflow-hidden">

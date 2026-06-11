@@ -30,7 +30,7 @@ export function AIAssistantMockup() {
   }, []);
 
   return (
-    <div className="relative w-full h-[400px] lg:h-[480px] bg-white rounded-2xl overflow-hidden flex flex-col font-sans">
+    <div className="relative w-full h-100 lg:h-120 bg-white rounded-2xl overflow-hidden flex flex-col font-sans">
       {/* MacOS Header */}
       <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-100 bg-neutral-50/80 backdrop-blur-md">
         <div className="flex gap-1.5">
@@ -117,7 +117,7 @@ export function AIAssistantMockup() {
 
 export function CollaborationMockup() {
   return (
-    <div className="relative w-full h-[400px] lg:h-[480px] bg-white rounded-2xl overflow-hidden flex font-sans">
+    <div className="relative w-full h-100 lg:h-120 bg-white rounded-2xl overflow-hidden flex font-sans">
       {/* Sidebar - Comments */}
       <div className="w-64 border-r border-neutral-100 bg-neutral-50/50 hidden md:flex flex-col">
         <div className="p-4 border-b border-neutral-100">
@@ -211,7 +211,7 @@ export function CollaborationMockup() {
 
 export function WorkspaceMockup() {
   return (
-    <div className="relative w-full h-[400px] lg:h-[480px] bg-[#FAFAFA] rounded-2xl border border-neutral-200/60 shadow-xl flex font-sans overflow-hidden">
+    <div className="relative w-full h-100 lg:h-120 bg-[#FAFAFA] rounded-2xl border border-neutral-200/60 shadow-xl flex font-sans overflow-hidden">
       {/* Glass Sidebar */}
       <div className="w-56 bg-neutral-50/80 backdrop-blur-xl border-r border-neutral-200/50 flex flex-col">
         <div className="p-4 border-b border-neutral-200/50">
@@ -290,7 +290,7 @@ export function WorkspaceMockup() {
 
 export function TaskTrackingMockup() {
   return (
-    <div className="relative w-full h-[400px] lg:h-[480px] bg-neutral-50 rounded-2xl border border-neutral-200/60 shadow-xl flex flex-col font-sans overflow-hidden">
+    <div className="relative w-full h-100 lg:h-120 bg-neutral-50 rounded-2xl border border-neutral-200/60 shadow-xl flex flex-col font-sans overflow-hidden">
       <div className="px-6 py-4 border-b border-neutral-200/80 bg-white flex justify-between items-center">
         <h3 className="font-semibold text-neutral-900 flex items-center gap-2">
           <LayoutDashboard className="w-5 h-5 text-indigo-600" />
@@ -391,7 +391,7 @@ export function TaskTrackingMockup() {
 
 export function CalendarMockup() {
   return (
-    <div className="relative w-full h-[400px] lg:h-[480px] bg-white rounded-2xl border border-neutral-200/60 shadow-xl flex flex-col font-sans overflow-hidden">
+    <div className="relative w-full h-100 lg:h-120 bg-white rounded-2xl border border-neutral-200/60 shadow-xl flex flex-col font-sans overflow-hidden">
       <div className="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-white z-10">
         <div className="flex items-center gap-4">
           <h3 className="text-lg font-bold text-neutral-900">October 2026</h3>
@@ -420,7 +420,7 @@ export function CalendarMockup() {
             const isToday = dayNum === 14;
             
             return (
-              <div key={i} className={`bg-white p-2 flex flex-col gap-1 min-h-[60px] ${!isCurrentMonth ? 'opacity-40' : 'hover:bg-neutral-50 transition-colors cursor-pointer'}`}>
+              <div key={i} className={`bg-white p-2 flex flex-col gap-1 min-h-15 ${!isCurrentMonth ? 'opacity-40' : 'hover:bg-neutral-50 transition-colors cursor-pointer'}`}>
                 <div className={`text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-indigo-600 text-white' : 'text-neutral-700'}`}>
                   {dayNum > 0 ? (dayNum > 31 ? dayNum - 31 : dayNum) : 30 + dayNum}
                 </div>

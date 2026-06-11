@@ -122,7 +122,7 @@ export function ProductShowcase({ theme }: { theme: "dark" | "light" }) {
         </div>
 
         {/* Window content (dynamic based on step) */}
-        <div className="relative min-h-[400px]">
+        <div className="relative min-h-100">
           <AnimatePresence mode="wait">
             {/* Step 0: Landing screen (before workspace open) */}
             {step === 0 && expanded && (
@@ -202,7 +202,7 @@ export function ProductShowcase({ theme }: { theme: "dark" | "light" }) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="grid grid-cols-4 h-full min-h-[400px]"
+                className="grid grid-cols-4 h-full min-h-100"
               >
                 {/* LEFT SIDEBAR */}
                 <div className={`col-span-1 border-r ${t.border} p-4 space-y-6`}>

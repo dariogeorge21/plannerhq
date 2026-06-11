@@ -41,15 +41,15 @@ export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="relative isolate overflow-hidden bg-gradient-to-b from-white to-muted/30 py-24 lg:py-32">
+    <section className="relative isolate overflow-hidden bg-linear-to-b from-white to-muted/30 py-24 lg:py-32">
       {/* Decorative background elements */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-        <div className="absolute -top-80 -left-80 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-80 -right-80 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-px bg-linear-to-r from-transparent via-border to-transparent" />
+        <div className="absolute -top-80 -left-80 w-150 h-150 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -bottom-80 -right-80 w-150 h-150 rounded-full bg-primary/5 blur-3xl" />
       </div>
 
-      <div className="max-w-[900px] mx-auto px-6 lg:px-8">
+      <div className="max-w-225 mx-auto px-6 lg:px-8">
         {/* Header section */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/10 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary mb-6 backdrop-blur-sm">
@@ -87,7 +87,7 @@ export default function FAQSection() {
                     {faq.question}
                   </span>
                   <ChevronDown
-                    className={`w-5 h-5 text-muted-foreground transition-transform duration-300 flex-shrink-0 ${
+                    className={`w-5 h-5 text-muted-foreground transition-transform duration-300 shrink-0 ${
                       isOpen ? "rotate-180" : "group-hover:scale-110"
                     }`}
                   />
@@ -111,8 +111,8 @@ export default function FAQSection() {
 
         {/* Contact support CTA */}
         <div className="mt-20 text-center">
-          <div className="relative rounded-2xl border border-border bg-gradient-to-br from-card to-muted/20 p-8 lg:p-10 shadow-sm">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 rounded-2xl" />
+          <div className="relative rounded-2xl border border-border bg-linear-to-br from-card to-muted/20 p-8 lg:p-10 shadow-sm">
+            <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-transparent to-primary/5 rounded-2xl" />
             <div className="relative z-10">
               <h3 className="text-xl font-semibold text-foreground mb-2">
                 Still have questions?

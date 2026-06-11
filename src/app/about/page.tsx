@@ -27,11 +27,11 @@ export default function About() {
     <><Header />
     <div className="relative bg-background">
       {/* Hero Section */}
-      <section className="relative isolate overflow-hidden bg-gradient-to-b from-background via-background to-muted/20 pt-24 pb-32 lg:pt-32 lg:pb-40">
+      <section className="relative isolate overflow-hidden bg-linear-to-b from-background via-background to-muted/20 pt-24 pb-32 lg:pt-32 lg:pb-40">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-          <div className="absolute top-40 -left-40 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl" />
-          <div className="absolute bottom-20 -right-40 w-[500px] h-[500px] rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-px bg-linear-to-r from-transparent via-border to-transparent" />
+          <div className="absolute top-40 -left-40 w-125 h-125 rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute bottom-20 -right-40 w-125 h-125 rounded-full bg-primary/5 blur-3xl" />
         </div>
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
@@ -41,7 +41,7 @@ export default function About() {
             </div>
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-foreground mb-6">
               Your ideas deserve a{" "}
-              <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              <span className="bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
                 better workspace
               </span>
         </h1>
@@ -163,7 +163,7 @@ export default function About() {
               </div>
             </div>
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-l from-primary/5 to-transparent rounded-3xl" />
+              <div className="absolute inset-0 bg-linear-to-l from-primary/5 to-transparent rounded-3xl" />
               <div className="relative rounded-2xl border border-border bg-card/50 p-6 backdrop-blur-sm">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
@@ -286,7 +286,7 @@ export default function About() {
           <div className="grid md:grid-cols-3 gap-8">
             {team.map((member, idx) => (
               <div key={idx} className="text-center group">
-                <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4 text-4xl font-bold text-primary">
+                <div className="w-32 h-32 mx-auto rounded-full bg-linear-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4 text-4xl font-bold text-primary">
                   {member.initials}
                 </div>
                 <h3 className="text-xl font-semibold text-foreground">{member.name}</h3>
@@ -300,7 +300,7 @@ export default function About() {
 
       {/* CTA Section */}
       <section className="py-24 relative isolate">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 -z-10" />
+        <div className="absolute inset-0 bg-linear-to-r from-primary/10 via-transparent to-primary/10 -z-10" />
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <div className="rounded-3xl border border-border bg-card p-8 lg:p-12 shadow-lg">
             <Star className="w-12 h-12 text-primary mx-auto mb-6" />

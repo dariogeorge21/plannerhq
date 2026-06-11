@@ -65,7 +65,7 @@ export default function TestimonialsSection() {
     <section className="relative w-full overflow-hidden bg-[#FAFAFA] py-24 sm:py-32 selection:bg-indigo-500/30">
       {/* Background Decorative Elements */}
       <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
-        <div className="absolute top-0 w-[800px] h-[600px] bg-gradient-to-b from-neutral-200/40 to-transparent blur-3xl rounded-full opacity-50 -translate-y-1/2" />
+        <div className="absolute top-0 w-200 h-150 bg-linear-to-b from-neutral-200/40 to-transparent blur-3xl rounded-full opacity-50 -translate-y-1/2" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
@@ -117,10 +117,10 @@ export default function TestimonialsSection() {
               transition={{ duration: 0.6, delay: idx * 0.1, ease: "easeOut" }}
               className="break-inside-avoid relative group"
             >
-              <div className="relative flex flex-col rounded-[2rem] border border-neutral-200/80 bg-white/60 p-8 shadow-sm backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:shadow-neutral-200/50 hover:bg-white hover:-translate-y-1">
+              <div className="relative flex flex-col rounded-4xl border border-neutral-200/80 bg-white/60 p-8 shadow-sm backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:shadow-neutral-200/50 hover:bg-white hover:-translate-y-1">
                 
                 {/* Subtle top glare */}
-                <div className="absolute inset-x-0 top-0 h-px w-full bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-x-0 top-0 h-px w-full bg-linear-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 {/* Stars */}
                 <div className="flex items-center gap-1 mb-6">
@@ -143,7 +143,7 @@ export default function TestimonialsSection() {
                 {/* Author Info */}
                 <div className="flex items-center gap-4 mt-auto border-t border-neutral-100 pt-6">
                   <div 
-                    className={`w-12 h-12 rounded-full bg-gradient-to-br border flex items-center justify-center font-bold tracking-tight shadow-sm ${testimonial.color}`}
+                    className={`w-12 h-12 rounded-full bg-linear-to-br border flex items-center justify-center font-bold tracking-tight shadow-sm ${testimonial.color}`}
                   >
                     {testimonial.avatar}
                   </div>

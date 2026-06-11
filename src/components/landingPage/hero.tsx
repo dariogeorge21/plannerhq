@@ -1,5 +1,6 @@
 import {
   Sparkles,
+  WandSparkles,
   Users,
   BookOpen,
   ChevronRight,
@@ -237,7 +238,7 @@ export default function HeroSection() {
 
             <div className="absolute -bottom-6 -left-6 lg:-bottom-8 lg:-left-8 bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl border border-neutral-200/60 p-4 hidden md:flex items-center gap-3 animate-[y-axis_4s_ease-in-out_infinite_alternate_reverse] hover:scale-105 transition-transform" style={{ animationName: 'float' }}>
               <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-indigo-600" />
+                <WandSparkles className="w-5 h-5 text-indigo-600" />
               </div>
               <div>
                 <div className="text-sm font-bold text-neutral-900">AI Enabled</div>

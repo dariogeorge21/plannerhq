@@ -26,10 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    
     <html
       lang="en"
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable)}
     >
+      <head>
+        <meta name="apple-mobile-web-app-title" content="PlannerHQ" />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

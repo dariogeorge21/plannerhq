@@ -3,6 +3,7 @@
 
 import Footer from "@/components/footer";
 import Header from "@/components/header";
+import { MissionWorkspaceMockup } from "@/components/about/MissionWorkspaceMockup";
 
 import {
   Globe,
@@ -90,47 +91,7 @@ export default function About() {
                 scalable, and intuitive environment where every idea finds its home.
               </p>
             </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent rounded-3xl blur-2xl" />
-              <div className="relative rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-1">
-                <div className="grid grid-cols-2 gap-4 p-6">
-                  <div className="rounded-xl bg-background p-4 border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500" />
-                      <span className="text-xs font-medium">Live cursors</span>
-                    </div>
-                    <div className="h-1 w-full bg-muted rounded-full mb-3" />
-                    <div className="space-y-2">
-                      <div className="h-2 bg-primary/20 rounded-full w-3/4" />
-                      <div className="h-2 bg-primary/20 rounded-full w-1/2" />
-                    </div>
-                  </div>
-                  <div className="rounded-xl bg-background p-4 border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <MessageCircle className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs font-medium">Workspace chat</span>
-                    </div>
-                    <div className="space-y-2 mt-2">
-                      <div className="h-2 bg-muted rounded-full w-full" />
-                      <div className="h-2 bg-muted rounded-full w-5/6" />
-                    </div>
-                  </div>
-                  <div className="rounded-xl bg-background p-4 border border-border col-span-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CheckCircle className="w-3 h-3 text-primary" />
-                      <span className="text-xs font-medium">Tasks & Calendar</span>
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      <div className="w-8 h-8 rounded-lg bg-muted" />
-                      <div className="flex-1 space-y-1">
-                        <div className="h-2 bg-muted rounded-full w-full" />
-                        <div className="h-2 bg-muted rounded-full w-3/4" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MissionWorkspaceMockup />
           </div>
         </div>
       </section>

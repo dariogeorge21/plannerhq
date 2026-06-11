@@ -128,13 +128,6 @@ export default function FAQ() {
                   <Mail className="w-4 h-4" />
                   Email support
                 </a>
-                <a
-                  href="#"
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-6 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-muted hover:border-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-2"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  Live chat
-                </a>
               </div>
               <p className="text-xs text-muted-foreground mt-6">
                 Average response time: &lt; 2 hours during business days

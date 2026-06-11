@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Sparkles, ArrowRight, Loader2, Eye, EyeOff} from "lucide-react";
 import { ProductShowcase } from "@/components/ProductShowcase";
+import Image from "next/image";
 
 // Helper SVG for Google Icon
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -41,7 +42,7 @@ export default function SignInPage() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group w-fit mb-12">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-950 text-white transition-transform group-hover:scale-105 group-hover:bg-indigo-600 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-              <Sparkles className="h-4 w-4" />
+              <Image src="/logo.png" alt="PlannerHQ Logo" width={36} height={36} />
             </div>
             <span className="text-xl font-bold tracking-tight text-neutral-900 transition-colors group-hover:text-indigo-600">
               PlannerHQ

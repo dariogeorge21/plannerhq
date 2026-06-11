@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -40,7 +41,7 @@ export default function Header() {
           <div className="flex lg:flex-1">
             <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2 group">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-950 text-white transition-transform group-hover:scale-105 group-hover:bg-indigo-600 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-                <Sparkles className="h-4 w-4" />
+                <Image src="/logo.png" alt="PlannerHQ Logo" width={36} height={36} />
               </div>
               <span className="text-xl font-bold tracking-tight text-neutral-900 transition-colors group-hover:text-indigo-600">
                 PlannerHQ
@@ -115,7 +116,7 @@ export default function Header() {
               <div className="flex items-center justify-between">
                 <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
                   <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-                    <Sparkles className="h-4 w-4" />
+                    <Image src="/logo.png" alt="PlannerHQ Logo" width={36} height={36} />
                   </div>
                   <span className="text-xl font-bold tracking-tight text-neutral-900">
                     PlannerHQ

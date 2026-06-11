@@ -2,6 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { Sparkles, ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 const footerNav = {
   product: [
@@ -66,7 +67,7 @@ export default function Footer() {
           <div className="space-y-8 xl:col-span-1">
             <Link href="/" className="flex items-center gap-2 group w-fit">
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-950 text-white transition-all group-hover:scale-105 group-hover:bg-indigo-600 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-                <Sparkles className="h-4 w-4" />
+                <Image src="/logo.png" alt="PlannerHQ Logo" width={36} height={36} />
               </div>
               <span className="text-xl font-bold tracking-tight text-neutral-900 transition-colors group-hover:text-indigo-600">
                 PlannerHQ

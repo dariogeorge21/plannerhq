@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Check, Sparkles, Building2, HelpCircle } from "lucide-react";
 
@@ -9,10 +9,6 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { BillingCycle, Plan, Cell } from "@/types/types";
 import { pricingPageContent } from "@/data/data";
-
-// ============================================================================
-// HELPER FUNCTIONS & COMPONENTS
-// ============================================================================
 
 function formatPlanPrice(plan: Plan, cycle: BillingCycle) {
   const value = cycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
@@ -24,7 +20,7 @@ function CellContent({ cell }: { cell: Cell }) {
   if (cell.kind === "check") {
     return (
       <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 shadow-sm">
-        <Check className="h-3.5 w-3.5 text-emerald-600 stroke-[3]" />
+        <Check className="h-3.5 w-3.5 text-emerald-600 stroke-3" />
       </span>
     );
   }
@@ -54,10 +50,6 @@ function CellContent({ cell }: { cell: Cell }) {
   );
 }
 
-// ============================================================================
-// MAIN PAGE COMPONENT
-// ============================================================================
-
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
 
@@ -68,8 +60,8 @@ export default function PricingPage() {
       <main className="flex-1 relative pt-24 pb-32">
         {/* Abstract Background Elements */}
         <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-          <div className="absolute top-0 w-[1200px] h-[600px] bg-gradient-to-b from-indigo-500/10 via-purple-500/5 to-transparent blur-3xl rounded-full opacity-60 -translate-y-1/3" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]" />
+          <div className="absolute top-0 w-300 h-150 bg-linear-to-b from-indigo-500/10 via-purple-500/5 to-transparent blur-3xl rounded-full opacity-60 -translate-y-1/3" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-size-[24px_24px]" />
         </div>
 
         {/* Hero Section */}
@@ -118,7 +110,7 @@ export default function PricingPage() {
                   <button
                     key={cycle}
                     onClick={() => setBillingCycle(cycle)}
-                    className={`relative z-10 flex w-[140px] items-center justify-center py-2.5 text-sm font-bold capitalize transition-colors duration-300 ${
+                    className={`relative z-10 flex w-35 items-center justify-center py-2.5 text-sm font-bold capitalize transition-colors duration-300 ${
                       isActive ? "text-neutral-900" : "text-neutral-500 hover:text-neutral-900"
                     }`}
                   >
@@ -151,7 +143,7 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="relative z-10 mx-auto mt-20 max-w-[1280px] px-6 lg:px-8">
+        <div className="relative z-10 mx-auto mt-20 max-w-7xl px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 items-stretch">
             {pricingPageContent.plans.map((plan, idx) => {
               const isDark = plan.featured;
@@ -163,14 +155,14 @@ export default function PricingPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.4 + idx * 0.1 }}
-                  className={`relative flex flex-col rounded-[2rem] p-8 transition-all duration-300 ${
+                  className={`relative flex flex-col rounded-4xl p-8 transition-all duration-300 ${
                     isDark
-                      ? "bg-neutral-950 text-white shadow-2xl shadow-indigo-500/10 scale-100 lg:scale-105 z-10 border border-neutral-800"
+                      ? "bg-white/80 text-neutral-900 shadow-2xl shadow-indigo-500/10 scale-100 lg:scale-105 z-10 border ring-1 ring-indigo-500/20"
                       : "bg-white/80 backdrop-blur-xl text-neutral-900 border border-neutral-200/80 shadow-xl shadow-neutral-200/40 hover:shadow-2xl hover:shadow-neutral-200/60"
                   }`}
                 >
                   {isDark && (
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1.5 bg-gradient-to-r from-indigo-500 to-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1.5 bg-linear-to-r from-indigo-500 to-emerald-500 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-lg">
                       {plan.ribbon}
                     </div>
                   )}
@@ -178,21 +170,21 @@ export default function PricingPage() {
                   <div className="mb-6 flex-1">
                     <h3
                       className={`text-2xl font-bold tracking-tight ${
-                        isDark ? "text-white" : "text-neutral-900"
+                        isDark ? "text-neutral-900" : "text-neutral-900"
                       }`}
                     >
                       {plan.name}
                     </h3>
                     <p
                       className={`mt-3 text-sm leading-relaxed h-12 ${
-                        isDark ? "text-neutral-400" : "text-neutral-500"
+                        isDark ? "text-neutral-500" : "text-neutral-500"
                       }`}
                     >
                       {plan.description}
                     </p>
                   </div>
 
-                  <div className={`mb-8 border-b pb-8 ${isDark ? "border-neutral-800" : "border-neutral-100"}`}>
+                  <div className={`mb-8 border-b pb-8 ${isDark ? "border-neutral-100" : "border-neutral-100"}`}>
                     <div className="flex items-baseline gap-1">
                       {value === "Custom" ? (
                         <span className={`text-4xl font-extrabold tracking-tight ${isDark ? "text-white" : "text-neutral-900"}`}>
@@ -207,12 +199,12 @@ export default function PricingPage() {
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: 10 }}
                               transition={{ duration: 0.2 }}
-                              className={`text-5xl font-extrabold tracking-tight ${isDark ? "text-white" : "text-neutral-900"}`}
+                              className={`text-5xl font-extrabold tracking-tight ${isDark ? "text-neutral-900" : "text-neutral-900"}`}
                             >
                               {value}
                             </motion.span>
                           </AnimatePresence>
-                          <span className={`text-sm font-medium ml-1 ${isDark ? "text-neutral-400" : "text-neutral-500"}`}>
+                          <span className={`text-sm font-medium ml-1 ${isDark ? "text-neutral-500" : "text-neutral-500"}`}>
                             /mo
                           </span>
                         </>
@@ -226,7 +218,7 @@ export default function PricingPage() {
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               exit={{ opacity: 0 }}
-                              className={`text-xs font-semibold ${isDark ? "text-emerald-400" : "text-emerald-600"}`}
+                              className={`text-xs font-semibold ${isDark ? "text-emerald-600" : "text-emerald-600"}`}
                             >
                               {suffix}
                             </motion.p>
@@ -240,7 +232,7 @@ export default function PricingPage() {
                     href={plan.href}
                     className={`group relative flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-sm font-bold transition-all duration-300 active:scale-95 ${
                       isDark
-                        ? "bg-white text-neutral-950 hover:bg-neutral-100 hover:shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                        ? "bg-neutral-950 text-white hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)]"
                         : "bg-neutral-950 text-white hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)]"
                     }`}
                   >
@@ -286,7 +278,7 @@ export default function PricingPage() {
         </motion.div>
 
         {/* Detailed Comparison Table */}
-        <div className="relative z-10 mt-32 max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 mt-32 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-neutral-900">
               Compare features side-by-side
@@ -297,7 +289,7 @@ export default function PricingPage() {
           </div>
 
           <div className="overflow-x-auto pb-12 -mx-4 sm:-mx-6 lg:mx-0 px-4 sm:px-6 lg:px-0">
-            <div className="min-w-[1000px] rounded-3xl bg-white/60 border border-neutral-200/80 shadow-2xl shadow-neutral-200/50 backdrop-blur-2xl">
+            <div className="min-w-250 rounded-3xl bg-white/60 border border-neutral-200/80 shadow-2xl shadow-neutral-200/50 backdrop-blur-2xl">
               
               {/* Table Header Sticky */}
               <div className="sticky z-30 grid grid-cols-[minmax(280px,1.3fr)_repeat(4,minmax(180px,1fr))] items-end border-b border-neutral-200/80 bg-white/90 backdrop-blur-xl px-8 py-6 rounded-t-3xl shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">

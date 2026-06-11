@@ -18,8 +18,8 @@ export default function HeroSection() {
     <section className="relative w-full overflow-hidden bg-[#FAFAFA] pt-24 pb-20 lg:pt-32 lg:pb-28 selection:bg-indigo-500/30">
       {/* Background Gradients & Grids */}
       <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none">
-        <div className="absolute top-0 w-[1000px] h-[500px] bg-gradient-to-b from-indigo-500/10 to-transparent blur-3xl rounded-full opacity-50 translate-y-[-50%]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        <div className="absolute top-0 w-250 h-125 bg-linear-to-b from-indigo-500/10 to-transparent blur-3xl rounded-full opacity-50 translate-y-[-50%]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px] mask-[radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
@@ -37,7 +37,7 @@ export default function HeroSection() {
           <h1 className="text-5xl md:text-6xl lg:text-[5rem] lg:leading-[1.05] font-extrabold tracking-[-0.02em] text-neutral-950 text-balance">
             The workspace where teams{" "}
             <span className="relative whitespace-nowrap">
-              <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500">
+              <span className="relative z-10 text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-emerald-500">
                 think & build
               </span>
             </span>{" "}
@@ -72,10 +72,10 @@ export default function HeroSection() {
         {/* Product Showcase Mockup */}
         <div className="mt-20 relative mx-auto max-w-5xl">
           {/* Outer glow */}
-          <div className="absolute -inset-1 bg-gradient-to-b from-indigo-500/20 to-emerald-500/20 rounded-[2.5rem] blur-2xl opacity-50" />
+          <div className="absolute -inset-1 bg-linear-to-b from-indigo-500/20 to-emerald-500/20 rounded-[2.5rem] blur-2xl opacity-50" />
           
-          <div className="relative rounded-[2rem] border border-neutral-200/60 bg-white/40 p-2 shadow-2xl backdrop-blur-xl">
-            <div className="rounded-[1.5rem] border border-neutral-200/80 bg-white shadow-sm overflow-hidden flex flex-col h-[600px]">
+          <div className="relative rounded-4xl border border-neutral-200/60 bg-white/40 p-2 shadow-2xl backdrop-blur-xl">
+            <div className="rounded-3xl border border-neutral-200/80 bg-white shadow-sm overflow-hidden flex flex-col h-150">
               
               {/* Mockup MacOS Header */}
               <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-100 bg-neutral-50/50">
@@ -157,7 +157,7 @@ export default function HeroSection() {
 
                   <div className="space-y-6 max-w-3xl">
                     {/* AI Generation Block */}
-                    <div className="relative overflow-hidden rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white p-5 shadow-sm">
+                    <div className="relative overflow-hidden rounded-xl border border-indigo-100 bg-linear-to-br from-indigo-50/50 to-white p-5 shadow-sm">
                       <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
                       <div className="flex items-start gap-4">
                         <div className="mt-1 rounded-full bg-indigo-100 p-1.5 text-indigo-600">
@@ -209,7 +209,7 @@ export default function HeroSection() {
                           </div>
                           
                           {/* Simulated active cursor */}
-                          <div className="absolute top-8 left-[180px] z-50 animate-bounce">
+                          <div className="absolute top-8 left-45 z-50 animate-bounce">
                             <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path d="M2.58046 0L0 18.2384L5.61713 14.898L9.2088 19.3496L11.8315 17.2285L8.14088 12.8711L13.8821 11.2319L2.58046 0Z" fill="#10B981" stroke="white" strokeWidth="1.5"/>
                             </svg>

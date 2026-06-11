@@ -156,7 +156,7 @@ export default function Pricing() {
                             exit={{ opacity: 0 }}
                             className="text-xs font-medium text-emerald-600"
                           >
-                            Billed ${parseInt(plan.yearlyPrice) * 12} annually per user
+                            {/* Billed ${ (parseInt(plan.yearlyPrice) * 12 ).toLocaleString() } annually per user */}
                           </motion.p>
                         )}
                       </AnimatePresence>

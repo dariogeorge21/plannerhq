@@ -1,199 +1,326 @@
-import { Testimonial, PricingPlan, TemplateItem, FAQItem, PlannerTask, ActivityLog } from '@/types/types';
-
-export const TESTIMONIALS: Testimonial[] = [
+export const PricingPlans = [
   {
-    id: 't1',
-    name: 'Sarah Jenkins',
-    role: 'VP of Product',
-    company: 'LinearFlow',
-    content: 'PlannerHQ completely transformed our weekly launch sprint mapping. The seamless calendar integrations and minimal interface let us focus on building, not managing software.',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120',
-    rating: 5,
-  },
-  {
-    id: 't2',
-    name: 'David Kojo',
-    role: 'Lead Project Coordinator',
-    company: 'SupaDevs',
-    content: 'We migrated from static spreadsheets to PlannerHQ inside a single weekend. Syncing schedules with our database schema is a breeze, and the Google JWT flow operates flawlessly.',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
-    rating: 5,
-  },
-  {
-    id: 't3',
-    name: 'Elena Rostova',
-    role: 'Founder & Designer',
-    company: 'Aura Studio',
-    content: 'I live inside the templates marketplace. The Product Roadmap templates cut my preparation time in half, giving our agency a polished, client-ready timeline within minutes.',
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120',
-    rating: 5,
-  },
-];
-
-export const PRICING_PLANS: PricingPlan[] = [
-  {
-    id: 'p1',
-    name: 'Free Workspace',
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    description: 'Essential task scheduling tools for solo developers.',
+    name: "Starter",
+    monthlyPrice: "Free",
+    yearlyPrice: "Free",
+    description: "For personal use and getting started.",
     features: [
-      'Up to 3 Active Planner Roadmaps',
-      'Standard JWT Client Authentication',
-      'Vibrant White UI Customizations',
-      'Local Sandbox Persistence',
-      'Community Form Support',
+      "Up to 3 workspaces",
+      "Up to 2 simultaneous collaborations",
+      "100MB storage",
+      "200K AI tokens",
     ],
-    cta: 'Get Started Free',
-    popular: false,
+    cta: "Get Started",
+    highlighted: false,
+    href: "/signup",
   },
   {
-    id: 'p2',
-    name: 'Pro Planner',
-    monthlyPrice: 24,
-    yearlyPrice: 19,
-    description: 'Perfect for fast-moving startups and high-intensity builders.',
+    name: "Pro",
+    monthlyPrice: "$15",
+    yearlyPrice: "$12",
+    description: "Advanced collaboration for growing teams.",
     features: [
-      'Unlimited Active Action Planners',
-      'Supabase Database Auto-Synchronization',
-      'Secure SMS & Sendgrid OTP OTP Flows',
-      'Premium Template Marketplace Access',
-      'Personalized Activity Dashboard Sync',
-      'Priority Email Support (under 3h)',
+      "Up to 10 workspaces",
+      "Up to 10 simultaneous collaborations",
+      "Team workspaces",
+      "2 GB storage",
+      "20 sheets per workspace",
+      "500K tokens per day",
     ],
-    cta: 'Upgrade to Pro Account',
-    popular: true,
+    cta: "Start Free Trial",
+    highlighted: true,
+    href: "/signup",
   },
   {
-    id: 'p3',
-    name: 'HQ Enterprise',
-    monthlyPrice: 79,
-    yearlyPrice: 65,
-    description: 'Custom governance, infinite scaling, and absolute security.',
+    name: "Ultra",
+    monthlyPrice: "$30",
+    yearlyPrice: "$24",
+    description: "All-in-one solution for large teams and enterprises.",
     features: [
-      'Dedicated Isolated DB Infrastructure',
-      'Custom SAML SSO & GoogleAuth Identity',
-      'Enterprise-grade SLA & 99.99% Uptime SLA',
-      'On-demand Custom Marketplace Templates',
-      'Sendgrid Dedicated SMTP Senders',
-      'Dedicated Success Account Executive',
+      "Up to 100 workspaces",
+      "Unlimited simultaneous collaborations",
+      "Team workspaces with advanced permissions",
+      "10 GB storage",
+      "Up to 300 sheets per workspace",
+      "20M tokens per day",
     ],
-    cta: 'Schedule Custom Demo',
-    popular: false,
+    cta: "Start Free Trial",
+    highlighted: false,
+    href: "/signup",
+  },
+  {
+    name: "Enterprise",
+    monthlyPrice: "Custom",
+    yearlyPrice: "Custom",
+    description: "For organizations that need scale and security.",
+    features: [
+      "Unlimited scale",
+      "SSO & SAML",
+      "Advanced permissions",
+      "Audit logs",
+      "Dedicated support",
+      "SLA agreement",
+    ],
+    cta: "Contact Sales",
+    highlighted: false,
+    href: "/contact",
   },
 ];
 
-export const MARKETPLACE_TEMPLATES: TemplateItem[] = [
-  {
-    id: 'tpl1',
-    title: 'Product Launch Checklist',
-    category: 'marketing',
-    description: 'Organize critical cross-functional steps across engineering, legal, marketing, and sales to launch new features successfully.',
-    likes: 142,
-    downloads: 980,
-    tasksCount: 18,
-    badge: 'Popular',
-  },
-  {
-    id: 'tpl2',
-    title: 'Weekly Iterative Agile Sprint',
-    category: 'engineering',
-    description: 'A robust template designed for 2-week active cycle teams targeting code freezes, smoke tests, and deployments.',
-    likes: 210,
-    downloads: 1450,
-    tasksCount: 12,
-    badge: 'Highly Rated',
-  },
-  {
-    id: 'tpl3',
-    title: 'Minimal Daily Focus Planner',
-    category: 'productivity',
-    description: 'Simplify your brain backlog. Highlight direct key objectives and delegate minor tasks with visual micro-blocks.',
-    likes: 95,
-    downloads: 870,
-    tasksCount: 5,
-    badge: 'Editor Choice',
-  },
-  {
-    id: 'tpl4',
-    title: 'Enterprise Risk Audit Track',
-    category: 'personal',
-    description: 'Track internal security controls, periodic compliance logs, and standard checklist items for SOC2 audits.',
-    likes: 47,
-    downloads: 320,
-    tasksCount: 25,
-  },
-];
+import { Plan, Group } from "@/types/types";
 
-export const FAQS: FAQItem[] = [
-  {
-    id: 'faq1',
-    question: 'How does Supabase handle database persistence on PlannerHQ?',
-    answer: 'PlannerHQ connects seamlessly with your Supabase backend via direct REST endpoints and JWT tokens. All plans, tasks, and settings update React state instantly and persist in real-time. In this demo environment, your settings simulate active SQL queries with low latency.',
-  },
-  {
-    id: 'faq2',
-    question: 'How do GoogleAuth and Sendgrid OTP work?',
-    answer: 'We deploy a unified JWT validation system. You can choose to instantly link a Google Identity profile or input your email to trigger a simulated Sendgrid secure verification OTP code. In this sandbox, an OTP code notification triggers right on your screen for convenient direct testing without real inbox setup.',
-  },
-  {
-    id: 'faq3',
-    question: 'Are there any setup required for external API keys?',
-    answer: 'By default, the application runs perfectly out of the box using our server-side proxy models. You can optionally paste your Supabase and Sendgrid credentials inside the Settings panel to review connection status.',
-  },
-  {
-    id: 'faq4',
-    question: 'Can I export templates from the Marketplace?',
-    answer: 'Yes! Select any template and load it directly into your live dashboard workspace in one click. The dashboard instantly integrates pre-configured template items into your scheduler.',
-  },
-];
-
-export const STARTER_TASKS: PlannerTask[] = [
-  {
-    id: 'task-1',
-    title: 'Perform SOC-2 compliance check on Supabase rules',
-    date: '2026-06-04',
-    time: '14:30',
-    priority: 'high',
-    status: 'pending',
-    category: 'Security',
-    description: 'Audit read-write parameters and policy filters on Supabase public tables.',
-  },
-  {
-    id: 'task-2',
-    title: 'Revamp Pricing landing page with crisp white UI details',
-    date: '2026-06-04',
-    time: '10:00',
-    priority: 'medium',
-    status: 'completed',
-    category: 'Growth',
-    description: 'Integrate dynamic annual-monthly price visual toggle with motion fade transitions.',
-  },
-  {
-    id: 'task-3',
-    title: 'Verify Sendgrid OTP delivery speed',
-    date: '2026-06-05',
-    time: '09:15',
-    priority: 'low',
-    status: 'pending',
-    category: 'Engineering',
-    description: 'Run automated dispatch smoke tests on JWT OTP authorization triggers.',
-  },
-];
-
-export const INITIAL_LOGS: ActivityLog[] = [
-  {
-    id: 'log-1',
-    timestamp: '15:19:35',
-    type: 'auth',
-    message: 'User session created using secure JSON Web Token',
-    status: 'success',
-  },
-  {
-    id: 'log-2',
-    timestamp: '15:19:36',
-    type: 'settings_update',
-    message: 'Supabase real-time connection initialized at endpoint /v1/auth',
-    status: 'info',
-  },
-];
+export const pricingPageContent = {
+  title: "Plans and pricing designed for teams of all sizes.",
+  subtitle:
+    "Choose the plan that’s right for your team and start collaborating more effectively today.",
+  plans: [
+    {
+      key: "free",
+      name: "Free",
+      monthlyPrice: "$0",
+      yearlyPrice: "$0",
+      monthlySuffix: "",
+      yearlySuffix: "",
+      description: "For individuals who want to organize their work and notes.",
+      ctaLabel: "Sign up",
+      href: "/signup",
+    },
+    {
+      key: "pro",
+      name: "Pro",
+      monthlyPrice: "$15",
+      yearlyPrice: "$12",
+      monthlySuffix: "per month",
+      yearlySuffix: "per month billed yearly",
+      description: "For smaller teams that need stronger collaboration.",
+      ctaLabel: "Get started",
+      href: "/signup",
+      featured: true,
+      ribbon: "Most popular",
+    },
+    {
+      key: "plus",
+      name: "Plus",
+      monthlyPrice: "$30",
+      yearlyPrice: "$24",
+      monthlySuffix: "per month",
+      yearlySuffix: "per month billed yearly",
+      description: "For growing teams that need more workspaces and storage.",
+      ctaLabel: "Get started",
+      href: "/signup",
+    },
+    {
+      key: "enterprise",
+      name: "Enterprise",
+      monthlyPrice: "Custom",
+      yearlyPrice: "Custom",
+      monthlySuffix: "",
+      yearlySuffix: "",
+      description: "For organizations that need custom support and security.",
+      ctaLabel: "Contact us",
+      href: "/contact",
+    },
+  ] satisfies Plan[],
+  groups: [
+    {
+      title: "Workspace & Usage Limits",
+      rows: [
+        {
+          label: "Workspaces",
+          values: {
+            free: { kind: "text", lines: ["3"] },
+            pro: { kind: "text", lines: ["10"] },
+            plus: { kind: "text", lines: ["100"] },
+            enterprise: { kind: "text", lines: ["Unlimited"] },
+          },
+        },
+        {
+          label: "Sections",
+          values: {
+            free: { kind: "text", lines: ["2"] },
+            pro: { kind: "text", lines: ["20"] },
+            plus: { kind: "text", lines: ["300"] },
+            enterprise: { kind: "text", lines: ["Unlimited"] },
+          },
+        },
+        {
+          label: "Storage",
+          values: {
+            free: { kind: "text", lines: ["100 MB"] },
+            pro: { kind: "text", lines: ["2 GB"] },
+            plus: { kind: "text", lines: ["10 GB"] },
+            enterprise: { kind: "text", lines: ["Custom"] },
+          },
+        },
+        {
+          label: "AI Usage",
+          values: {
+            free: { kind: "text", lines: ["200K tokens"] },
+            pro: { kind: "text", lines: ["500K/day"] },
+            plus: { kind: "text", lines: ["20M/day"] },
+            enterprise: { kind: "text", lines: ["Custom"] },
+          },
+        },
+        {
+          label: "Active Collaborators",
+          values: {
+            free: { kind: "text", lines: ["2"] },
+            pro: { kind: "text", lines: ["10"] },
+            plus: { kind: "text", lines: ["100"] },
+            enterprise: { kind: "text", lines: ["Unlimited"] },
+          },
+        },
+      ],
+    },
+    {
+      title: "Documents & Collaboration",
+      rows: [
+        {
+          label: "Version History",
+          values: {
+            free: { kind: "text", lines: ["7 Days"] },
+            pro: { kind: "text", lines: ["30 Days"] },
+            plus: { kind: "text", lines: ["180 Days"] },
+            enterprise: { kind: "text", lines: ["Unlimited"] },
+          },
+        },
+        {
+          label: "File Upload Size",
+          values: {
+            free: { kind: "text", lines: ["1 MB"] },
+            pro: { kind: "text", lines: ["10 MB"] },
+            plus: { kind: "text", lines: ["100 MB"] },
+            enterprise: { kind: "text", lines: ["Custom"] },
+          },
+        },
+        {
+          label: "Guest Viewers",
+          values: {
+            free: { kind: "text", lines: ["Unlimited"] },
+            pro: { kind: "text", lines: ["Unlimited"] },
+            plus: { kind: "text", lines: ["Unlimited"] },
+            enterprise: { kind: "text", lines: ["Unlimited"] },
+          },
+        },
+        {
+          label: "Real-time Collaboration",
+          values: {
+            free: { kind: "check" },
+            pro: { kind: "check" },
+            plus: { kind: "check" },
+            enterprise: { kind: "check" },
+          },
+        },
+        {
+          label: "Live Cursor Presence",
+          values: {
+            free: { kind: "check" },
+            pro: { kind: "check" },
+            plus: { kind: "check" },
+            enterprise: { kind: "check" },
+          },
+        },
+      ],
+    },
+    {
+      title: "Tasks, Calendar & AI",
+      rows: [
+        {
+          label: "Tasks per Workspace",
+          values: {
+            free: { kind: "text", lines: ["100"] },
+            pro: { kind: "text", lines: ["5,000"] },
+            plus: { kind: "text", lines: ["Unlimited"] },
+            enterprise: { kind: "text", lines: ["Unlimited"] },
+          },
+        },
+        {
+          label: "Calendar Events / Month",
+          values: {
+            free: { kind: "text", lines: ["10"] },
+            pro: { kind: "text", lines: ["50"] },
+            plus: { kind: "text", lines: ["200"] },
+            enterprise: { kind: "text", lines: ["Unlimited"] },
+          },
+        },
+        {
+          label: "Google Calendar Sync",
+          values: {
+            free: { kind: "blank" },
+            pro: { kind: "check" },
+            plus: { kind: "check" },
+            enterprise: { kind: "check" },
+          },
+        },
+        {
+          label: "Google Meet Integration",
+          values: {
+            free: { kind: "blank" },
+            pro: { kind: "check" },
+            plus: { kind: "check" },
+            enterprise: { kind: "check" },
+          },
+        },
+        {
+          label: "AI Context Window",
+          values: {
+            free: { kind: "text", lines: ["16K"] },
+            pro: { kind: "text", lines: ["64K"] },
+            plus: { kind: "text", lines: ["256K"] },
+            enterprise: { kind: "text", lines: ["Custom"] },
+          },
+        },
+      ],
+    },
+    {
+      title: "Administration & Support",
+      rows: [
+        {
+          label: "Workspace Admins",
+          values: {
+            free: { kind: "text", lines: ["0"] },
+            pro: { kind: "text", lines: ["2"] },
+            plus: { kind: "text", lines: ["20"] },
+            enterprise: { kind: "text", lines: ["Unlimited"] },
+          },
+        },
+        {
+          label: "Custom Roles",
+          values: {
+            free: { kind: "blank" },
+            pro: { kind: "blank" },
+            plus: { kind: "blank" },
+            enterprise: { kind: "check" },
+          },
+        },
+        {
+          label: "Audit Logs",
+          values: {
+            free: { kind: "blank" },
+            pro: { kind: "blank" },
+            plus: { kind: "text", lines: ["90 Days"] },
+            enterprise: { kind: "text", lines: ["Unlimited"] },
+          },
+        },
+        {
+          label: "Priority Support",
+          values: {
+            free: { kind: "blank" },
+            pro: { kind: "text", lines: ["Email"] },
+            plus: { kind: "text", lines: ["Priority Email"] },
+            enterprise: { kind: "text", lines: ["Dedicated Manager"] },
+          },
+        },
+        {
+          label: "SLA",
+          values: {
+            free: { kind: "blank" },
+            pro: { kind: "blank" },
+            plus: { kind: "text", lines: ["99.9%"] },
+            enterprise: { kind: "text", lines: ["Custom"] },
+          },
+        },
+      ],
+    },
+  ] satisfies Group[],
+} as const;

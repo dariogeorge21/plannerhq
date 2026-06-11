@@ -1,8 +1,10 @@
-// components/Header.tsx
+// header.tsx
 "use client";
 
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
+import Link from "next/link";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -13,110 +15,160 @@ const navigation = [
 ];
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-[#EAEAEA]">
-      <nav className="max-w-[1280px] mx-auto px-6 lg:px-8" aria-label="Global">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+    <header
+      className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/80 backdrop-blur-md border-b border-neutral-200/50 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]"
+          : "bg-transparent border-b border-transparent"
+      }`}
+    >
+      <nav className="mx-auto max-w-7xl px-6 lg:px-8" aria-label="Global">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex lg:flex-1">
-            <a href="/" className="-m-1.5 p-1.5">
-              <span className="text-xl font-semibold tracking-tight text-[#111111]">
+            <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2 group">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-950 text-white transition-transform group-hover:scale-105 group-hover:bg-indigo-600 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.3)]">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <span className="text-xl font-bold tracking-tight text-neutral-900 transition-colors group-hover:text-indigo-600">
                 PlannerHQ
               </span>
-            </a>
+            </Link>
           </div>
 
-          {/* Desktop navigation */}
-          <div className="hidden lg:flex lg:gap-x-8">
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex lg:gap-x-1">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-medium text-[#111111]/70 hover:text-[#111111] transition-colors"
+                className="relative px-4 py-2 text-sm font-semibold text-neutral-500 transition-colors hover:text-neutral-900 rounded-full hover:bg-neutral-50 group"
               >
                 {item.name}
-              </a>
+                {/* Active Indicator Mock (if matched route) */}
+                <span className="absolute inset-x-4 -bottom-px h-px bg-transparent transition-colors group-hover:bg-neutral-200" />
+              </Link>
             ))}
           </div>
 
-          {/* Desktop buttons */}
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-4">
-            <a
-              href="/login"
-              className="text-sm font-medium text-[#111111]/70 hover:text-[#111111] transition-colors"
+          {/* Desktop Auth */}
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-4">
+            <Link
+              href="/signin"
+              className="text-sm font-semibold text-neutral-600 hover:text-neutral-900 transition-colors px-3 py-2"
             >
-              Sign In
-            </a>
-            <a
+              Sign in
+            </Link>
+            <Link
               href="/signup"
-              className="rounded-full bg-[#111111] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#111111]/90 transition-all"
+              className="group relative inline-flex items-center justify-center gap-2 rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-medium text-white shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] transition-all hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] active:scale-95"
             >
               Get Started
-            </a>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile Menu Button */}
           <div className="flex lg:hidden">
             <button
               type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-[#111111]"
+              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-neutral-700 hover:bg-neutral-100 transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
             >
+              <span className="sr-only">Open main menu</span>
               <Menu className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
         </div>
+      </nav>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-50 bg-white">
-            <div className="flex items-center justify-between p-6 border-b border-[#EAEAEA]">
-              <a href="#" className="-m-1.5 p-1.5">
-                <span className="text-xl font-semibold tracking-tight text-[#111111]">
-                  PlannerHQ
-                </span>
-              </a>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="-m-2.5 rounded-md p-2.5 text-[#111111]"
-              >
-                <X className="h-6 w-6" aria-hidden="true" />
-              </button>
-            </div>
-            <div className="flow-root">
-              <div className="space-y-2 p-6">
-                {navigation.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold text-[#111111]/70 hover:text-[#111111] hover:bg-[#FAFAFA]"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {item.name}
-                  </a>
-                ))}
-                <div className="pt-4 flex flex-col gap-3">
-                  <a
-                    href="/login"
-                    className="text-base font-semibold text-[#111111]/70 hover:text-[#111111]"
-                  >
-                    Sign In
-                  </a>
-                  <a
-                    href="/signup"
-                    className="inline-flex justify-center rounded-full bg-[#111111] px-5 py-2 text-base font-semibold text-white shadow-sm"
-                  >
-                    Get Started
-                  </a>
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-neutral-950/20 backdrop-blur-sm lg:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-neutral-900/10 shadow-2xl lg:hidden flex flex-col"
+            >
+              <div className="flex items-center justify-between">
+                <Link href="/" className="-m-1.5 p-1.5 flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                  <span className="text-xl font-bold tracking-tight text-neutral-900">
+                    PlannerHQ
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  className="-m-2.5 rounded-md p-2.5 text-neutral-700 hover:bg-neutral-100 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <span className="sr-only">Close menu</span>
+                  <X className="h-6 w-6" aria-hidden="true" />
+                </button>
+              </div>
+              
+              <div className="mt-8 flow-root flex-1">
+                <div className="-my-6 divide-y divide-neutral-100">
+                  <div className="space-y-1 py-6">
+                    {navigation.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="-mx-3 flex items-center justify-between rounded-xl px-3 py-4 text-base font-semibold leading-7 text-neutral-900 hover:bg-neutral-50 transition-colors"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {item.name}
+                        <ChevronDown className="w-4 h-4 text-neutral-400 -rotate-90" />
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="py-6 space-y-4">
+                    <Link
+                      href="/signin"
+                      className="-mx-3 block rounded-xl px-3 py-3 text-base font-semibold leading-7 text-neutral-900 hover:bg-neutral-50 transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Sign in
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="group flex w-full items-center justify-center gap-2 rounded-full bg-neutral-950 px-5 py-3.5 text-base font-semibold text-white shadow-md transition-all hover:bg-neutral-800 active:scale-95"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Get Started Free
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </>
         )}
-      </nav>
+      </AnimatePresence>
     </header>
   );
 }

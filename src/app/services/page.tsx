@@ -13,6 +13,8 @@ import { AIAssistantMockup,
  } from "@/components/productMockup/Mockups";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import { pricingPageContent } from "@/data/data";
+import { Cell, Group } from "@/types/types";
 
 const featureBlocks = [
   {
@@ -67,15 +69,33 @@ const featureBlocks = [
   },
 ];
 
-const comparisonFeatures = [
-  { feature: "AI Writing Assistant", starter: false, pro: true, enterprise: true },
-  { feature: "Real-time collaboration", starter: true, pro: true, enterprise: true },
-  { feature: "Kanban boards", starter: false, pro: true, enterprise: true },
-  { feature: "Calendar integration", starter: false, pro: true, enterprise: true },
-  { feature: "Unlimited documents", starter: "5GB", pro: "100GB", enterprise: "Unlimited" },
-  { feature: "SSO & SAML", starter: false, pro: false, enterprise: true },
-  { feature: "Audit logs", starter: false, pro: false, enterprise: true },
-];
+const comparisonFeatureLabels = [
+  "Storage",
+  "AI Usage",
+  "Active Collaborators",
+  "Real-time Collaboration",
+  "Google Calendar Sync",
+  "Tasks per Workspace",
+  "AI Context Window",
+  "Audit Logs",
+] as const;
+
+function findComparisonRow(label: string): Group["rows"][number] | undefined {
+  const rows = pricingPageContent.groups.flatMap(
+    (group) => group.rows as Group["rows"],
+  );
+  return rows.find((row) => row.label === label);
+}
+
+const comparisonRows = comparisonFeatureLabels
+  .map((label) => findComparisonRow(label))
+  .filter((row): row is Group["rows"][number] => row !== undefined);
+
+function renderComparisonCell(cell: Cell): string {
+  if (cell.kind === "check") return "✓";
+  if (cell.kind === "blank") return "—";
+  return cell.lines.join(" ");
+}
 
 export default function ServicesPage() {
   return (
@@ -171,36 +191,25 @@ export default function ServicesPage() {
               <thead>
                 <tr className="border-b border-[#EAEAEA]">
                   <th className="text-left py-4 font-semibold">Feature</th>
-                  <th className="text-center py-4 font-semibold">Starter</th>
-                  <th className="text-center py-4 font-semibold">Pro</th>
-                  <th className="text-center py-4 font-semibold">Enterprise</th>
+                  {pricingPageContent.plans.map((plan) => (
+                    <th key={plan.key} className="text-center py-4 font-semibold">
+                      {plan.name}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {comparisonFeatures.map((row) => (
-                  <tr key={row.feature} className="border-b border-[#EAEAEA]">
-                    <td className="py-3 font-medium">{row.feature}</td>
-                    <td className="text-center py-3 text-[#111111]/70">
-                      {typeof row.starter === "boolean"
-                        ? row.starter
-                          ? "✓"
-                          : "—"
-                        : row.starter}
-                    </td>
-                    <td className="text-center py-3 text-[#111111]/70">
-                      {typeof row.pro === "boolean"
-                        ? row.pro
-                          ? "✓"
-                          : "—"
-                        : row.pro}
-                    </td>
-                    <td className="text-center py-3 text-[#111111]/70">
-                      {typeof row.enterprise === "boolean"
-                        ? row.enterprise
-                          ? "✓"
-                          : "—"
-                        : row.enterprise}
-                    </td>
+                {comparisonRows.map((row) => (
+                  <tr key={row.label} className="border-b border-[#EAEAEA]">
+                    <td className="py-3 font-medium">{row.label}</td>
+                    {pricingPageContent.plans.map((plan) => (
+                      <td
+                        key={plan.key}
+                        className="text-center py-3 text-[#111111]/70"
+                      >
+                        {renderComparisonCell(row.values[plan.key])}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>

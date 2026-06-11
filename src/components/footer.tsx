@@ -5,32 +5,31 @@ import { Sparkles, ArrowRight } from "lucide-react";
 
 const footerNav = {
   product: [
-    { name: "Features", href: "#" },
-    { name: "AI Assistant", href: "#" },
-    { name: "Pricing", href: "#" },
-    { name: "Enterprise", href: "#" },
-    { name: "Changelog", href: "#" },
+    { name: "Features", href: "/services" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "Enterprise", href: "/pricing" },
+    { name: "Changelog", href: "/changelog" },
   ],
   company: [
-    { name: "About Us", href: "#" },
-    { name: "Careers", href: "#" },
-    { name: "Blog", href: "#" },
-    { name: "Contact", href: "#" },
-    { name: "Partners", href: "#" },
+    { name: "About Us", href: "/about" },
+    { name: "Careers", href: "/careers" },
+    { name: "Blog", href: "/blog" },
+    { name: "Contact", href: "/contact" },
+    { name: "Partners", href: "/partners" },
   ],
   resources: [
-    { name: "Documentation", href: "#" },
-    { name: "Help Center", href: "#" },
-    { name: "Community", href: "#" },
-    { name: "API Reference", href: "#" },
-    { name: "Status", href: "#" },
+    { name: "Documentation", href: "/documentation" },
+    { name: "Help Center", href: "/help" },
+    { name: "Community", href: "/community" },
+    { name: "API Reference", href: "/api" },
+    { name: "Status", href: "/status" },
   ],
   legal: [
-    { name: "Privacy Policy", href: "#" },
-    { name: "Terms of Service", href: "#" },
-    { name: "Security", href: "#" },
-    { name: "Cookie Policy", href: "#" },
-    { name: "GDPR", href: "#" },
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Terms of Service", href: "/terms" },
+    { name: "Security", href: "/security" },
+    { name: "Cookie Policy", href: "/cookie" },
+    { name: "GDPR", href: "/gdpr" },
   ],
 };
 
@@ -54,7 +53,7 @@ const SocialIcons = {
 
 export default function Footer() {
   return (
-    <footer className="bg-white pt-24 pb-12 relative overflow-hidden">
+    <footer className="bg-white pt-24 pb-12 relative">
       {/* Decorative Top Border */}
       <div className="absolute top-0 inset-x-0 h-px w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent opacity-50" />
       
@@ -78,7 +77,7 @@ export default function Footer() {
             </p>
             
             {/* Status Indicator */}
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5 transition-colors hover:bg-white hover:border-neutral-300 w-fit cursor-pointer">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -86,7 +85,7 @@ export default function Footer() {
                 </span>
                 <span className="text-xs font-medium text-neutral-600">All systems operational</span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Navigation Grid */}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Container from "@/components/shared/Container";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Header from "@/components/landingPage/header";
+import Header from "@/components/header";
 import { FaGoogle } from "react-icons/fa";
 
 export default function SignUpPage() {

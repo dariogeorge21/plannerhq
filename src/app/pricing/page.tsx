@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
-import Header from "@/components/landingPage/header";
-import Footer from "@/components/landingPage/footer";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 import Pricing from "@/components/landingPage/pricing";
 
 import { BillingCycle, Plan, Cell } from "@/types/types";

@@ -5,8 +5,8 @@ import Container from "@/components/shared/Container";
 import Section from "@/components/shared/Section";
 import PageHero from "@/components/shared/PageHero";
 import ContactForm from "@/components/shared/ContactForm";
-import Header from "@/components/landingPage/header";
-import Footer from "@/components/landingPage/footer";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 
 export default function ContactPage() {
   return (

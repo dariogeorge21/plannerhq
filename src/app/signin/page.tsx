@@ -6,7 +6,7 @@ import Container from "@/components/shared/Container";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FaGoogle } from 'react-icons/fa';
-import Header from "@/components/landingPage/header";
+import Header from "@/components/header";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");

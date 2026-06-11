@@ -5,11 +5,12 @@ import Container from "@/components/shared/Container";
 import Section from "@/components/shared/Section";
 import PageHero from "@/components/shared/PageHero";
 import CTABanner from "@/components/shared/CTABanner";
-import { AIAssistantMockup } from "@/components/productMockup/AIAssistantMockup";
-import { WorkspaceMockup } from "@/components/productMockup/WorkspaceMockup";
-import { TaskTrackingMockup } from "@/components/productMockup/TaskTrackingMockup";
-import { CollaborationMockup } from "@/components/productMockup/CollaborationMockup";
-import { CalendarMockup } from "@/components/productMockup/CalendarMockup";
+import { AIAssistantMockup,
+  CollaborationMockup,
+  WorkspaceMockup,
+  CalendarMockup,
+  TaskTrackingMockup
+ } from "@/components/productMockup/Mockups";
 import Header from "@/components/landingPage/header";
 import Footer from "@/components/landingPage/footer";
 

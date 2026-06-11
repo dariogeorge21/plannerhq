@@ -118,12 +118,7 @@ export function ProductShowcase({ theme }: { theme: "dark" | "light" }) {
             <span className="w-3 h-3 rounded-full bg-green-500/80" />
           </div>
           <div className={`text-xs font-medium ${t.muted}`}>PlannerHQ Workspace</div>
-          <button
-            onClick={toggleTheme}
-            className={`px-2 py-1 text-[10px] font-semibold rounded-full ${mockTheme === "dark" ? "bg-yellow-400/20 text-yellow-300" : "bg-indigo-100 text-indigo-700"} transition-colors`}
-          >
-            {mockTheme === "dark" ? "☀️ Light" : "🌙 Dark"}
-          </button>
+          
         </div>
 
         {/* Window content (dynamic based on step) */}

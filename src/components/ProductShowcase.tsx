@@ -28,14 +28,14 @@ export function ProductShowcase({ theme }: { theme: "dark" | "light" }) {
   useEffect(() => {
     if (!expanded) return;
     const delays: Record<number, number> = {
-      0: 1500, // landing screen
-      1: 2000, // cursor clicks open workspace
-      2: 3000, // workspace view
+      0: 1000, // landing screen
+      1: 1500, // cursor clicks open workspace
+      2: 2000, // workspace view
       3: 2500, // calendar click
-      4: 3500, // AI assistant
-      5: 4000, // documents collaboration
-      6: 2000, // close workspace
-      7: 2000, // collapsed state before restart
+      4: 3000, // AI assistant
+      5: 3500, // documents collaboration
+      6: 4000, // close workspace
+      7: 4500, // collapsed state before restart
     };
     sequenceTimer.current = setTimeout(() => {
       advanceStep();
@@ -53,7 +53,7 @@ export function ProductShowcase({ theme }: { theme: "dark" | "light" }) {
   // ---------- Cursor movement (pre‑defined positions) ----------
   const cursorRef = useRef<HTMLDivElement>(null);
   const cursorPositions = [
-    { x: 45, y: 40 },  // landing: on "Open Workspace" button
+    { x: 35, y: 40 },  // landing: on "Open Workspace" button
     { x: 45, y: 40 },  // click
     { x: 30, y: 30 },  // workspace: sidebar
     { x: 55, y: 35 },  // calendar tab
@@ -244,7 +244,7 @@ export function ProductShowcase({ theme }: { theme: "dark" | "light" }) {
                       <h3 className={`text-lg font-semibold ${t.text}`}>Calendar</h3>
                       <div className="mt-4 grid grid-cols-7 gap-1 text-xs">
                         {Array.from({ length: 7 }).map((_, i) => (
-                          <div key={i} className="text-center text-neutral-500">M T W T F S S</div>
+                          <div key={i} className="text-center text-neutral-500"></div>
                         ))}
                         {Array.from({ length: 28 }).map((_, i) => (
                           <div

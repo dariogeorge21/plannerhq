@@ -26,7 +26,6 @@ const showcaseBlocks = [
       "Instant document summarization",
     ],
     mockup: <AIAssistantMockup />,
-    layout: "textLeft" as const,
   },
   {
     eyebrow: "Multiplayer",
@@ -40,7 +39,6 @@ const showcaseBlocks = [
       "Presence indicators"
     ],
     mockup: <CollaborationMockup />,
-    layout: "textRight" as const,
   },
   {
     eyebrow: "Knowledge Hub",
@@ -54,7 +52,6 @@ const showcaseBlocks = [
       "Granular access controls"
     ],
     mockup: <WorkspaceMockup />,
-    layout: "textLeft" as const,
   },
   {
     eyebrow: "Project Management",
@@ -68,7 +65,6 @@ const showcaseBlocks = [
       "Assignee workload views"
     ],
     mockup: <TaskTrackingMockup />,
-    layout: "textRight" as const,
   },
   {
     eyebrow: "Calendar Sync",
@@ -82,7 +78,6 @@ const showcaseBlocks = [
       "Team availability view"
     ],
     mockup: <CalendarMockup />,
-    layout: "textLeft" as const,
   },
 ];
 
@@ -128,23 +123,18 @@ export default function ProductsSection() {
           </motion.p>
         </div>
 
-        {/* Feature Blocks */}
+        {/* Feature Blocks — alternating: content/mockup, mockup/content, content/mockup */}
         <div className="space-y-32 lg:space-y-48">
-          {showcaseBlocks.map((block, index) => (
-            <div
-              key={index}
-              className={`grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center ${
-                block.layout === "textRight" ? "lg:rtl" : ""
-              }`}
-            >
-              {/* Text Side */}
+          {showcaseBlocks.map((block, index) => {
+            const contentFirst = index % 2 === 0;
+
+            const content = (
               <motion.div
-                initial={{ opacity: 0, x: block.layout === "textLeft" ? -30 : 30 }}
+                key="content"
+                initial={{ opacity: 0, x: contentFirst ? -30 : 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
-                className={block.layout === "textRight" ? "lg:ltr" : ""}
-                dir="ltr"
               >
                 <div className="flex flex-col items-start">
                   <span className="text-sm font-bold tracking-widest text-indigo-600 uppercase mb-4">
@@ -156,10 +146,13 @@ export default function ProductsSection() {
                   <p className="text-lg text-neutral-500 leading-relaxed mb-8">
                     {block.description}
                   </p>
-                  
+
                   <ul className="space-y-4 mb-10 w-full">
                     {block.benefits.map((benefit, i) => (
-                      <li key={i} className="flex items-center gap-3 text-neutral-700 font-medium">
+                      <li
+                        key={i}
+                        className="flex items-center gap-3 text-neutral-700 font-medium"
+                      >
                         <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                         </div>
@@ -174,28 +167,46 @@ export default function ProductsSection() {
                   </button>
                 </div>
               </motion.div>
+            );
 
-              {/* Mockup Side */}
+            const mockup = (
               <motion.div
+                key="mockup"
                 initial={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
                 whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
-                className="relative lg:ltr"
-                dir="ltr"
+                className="relative"
               >
-                {/* Abstract Decorative Glow */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-indigo-500/10 via-transparent to-emerald-500/10 blur-3xl rounded-full -z-10 pointer-events-none" />
-                
-                {/* Device Frame */}
+
                 <div className="relative rounded-[1.5rem] bg-neutral-100/50 p-2 lg:p-3 border border-neutral-200/50 shadow-sm backdrop-blur-sm">
-                   <div className="relative rounded-2xl overflow-hidden ring-1 ring-neutral-200/50 bg-white">
-                      {block.mockup}
-                   </div>
+                  <div className="relative rounded-2xl overflow-hidden ring-1 ring-neutral-200/50 bg-white">
+                    {block.mockup}
+                  </div>
                 </div>
               </motion.div>
-            </div>
-          ))}
+            );
+
+            return (
+              <div
+                key={block.eyebrow}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center"
+              >
+                {contentFirst ? (
+                  <>
+                    {content}
+                    {mockup}
+                  </>
+                ) : (
+                  <>
+                    {mockup}
+                    {content}
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

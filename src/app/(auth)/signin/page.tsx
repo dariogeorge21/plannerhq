@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, Loader2, Eye, EyeOff} from "lucide-react";
+import { Sparkles, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import Image from "next/image";
 
@@ -34,11 +34,11 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen flex w-full bg-white font-sans selection:bg-indigo-500/30">
-      
+
       {/* LEFT PANEL - Form */}
       <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-12 lg:flex-none lg:w-1/2 xl:w-[45%] lg:px-20 xl:px-24 border-r border-neutral-200/50">
         <div className="mx-auto w-full max-w-sm lg:max-w-md">
-          
+
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group w-fit mb-12">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-950 text-white transition-transform group-hover:scale-105 group-hover:bg-indigo-600 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.3)]">
@@ -50,7 +50,7 @@ export default function SignInPage() {
           </Link>
 
           {/* Header */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -63,7 +63,7 @@ export default function SignInPage() {
             </p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
@@ -174,11 +174,12 @@ export default function SignInPage() {
 
       {/* RIGHT PANEL - Visual Branding */}
       <div className="hidden lg:flex relative w-0 flex-1 bg-neutral-950 overflow-hidden items-center justify-center">
-        <ProductShowcase theme="dark" />      
+        <ProductShowcase theme="dark" />
       </div>
-      
+
       {/* Global CSS for shimmer effect */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes shimmer {
           100% { transform: translateX(100%); }
         }

@@ -1,17 +1,24 @@
 // app/verify-otp/page.tsx
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ShieldCheck, Loader2, CheckCircle2, RefreshCw } from "lucide-react";
 import Image from "next/image";
+import { verifyOtp } from "@/api/auth";
+import { createClient } from "@/lib/supabase/client";
+import { setCookie } from "@/utils/session";
+import { toast } from "sonner";
 
+const ACTIVITY_COOKIE = "plannerhq_last_activity";
+const INACTIVITY_TIMEOUT = 24 * 60 * 60; // 24 hours in seconds
 
-export default function VerifyOtpPage() {
-    // In a real app, the email would come from the previous step (e.g., query params or state).
-    // Here we’ll use a static example for demonstration.
-    const maskedEmail = "jane@company.com";
+function VerifyOtpContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const email = searchParams.get("email") || "";
 
     const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
     const [isLoading, setIsLoading] = useState(false);
@@ -61,27 +68,60 @@ export default function VerifyOtpPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (otp.some((d) => d === "")) return;
+        if (!email) {
+            setError("Email is missing. Please sign up again.");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
 
-        // Mock verification: any code is valid except "000000" for demo
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        if (otp.join("") === "000000") {
-            setError("Invalid code. Please try again.");
-            setIsLoading(false);
-        } else {
-            setIsLoading(false);
+        const res = await verifyOtp(email, otp.join(""));
+        
+        setIsLoading(false);
+        if (res.success) {
+            // Set initial activity cookie upon successful verification
+            setCookie(ACTIVITY_COOKIE, Date.now().toString(), INACTIVITY_TIMEOUT);
             setIsVerified(true);
+            toast.success("Account verified successfully!");
+        } else {
+            setError(res.message || "Invalid OTP code. Please try again.");
+            toast.error(res.message || "Verification failed.");
         }
     };
 
+    // Auto-redirect on successful verification
+    useEffect(() => {
+        if (isVerified) {
+            const timeout = setTimeout(() => {
+                router.push("/dashboard");
+            }, 2000);
+            return () => clearTimeout(timeout);
+        }
+    }, [isVerified, router]);
+
     const handleResend = async () => {
         if (resendCooldown > 0 || isLoading) return;
-        // Mock resend
-        setResendCooldown(30);
+        if (!email) {
+            toast.error("Email is missing. Cannot resend code.");
+            return;
+        }
+
         setIsLoading(true);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const supabase = createClient();
+        
+        const { error: resendError } = await supabase.auth.resend({
+            type: "signup",
+            email: email,
+        });
+
         setIsLoading(false);
+        if (resendError) {
+            toast.error(resendError.message || "Failed to resend code.");
+        } else {
+            setResendCooldown(30);
+            toast.success("A new verification code has been sent!");
+        }
     };
 
     // Countdown for resend
@@ -93,7 +133,7 @@ export default function VerifyOtpPage() {
         return () => clearInterval(timer);
     }, [resendCooldown]);
 
-    // Reset form after success (optional)
+    // Reset form
     const resetForm = () => {
         setOtp(Array(6).fill(""));
         setIsVerified(false);
@@ -165,7 +205,7 @@ export default function VerifyOtpPage() {
                         </h1>
                         <p className="mt-2.5 text-base text-neutral-500">
                             We sent a 6‑digit code to{" "}
-                            <span className="font-semibold text-neutral-900">{maskedEmail}</span>.
+                            <span className="font-semibold text-neutral-900">{email || "your email"}</span>.
                         </p>
                     </motion.div>
 
@@ -314,5 +354,17 @@ export default function VerifyOtpPage() {
         }
       `}} />
         </div>
+    );
+}
+
+export default function VerifyOtpPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <Loader2 className="w-8 h-8 animate-spin text-neutral-900" />
+            </div>
+        }>
+            <VerifyOtpContent />
+        </Suspense>
     );
 }

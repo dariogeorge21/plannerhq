@@ -3,10 +3,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ArrowRight, Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import Image from "next/image";
+import { signUp } from "@/api/auth";
+import { toast } from "sonner";
 
 // Helper SVG for Google Icon
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -19,6 +22,7 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,9 +43,16 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Mock registration delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    const res = await signUp(email, password, name);
+    
     setIsLoading(false);
+    if (res.success) {
+      toast.success("Verification email sent! Please check your inbox.");
+      router.push(`/check-email?email=${encodeURIComponent(email)}`);
+    } else {
+      toast.error(res.message || "Sign up failed. Please try again.");
+    }
   };
 
   const strengthConfig = [

@@ -1,12 +1,20 @@
 // app/signin/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Sparkles, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import { ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import Image from "next/image";
+import { signIn, signOut } from "@/api/auth";
+import { setCookie } from "@/utils/session";
+import { toast } from "sonner";
+import { useSession } from "@/features/auth/providers/SessionProvider";
+
+const ACTIVITY_COOKIE = "plannerhq_last_activity";
+const INACTIVITY_TIMEOUT = 24 * 60 * 60; // 24 hours in seconds
 
 // Helper SVG for Google Icon
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -18,19 +26,72 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default function SignInPage() {
+function SignInContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, isLoading: sessionLoading } = useSession();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const expired = searchParams.get("expired");
+
+  // Auto-redirect if already logged in
+  useEffect(() => {
+    if (!sessionLoading && user) {
+      router.push("/dashboard");
+      router.refresh();
+    }
+  }, [user, sessionLoading, router]);
+
+  // Handle session expiration warning
+  useEffect(() => {
+    if (expired === "true") {
+      const handleExpiredSession = async () => {
+        await signOut();
+        toast.warning("Your session has expired due to inactivity. Please sign in again.", {
+          id: "session-expired", // Avoid rendering duplicate toasts
+        });
+        // Remove the query parameter without reloading the page
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, "", newUrl);
+      };
+      
+      handleExpiredSession();
+    }
+  }, [expired]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Mock authentication delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    const res = await signIn(email, password);
+
     setIsLoading(false);
+    if (res.success) {
+      // Set the last activity cookie to start the 24 hour inactivity timer
+      setCookie(ACTIVITY_COOKIE, Date.now().toString(), INACTIVITY_TIMEOUT);
+      toast.success("Welcome back!");
+      router.push("/dashboard");
+      router.refresh();
+    } else {
+      toast.error(res.message || "Invalid email or password. Please try again.");
+    }
   };
+
+  // Render loader if session is loading or if we are redirecting an active user
+  if (sessionLoading || (user && !isLoading)) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white font-sans">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+          <span className="text-sm text-neutral-400 font-semibold">Resuming session...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex w-full bg-white font-sans selection:bg-indigo-500/30">
@@ -133,22 +194,10 @@ export default function SignInPage() {
                 </div>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-600 transition-colors cursor-pointer"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-neutral-600 cursor-pointer">
-                  Remember me for 30 days
-                </label>
-              </div>
-
               <button
                 type="submit"
                 disabled={isLoading}
-                className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-950 px-8 py-3.5 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] transition-all duration-300 hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] disabled:opacity-70 disabled:pointer-events-none active:scale-[0.98] mt-2 overflow-hidden"
+                className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-950 px-8 py-3.5 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] transition-all duration-300 hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] disabled:opacity-70 disabled:pointer-events-none active:scale-[0.98] mt-4 overflow-hidden"
               >
                 <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/10 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
                 {isLoading ? (
@@ -185,5 +234,17 @@ export default function SignInPage() {
         }
       `}} />
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-8 h-8 animate-spin text-neutral-900" />
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   );
 }

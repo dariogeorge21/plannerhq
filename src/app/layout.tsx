@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Figtree } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { SessionProvider } from "@/features/auth/providers/SessionProvider";
+import { Toaster } from "@/components/ui/sonner";
 
 const figtree = Figtree({subsets:['latin'],variable:'--font-sans'});
 
@@ -34,7 +36,12 @@ export default function RootLayout({
       <head>
         <meta name="apple-mobile-web-app-title" content="PlannerHQ" />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <SessionProvider>
+          {children}
+          <Toaster position="top-right" />
+        </SessionProvider>
+      </body>
     </html>
   );
 }

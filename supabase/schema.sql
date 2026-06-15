@@ -107,18 +107,27 @@ create or replace function public.handle_new_user()
 returns trigger as $$
 declare
   free_plan_id uuid;
+  name_val text;
 begin
   -- Retrieve the plan ID for the free plan
   select id into free_plan_id from public.plans where key = 'free';
 
+  -- Extract display name from metadata (supporting standard email signup & Google OAuth metadata)
+  name_val := coalesce(
+    new.raw_user_meta_data->>'display_name',
+    new.raw_user_meta_data->>'full_name',
+    new.raw_user_meta_data->>'name',
+    split_part(new.email, '@', 1)
+  );
+
   -- Create the public profile record
-  insert into public.profiles (id, display_name, email, hqid)
+  insert into public.profiles (id, display_name, email, hqid, avatar_url)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)),
+    name_val,
     new.email,
-    lower(replace(coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)), ' ', '-'))
-      || '-' || substr(new.id::text, 1, 4)
+    lower(replace(name_val, ' ', '-')) || '-' || substr(new.id::text, 1, 4),
+    coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture')
   );
 
   -- Create free subscription record

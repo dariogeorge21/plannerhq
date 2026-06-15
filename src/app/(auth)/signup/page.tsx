@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ArrowRight, Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import Image from "next/image";
-import { signUp } from "@/api/auth";
+import { signUp, signInWithGoogle } from "@/api/auth";
 import { toast } from "sonner";
 
 // Helper SVG for Google Icon
@@ -52,6 +52,15 @@ export default function SignUpPage() {
       router.push(`/check-email?email=${encodeURIComponent(email)}`);
     } else {
       toast.error(res.message || "Sign up failed. Please try again.");
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true);
+    const res = await signInWithGoogle();
+    if (!res.success) {
+      toast.error(res.message || "Google sign up failed.");
+      setIsLoading(false);
     }
   };
 
@@ -116,7 +125,11 @@ export default function SignUpPage() {
             className="mt-8"
           >
             {/* OAuth */}
-            <button className="relative flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200/80 bg-white px-4 py-3.5 text-sm font-semibold text-neutral-700 shadow-sm transition-all hover:bg-neutral-50 hover:shadow-md hover:border-neutral-300 active:scale-[0.98]">
+            <button
+              onClick={handleGoogleSignUp}
+              type="button"
+              className="relative flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200/80 bg-white px-4 py-3.5 text-sm font-semibold text-neutral-700 shadow-sm transition-all hover:bg-neutral-50 hover:shadow-md hover:border-neutral-300 active:scale-[0.98] cursor-pointer"
+            >
               <GoogleIcon className="w-5 h-5" />
               Sign up with Google
             </button>

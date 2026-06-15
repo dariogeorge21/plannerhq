@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import Image from "next/image";
-import { signIn, signOut } from "@/api/auth";
+import { signIn, signOut, signInWithGoogle } from "@/api/auth";
 import { setCookie } from "@/utils/session";
 import { toast } from "sonner";
 import { useSession } from "@/features/auth/providers/SessionProvider";
@@ -81,6 +81,15 @@ function SignInContent() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    const res = await signInWithGoogle();
+    if (!res.success) {
+      toast.error(res.message || "Google sign in failed.");
+      setIsLoading(false);
+    }
+  };
+
   // Render loader if session is loading or if we are redirecting an active user
   if (sessionLoading || (user && !isLoading)) {
     return (
@@ -131,7 +140,11 @@ function SignInContent() {
             className="mt-10"
           >
             {/* OAuth */}
-            <button className="relative flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200/80 bg-white px-4 py-3.5 text-sm font-semibold text-neutral-700 shadow-sm transition-all hover:bg-neutral-50 hover:shadow-md hover:border-neutral-300 active:scale-[0.98]">
+            <button
+              onClick={handleGoogleSignIn}
+              type="button"
+              className="relative flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200/80 bg-white px-4 py-3.5 text-sm font-semibold text-neutral-700 shadow-sm transition-all hover:bg-neutral-50 hover:shadow-md hover:border-neutral-300 active:scale-[0.98] cursor-pointer"
+            >
               <GoogleIcon className="w-5 h-5" />
               Continue with Google
             </button>

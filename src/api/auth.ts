@@ -189,3 +189,29 @@ function splitEmailName(email: string): string {
   if (!email) return "";
   return email.split("@")[0];
 }
+
+/**
+ * Initiates Google OAuth authentication flow.
+ * Redirects the browser to Supabase Google OAuth endpoint, which will eventually
+ * callback to /auth/callback.
+ */
+export async function signInWithGoogle(): Promise<{ success: boolean; message?: string }> {
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true };
+  } catch (err: unknown) {
+    const error = err as Error;
+    return { success: false, message: error.message || "An unexpected error occurred" };
+  }
+}

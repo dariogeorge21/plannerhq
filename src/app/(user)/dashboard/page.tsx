@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut,
   User as UserIcon,
@@ -18,7 +18,8 @@ import {
   ArrowRight,
   TrendingUp,
   Clock,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,6 +27,10 @@ import { useSession } from "@/features/auth/providers/SessionProvider";
 import { signOut } from "@/api/auth";
 import { deleteCookie } from "@/utils/session";
 import { toast } from "sonner";
+import { KpiMetrics } from "./components/kpi";
+import { WorkspacesList } from "./components/workspace-list";
+import { DashboardBreadcrumbs } from "./components/breadcrumbs";
+import { ApplicationSettings } from "./components/application-settings";
 
 const ACTIVITY_COOKIE = "plannerhq_last_activity";
 
@@ -33,12 +38,26 @@ export default function DashboardPage() {
   const { user, isLoading } = useSession();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  // Close modal on escape press
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowLogoutConfirm(false);
+      }
+    };
+    if (showLogoutConfirm) {
+      window.addEventListener("keydown", handleEscape);
+    }
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [showLogoutConfirm]);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
     const res = await signOut();
     setIsLoggingOut(false);
-    router.push('/signin')
+    setShowLogoutConfirm(false);
 
     if (res.success) {
       deleteCookie(ACTIVITY_COOKIE);
@@ -103,7 +122,7 @@ export default function DashboardPage() {
 
             {/* Logout Button */}
             <button
-              onClick={handleLogout}
+              onClick={() => setShowLogoutConfirm(true)}
               disabled={isLoggingOut}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:bg-neutral-50 px-4 py-2.5 text-sm font-semibold text-neutral-700 shadow-xs active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
             >
@@ -156,136 +175,82 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 flex flex-col gap-8">
 
             {/* Quick Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {[
-                { title: "Total Workspaces", count: "1 / 3", icon: FolderKanban, color: "text-blue-600 bg-blue-50" },
-                { title: "Active Tasks", count: "0", icon: CheckSquare, color: "text-amber-600 bg-amber-50" },
-                { title: "Calendar Events", count: "0", icon: Calendar, color: "text-emerald-600 bg-emerald-50" },
-              ].map((stat, i) => (
-                <motion.div
-                  key={stat.title}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 + i * 0.05 }}
-                  className="bg-white rounded-2xl border border-neutral-200/50 p-6 flex items-center justify-between shadow-xs hover:shadow-md transition-shadow"
-                >
-                  <div className="space-y-1">
-                    <span className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">{stat.title}</span>
-                    <h3 className="text-2xl font-bold text-neutral-900">{stat.count}</h3>
-                  </div>
-                  <div className={`p-3.5 rounded-xl ${stat.color}`}>
-                    <stat.icon className="w-5 h-5" />
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Profile Information Panel */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.25 }}
-              className="bg-white rounded-3xl border border-neutral-200/50 p-8 shadow-xs flex flex-col gap-6"
-            >
-              <div>
-                <h3 className="text-lg font-bold text-neutral-950">Your Security Profile</h3>
-                <p className="text-sm text-neutral-400 mt-1 font-medium">Verify your profile metadata details linked to this session.</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2 border-t border-neutral-100">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-neutral-50 border border-neutral-200/60 flex items-center justify-center text-neutral-500">
-                    <UserIcon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-neutral-400 font-semibold">Full Name</span>
-                    <p className="text-sm font-bold text-neutral-900">{user.displayName}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-neutral-50 border border-neutral-200/60 flex items-center justify-center text-neutral-500">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-neutral-400 font-semibold">Email Address</span>
-                    <p className="text-sm font-bold text-neutral-900 truncate max-w-[200px]">{user.email}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-neutral-50 border border-neutral-200/60 flex items-center justify-center text-neutral-500">
-                    <Hash className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-neutral-400 font-semibold">Public HQID ID</span>
-                    <p className="text-sm font-mono font-bold text-indigo-600">{user.hqid || "Not assigned"}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-neutral-50 border border-neutral-200/60 flex items-center justify-center text-neutral-500">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <span className="text-xs text-neutral-400 font-semibold">Timezone</span>
-                    <p className="text-sm font-bold text-neutral-900">{user.timezone}</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            <KpiMetrics />
           </div>
+        </div>
+        <WorkspacesList />
+        <ApplicationSettings />
+      </main>
 
-          {/* Right Column - Activity & Features */}
-          <div className="flex flex-col gap-8">
 
-            {/* Quick Actions Panel */}
+      {/* Sign Out Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.35 }}
-              className="bg-white rounded-3xl border border-neutral-200/50 p-6 shadow-xs flex flex-col gap-4"
-            >
-              <h3 className="text-sm font-bold text-neutral-900 tracking-tight">Active Inactivity Guard</h3>
-              <div className="rounded-2xl bg-emerald-50/50 border border-emerald-100 p-4 flex gap-3 text-emerald-800">
-                <div className="h-2 w-2 rounded-full bg-emerald-500 mt-1.5 animate-ping flex-shrink-0" />
-                <div className="text-xs leading-relaxed font-medium">
-                  Your session is actively guarded. You will be automatically signed out after <strong>24 hours</strong> of complete inactivity.
-                </div>
-              </div>
-              <div className="text-xs text-neutral-400 flex items-center gap-1.5 px-1 font-medium">
-                <Clock className="w-3.5 h-3.5 text-neutral-300" />
-                <span>Timer resets on mouse moves, clicks & typing.</span>
-              </div>
-            </motion.div>
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowLogoutConfirm(false)}
+              className="absolute inset-0 bg-neutral-950/40 backdrop-blur-md"
+            />
 
-            {/* Launch Workspace card */}
+            {/* Modal Dialog Card */}
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-neutral-950 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden group"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", duration: 0.4, bounce: 0.15 }}
+              className="relative w-full max-w-md overflow-hidden rounded-3xl border border-neutral-100 bg-white p-8 shadow-2xl z-10 flex flex-col items-center text-center"
             >
-              <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-48 h-48 bg-indigo-600/30 rounded-full blur-[60px]" />
-              <div className="relative z-10 flex flex-col justify-between h-full gap-8">
-                <div className="space-y-2">
-                  <h3 className="text-lg font-extrabold">Ready to start planning?</h3>
-                  <p className="text-xs text-neutral-400 leading-relaxed font-medium">
-                    Dive into your Notion-style pages and ClickUp-style project boards to boost your shipping speed.
-                  </p>
-                </div>
+              {/* Decorative background glows */}
+              <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-36 h-36 bg-red-100/40 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-36 h-36 bg-indigo-50/40 rounded-full blur-3xl pointer-events-none" />
+
+              {/* Warning/Signout Icon Box */}
+              <div className="relative mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100">
+                <AlertCircle className="w-8 h-8 animate-pulse" />
+              </div>
+
+              {/* Modal Typography */}
+              <h3 className="text-xl font-extrabold text-neutral-900 tracking-tight">
+                Confirm Sign Out
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-neutral-500 font-medium max-w-[280px] sm:max-w-none">
+                Are you sure you want to sign out of PlannerHQ? You'll need to log in again to access your collaborative workspaces.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="mt-8 flex w-full flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => toast.info("Workspace features coming soon in upcoming sprint!")}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white hover:bg-neutral-100 text-neutral-950 px-4 py-3 text-xs font-extrabold w-fit transition-all active:scale-[0.98] group cursor-pointer"
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="w-full inline-flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-200/80 hover:bg-neutral-100 hover:border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-700 transition-all active:scale-[0.98] cursor-pointer"
                 >
-                  <span>Launch Workspace</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-red-600/10 transition-all hover:shadow-red-600/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                >
+                  {isLoggingOut ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Signing Out...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </>
+                  )}
                 </button>
               </div>
             </motion.div>
           </div>
-        </div>
-      </main>
+        )}
+      </AnimatePresence>
 
       {/* Global CSS for wave keyframes */}
       <style dangerouslySetInnerHTML={{

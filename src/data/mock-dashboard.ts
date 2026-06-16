@@ -27,9 +27,3 @@ export const MOCK_USER = {
         renewalDate: "2026-07-15"
     }
 };
-
-export const MOCK_WORKSPACES: Workspace[] = [
-    { id: "1", serial: 1, name: "Alpha Project", lastAccessed: "2026-06-16T10:00:00Z", role: "Owner" },
-    { id: "2", serial: 2, name: "Marketing Campaign", lastAccessed: "2026-06-15T14:30:00Z", role: "Member" },
-    { id: "3", serial: 3, name: "Q3 Roadmap", lastAccessed: "2026-06-10T09:15:00Z", role: "Owner" },
-].sort((a, b) => new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime()); // DESCENDING SORT

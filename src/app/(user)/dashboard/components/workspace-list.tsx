@@ -3,41 +3,154 @@
 import React, { useEffect, useState, useTransition } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ListWorkspace, ArchieveWorkspace, LeaveWorkspace } from "@/features/workspace/workspace";
+import { ListWorkspace, ArchieveWorkspace, LeaveWorkspace, WorkspaceListItem } from "@/features/workspace/workspace";
 import { CreateWorkspaceModal } from "./modal/create-workspace-modal";
-import { FileEdit, Trash2, Archive, Plus, LogOut, Loader2, ExternalLink, Shield } from "lucide-react";
+import {
+  FileEdit,
+  Archive,
+  Plus,
+  LogOut,
+  Loader2,
+  ExternalLink,
+  Shield,
+  Users,
+  Building2,
+} from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-type WorkspaceItem = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  created_at: string;
-  created_by: string;
-  role: 'owner' | 'admin' | 'member';
-  joined_at: string;
+type ConfirmState = {
+  open: boolean;
+  type: "archive" | "leave";
+  workspaceId: string;
+  workspaceName: string;
 };
 
+// ─── Role Badge ──────────────────────────────────────────────────────────────
+
+function RoleBadge({ role }: { role: WorkspaceListItem["role"] }) {
+  const styles: Record<WorkspaceListItem["role"], string> = {
+    owner: "bg-indigo-50 text-indigo-700 border border-indigo-100/60",
+    admin: "bg-purple-50 text-purple-700 border border-purple-100/60",
+    member: "bg-neutral-100 text-neutral-600 border border-neutral-200/40",
+  };
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize select-none ${styles[role]}`}
+    >
+      {role}
+    </span>
+  );
+}
+
+// ─── Workspace Table ──────────────────────────────────────────────────────────
+
+interface WorkspaceTableProps {
+  workspaces: WorkspaceListItem[];
+  onArchive: (ws: WorkspaceListItem) => void;
+  onLeave: (ws: WorkspaceListItem) => void;
+}
+
+function WorkspaceTable({ workspaces, onArchive, onLeave }: WorkspaceTableProps) {
+  return (
+    <div className="border border-neutral-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md shadow-lg shadow-neutral-100/30">
+      <Table>
+        <TableHeader className="bg-neutral-50/50">
+          <TableRow className="border-b border-neutral-100">
+            <TableHead className="w-[60px] font-bold text-neutral-500 pl-6">#</TableHead>
+            <TableHead className="font-bold text-neutral-500">Workspace Name</TableHead>
+            <TableHead className="font-bold text-neutral-500">Role</TableHead>
+            <TableHead className="font-bold text-neutral-500">Joined Date</TableHead>
+            <TableHead className="text-right font-bold text-neutral-500 pr-6">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {workspaces.map((ws, index) => (
+            <TableRow
+              key={ws.id}
+              className="border-b border-neutral-100/50 hover:bg-neutral-50/30 transition-colors"
+            >
+              <TableCell className="font-semibold text-neutral-400 pl-6">{index + 1}</TableCell>
+              <TableCell className="font-extrabold text-neutral-950 hover:text-indigo-600 transition-colors">
+                <Link href={`/${ws.id}`} className="flex items-center gap-1.5 group">
+                  <span>{ws.name}</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-500" />
+                </Link>
+              </TableCell>
+              <TableCell>
+                <RoleBadge role={ws.role} />
+              </TableCell>
+              <TableCell className="font-semibold text-neutral-500">
+                {new Date(ws.joined_at).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </TableCell>
+              <TableCell className="text-right pr-6">
+                <div className="flex justify-end gap-1.5">
+                  <Button asChild variant="ghost" size="icon-sm" className="hover:bg-neutral-100 rounded-xl cursor-pointer">
+                    <Link href={`/${ws.id}`}>
+                      <ExternalLink className="w-4 h-4 text-neutral-500" />
+                    </Link>
+                  </Button>
+                  {ws.role === "owner" || ws.role === "admin" ? (
+                    <>
+                      <Button asChild variant="ghost" size="icon-sm" className="hover:bg-neutral-100 rounded-xl cursor-pointer">
+                        <Link href={`/${ws.id}/settings`}>
+                          <FileEdit className="w-4 h-4 text-neutral-500" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => onArchive(ws)}
+                        className="hover:bg-red-50 hover:text-red-600 rounded-xl text-neutral-500 cursor-pointer"
+                      >
+                        <Archive className="w-4 h-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => onLeave(ws)}
+                      className="hover:bg-red-50 hover:text-red-600 rounded-xl text-neutral-500 cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
 export function WorkspacesList() {
-  const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([]);
+  const [owned, setOwned] = useState<WorkspaceListItem[]>([]);
+  const [joined, setJoined] = useState<WorkspaceListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [actionPending, startActionTransition] = useTransition();
 
-  // Confirmation dialog state
-  const [confirmState, setConfirmState] = useState<{
-    open: boolean;
-    type: 'archive' | 'leave';
-    workspaceId: string;
-    workspaceName: string;
-  }>({
+  const [confirmState, setConfirmState] = useState<ConfirmState>({
     open: false,
-    type: 'archive',
+    type: "archive",
     workspaceId: "",
-    workspaceName: ""
+    workspaceName: "",
   });
 
   const loadWorkspaces = async () => {
@@ -45,7 +158,8 @@ export function WorkspacesList() {
     try {
       const res = await ListWorkspace();
       if (res.success && res.data) {
-        setWorkspaces(res.data);
+        setOwned(res.data.owned);
+        setJoined(res.data.joined);
       } else {
         toast.error(res.message || "Failed to load workspaces");
       }
@@ -61,16 +175,21 @@ export function WorkspacesList() {
     loadWorkspaces();
   }, []);
 
+  const openArchive = (ws: WorkspaceListItem) =>
+    setConfirmState({ open: true, type: "archive", workspaceId: ws.id, workspaceName: ws.name });
+
+  const openLeave = (ws: WorkspaceListItem) =>
+    setConfirmState({ open: true, type: "leave", workspaceId: ws.id, workspaceName: ws.name });
+
   const handleArchiveConfirm = () => {
     startActionTransition(async () => {
       const formData = new FormData();
       formData.append("workspaceId", confirmState.workspaceId);
-
       const res = await ArchieveWorkspace(formData);
       if (res.success) {
         toast.success(res.message);
-        setWorkspaces((prev) => prev.filter((ws) => ws.id !== confirmState.workspaceId));
-        setConfirmState(prev => ({ ...prev, open: false }));
+        setOwned((prev) => prev.filter((ws) => ws.id !== confirmState.workspaceId));
+        setConfirmState((prev) => ({ ...prev, open: false }));
       } else {
         toast.error(res.message || "Failed to archive workspace");
       }
@@ -81,163 +200,113 @@ export function WorkspacesList() {
     startActionTransition(async () => {
       const formData = new FormData();
       formData.append("workspaceId", confirmState.workspaceId);
-
       const res = await LeaveWorkspace(formData);
       if (res.success) {
         toast.success(res.message);
-        setWorkspaces((prev) => prev.filter((ws) => ws.id !== confirmState.workspaceId));
-        setConfirmState(prev => ({ ...prev, open: false }));
+        setJoined((prev) => prev.filter((ws) => ws.id !== confirmState.workspaceId));
+        setConfirmState((prev) => ({ ...prev, open: false }));
       } else {
         toast.error(res.message || "Failed to leave workspace");
       }
     });
   };
 
+  // ── Loading skeleton ────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold tracking-tight text-neutral-900">Workspaces</h2>
-          <Button disabled><Plus className="w-4 h-4 mr-2" /> New Workspace</Button>
-        </div>
-        <div className="h-40 border border-neutral-100 bg-white/50 rounded-2xl flex items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
+      <div className="space-y-8">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="h-7 w-44 bg-neutral-200 animate-pulse rounded-lg" />
+            <div className="h-9 w-36 bg-neutral-200 animate-pulse rounded-xl" />
+          </div>
+          <div className="h-40 border border-neutral-100 bg-white/50 rounded-2xl flex items-center justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
+          </div>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="space-y-4 relative z-10">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold tracking-tight text-neutral-900">Your Workspaces</h2>
-        <Button 
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-neutral-950 text-white hover:bg-neutral-800 px-4 py-2 text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> New Workspace
-        </Button>
-      </div>
+  const hasNoWorkspaces = owned.length === 0 && joined.length === 0;
 
-      {workspaces.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 border border-dashed border-neutral-200/80 rounded-2xl bg-white/50 backdrop-blur-md text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-neutral-50 text-neutral-400 border border-neutral-100 mb-4">
-            <Shield className="w-6 h-6" />
+  return (
+    <div className="space-y-10 relative z-10">
+
+      {/* ── My Workspaces Section ───────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100/60">
+              <Building2 className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold tracking-tight text-neutral-950">My Workspaces</h2>
+              <p className="text-xs text-neutral-400 font-medium">Workspaces you own or manage</p>
+            </div>
           </div>
-          <h3 className="text-lg font-bold text-neutral-900">No workspaces found</h3>
-          <p className="text-sm text-neutral-500 max-w-[280px] mt-1.5 mb-6 font-medium">
-            Get started by creating your first workspace or accept pending invitations.
-          </p>
-          <Button 
+          <Button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-neutral-950 text-white hover:bg-neutral-800 px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-neutral-950 text-white hover:bg-neutral-800 px-4 py-2 text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer"
           >
-            <Plus className="w-4 h-4" /> Create Workspace
+            <Plus className="w-4 h-4" /> New Workspace
           </Button>
         </div>
-      ) : (
-        <div className="border border-neutral-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md shadow-lg shadow-neutral-100/30">
-          <Table>
-            <TableHeader className="bg-neutral-50/50">
-              <TableRow className="border-b border-neutral-100">
-                <TableHead className="w-[80px] font-bold text-neutral-500 pl-6">S.No</TableHead>
-                <TableHead className="font-bold text-neutral-500">Workspace Name</TableHead>
-                <TableHead className="font-bold text-neutral-500">Role</TableHead>
-                <TableHead className="font-bold text-neutral-500">Joined Date</TableHead>
-                <TableHead className="text-right font-bold text-neutral-500 pr-6">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {workspaces.map((ws, index) => (
-                <TableRow key={ws.id} className="border-b border-neutral-100/50 hover:bg-neutral-50/30 transition-colors">
-                  <TableCell className="font-semibold text-neutral-400 pl-6">{index + 1}</TableCell>
-                  <TableCell className="font-extrabold text-neutral-950 hover:text-indigo-600 transition-colors">
-                    <Link href={`/${ws.id}`} className="flex items-center gap-1.5 group">
-                      <span>{ws.name}</span>
-                      <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-500" />
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize select-none ${
-                      ws.role === 'owner' 
-                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-100/60' 
-                        : ws.role === 'admin'
-                        ? 'bg-purple-50 text-purple-700 border border-purple-100/60'
-                        : 'bg-neutral-100 text-neutral-600 border border-neutral-200/40'
-                    }`}>
-                      {ws.role}
-                    </span>
-                  </TableCell>
-                  <TableCell className="font-semibold text-neutral-500">
-                    {new Date(ws.joined_at).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right pr-6">
-                    <div className="flex justify-end gap-1.5">
-                      <Button asChild variant="ghost" size="icon-sm" className="hover:bg-neutral-100 rounded-xl cursor-pointer">
-                        <Link href={`/${ws.id}`}>
-                          <ExternalLink className="w-4 h-4 text-neutral-500" />
-                        </Link>
-                      </Button>
-                      {(ws.role === 'owner' || ws.role === 'admin') ? (
-                        <>
-                          <Button asChild variant="ghost" size="icon-sm" className="hover:bg-neutral-100 rounded-xl cursor-pointer">
-                            <Link href={`/${ws.id}/settings`}>
-                              <FileEdit className="w-4 h-4 text-neutral-500" />
-                            </Link>
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon-sm" 
-                            onClick={() => setConfirmState({
-                              open: true,
-                              type: 'archive',
-                              workspaceId: ws.id,
-                              workspaceName: ws.name
-                            })}
-                            className="hover:bg-red-50 hover:text-red-600 rounded-xl text-neutral-500 cursor-pointer"
-                          >
-                            <Archive className="w-4 h-4" />
-                          </Button>
-                        </>
-                      ) : (
-                        <Button 
-                          variant="ghost" 
-                          size="icon-sm" 
-                          onClick={() => setConfirmState({
-                            open: true,
-                            type: 'leave',
-                            workspaceId: ws.id,
-                            workspaceName: ws.name
-                          })}
-                          className="hover:bg-red-50 hover:text-red-600 rounded-xl text-neutral-500 cursor-pointer"
-                        >
-                          <LogOut className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+
+        {owned.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-10 border border-dashed border-neutral-200/80 rounded-2xl bg-white/50 backdrop-blur-md text-center">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-50 text-neutral-400 border border-neutral-100 mb-3">
+              <Shield className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-neutral-900">No workspaces yet</h3>
+            <p className="text-sm text-neutral-500 max-w-[260px] mt-1 mb-5 font-medium">
+              Create your first workspace to start collaborating.
+            </p>
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-neutral-950 text-white hover:bg-neutral-800 px-4 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <Plus className="w-4 h-4" /> Create Workspace
+            </Button>
+          </div>
+        ) : (
+          <WorkspaceTable workspaces={owned} onArchive={openArchive} onLeave={openLeave} />
+        )}
+      </section>
+
+      {/* ── Joined Workspaces Section (only shown when non-empty) ───────────── */}
+      {joined.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100/60">
+              <Users className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold tracking-tight text-neutral-950">Joined Workspaces</h2>
+              <p className="text-xs text-neutral-400 font-medium">Workspaces you were invited to</p>
+            </div>
+          </div>
+          <WorkspaceTable workspaces={joined} onArchive={openArchive} onLeave={openLeave} />
+        </section>
       )}
 
-      {/* Workspace Creation Modal */}
-      <CreateWorkspaceModal 
-        open={isModalOpen} 
-        onOpenChange={setIsModalOpen} 
+      {/* ── Empty state when no workspaces at all (edge case) ──────────────── */}
+      {hasNoWorkspaces && joined.length === 0 && owned.length === 0 && (
+        /* Already handled by owned empty state above; this guard is a no-op */
+        null
+      )}
+
+      {/* ── Workspace Creation Modal ────────────────────────────────────────── */}
+      <CreateWorkspaceModal
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
         onSuccess={loadWorkspaces}
       />
 
-      {/* Confirmation Dialog */}
-      <Dialog 
-        open={confirmState.open} 
-        onOpenChange={(open) => setConfirmState(prev => ({ ...prev, open }))}
+      {/* ── Confirmation Dialog ─────────────────────────────────────────────── */}
+      <Dialog
+        open={confirmState.open}
+        onOpenChange={(open) => setConfirmState((prev) => ({ ...prev, open }))}
       >
         <DialogContent className="sm:max-w-md border border-neutral-100 bg-white/95 backdrop-blur-md rounded-3xl p-8 text-center flex flex-col items-center">
           <div className="relative mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100">
@@ -245,10 +314,10 @@ export function WorkspacesList() {
           </div>
 
           <DialogTitle className="text-xl font-extrabold text-neutral-900 tracking-tight">
-            {confirmState.type === 'archive' ? 'Archive Workspace' : 'Leave Workspace'}
+            {confirmState.type === "archive" ? "Archive Workspace" : "Leave Workspace"}
           </DialogTitle>
           <DialogDescription className="mt-2 text-sm leading-relaxed text-neutral-500 font-medium max-w-[280px] sm:max-w-none">
-            {confirmState.type === 'archive' 
+            {confirmState.type === "archive"
               ? `Are you sure you want to archive "${confirmState.workspaceName}"? All collaborative projects and settings inside this workspace will be suspended.`
               : `Are you sure you want to leave "${confirmState.workspaceName}"? You will lose access to all sections and pages until invited back.`}
           </DialogDescription>
@@ -257,14 +326,14 @@ export function WorkspacesList() {
             <Button
               variant="outline"
               disabled={actionPending}
-              onClick={() => setConfirmState(prev => ({ ...prev, open: false }))}
+              onClick={() => setConfirmState((prev) => ({ ...prev, open: false }))}
               className="w-full inline-flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-200/80 hover:bg-neutral-100 px-5 py-3 text-sm font-semibold text-neutral-700 transition-all active:scale-[0.98] cursor-pointer"
             >
               Cancel
             </Button>
             <Button
               disabled={actionPending}
-              onClick={confirmState.type === 'archive' ? handleArchiveConfirm : handleLeaveConfirm}
+              onClick={confirmState.type === "archive" ? handleArchiveConfirm : handleLeaveConfirm}
               className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-red-600/10 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
             >
               {actionPending ? (
@@ -273,7 +342,7 @@ export function WorkspacesList() {
                   <span>Processing...</span>
                 </>
               ) : (
-                <span>{confirmState.type === 'archive' ? 'Archive' : 'Leave'}</span>
+                <span>{confirmState.type === "archive" ? "Archive" : "Leave"}</span>
               )}
             </Button>
           </DialogFooter>

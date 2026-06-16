@@ -209,61 +209,62 @@ CREATE POLICY "Workspace owners can delete workspaces"
   );
 
 -- Workspace Members Policies
+-- NOTE: Policies on workspace_members CANNOT self-join workspace_members — that causes
+-- infinite recursion. Use SECURITY DEFINER helper functions to break the cycle.
+
+-- Helper: is the current user a member of this workspace?
+CREATE OR REPLACE FUNCTION public.is_workspace_member(p_workspace_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.workspace_members
+    WHERE workspace_id = p_workspace_id
+    AND user_id = (SELECT auth.uid())
+  );
+$$;
+
+-- Helper: is the current user an owner or admin of this workspace?
+CREATE OR REPLACE FUNCTION public.is_workspace_admin(p_workspace_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.workspace_members
+    WHERE workspace_id = p_workspace_id
+    AND user_id = (SELECT auth.uid())
+    AND role IN ('owner', 'admin')
+  );
+$$;
+
 CREATE POLICY "Members can view other members in the workspace"
   ON public.workspace_members FOR SELECT
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.workspace_members m
-      WHERE m.workspace_id = workspace_members.workspace_id
-      AND m.user_id = auth.uid()
-    )
-  );
+  USING (public.is_workspace_member(workspace_id));
 
 CREATE POLICY "Admins and owners can add members"
   ON public.workspace_members FOR INSERT
   TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.workspace_members m
-      WHERE m.workspace_id = workspace_members.workspace_id
-      AND m.user_id = auth.uid()
-      AND m.role IN ('owner', 'admin')
-    )
-  );
+  WITH CHECK (public.is_workspace_admin(workspace_id));
 
 CREATE POLICY "Admins and owners can update roles"
   ON public.workspace_members FOR UPDATE
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.workspace_members m
-      WHERE m.workspace_id = workspace_members.workspace_id
-      AND m.user_id = auth.uid()
-      AND m.role IN ('owner', 'admin')
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.workspace_members m
-      WHERE m.workspace_id = workspace_members.workspace_id
-      AND m.user_id = auth.uid()
-      AND m.role IN ('owner', 'admin')
-    )
-  );
+  USING (public.is_workspace_admin(workspace_id))
+  WITH CHECK (public.is_workspace_admin(workspace_id));
 
 CREATE POLICY "Members can leave or admins can remove members"
   ON public.workspace_members FOR DELETE
   TO authenticated
   USING (
-    user_id = auth.uid()
-    OR
-    EXISTS (
-      SELECT 1 FROM public.workspace_members m
-      WHERE m.workspace_id = workspace_members.workspace_id
-      AND m.user_id = auth.uid()
-      AND m.role IN ('owner', 'admin')
-    )
+    user_id = (SELECT auth.uid())
+    OR public.is_workspace_admin(workspace_id)
   );
 
 -- Workspace Invites Policies
@@ -327,7 +328,16 @@ CREATE POLICY "Admins and owners can delete invites"
     )
   );
 
--- 10. Role Access Grants (Data API Exposure)
+-- 10. Add missing FK: workspace_members.workspace_id → workspaces.id
+-- This was missing from the initial migration and caused the PostgREST schema cache
+-- to be unaware of the relationship, breaking embedded joins (workspaces!inner).
+ALTER TABLE public.workspace_members
+  DROP CONSTRAINT IF EXISTS workspace_members_workspace_id_fkey;
+ALTER TABLE public.workspace_members
+  ADD CONSTRAINT workspace_members_workspace_id_fkey
+  FOREIGN KEY (workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
+
+-- 11. Role Access Grants (Data API Exposure)
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.workspaces TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.workspace_members TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.workspace_invites TO authenticated;

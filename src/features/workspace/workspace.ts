@@ -35,7 +35,7 @@ export async function ArchieveWorkspace(formData: FormData): Promise<{ success: 
         .from('workspaces')
         .update({ is_deleted: true, deleted_at: new Date().toISOString() })
         .eq('id', workspaceId);
-        
+
     if (workspaceError) {
         return { success: false, message: "Failed to archive workspace" }
     }
@@ -52,12 +52,12 @@ export async function UpdateWorkspace(formData: FormData): Promise<{ success: bo
 
     const { error: workspaceError } = await supabase
         .from('workspaces')
-        .update({ 
-            name: workspaceName, 
+        .update({
+            name: workspaceName,
             description: workspaceDescription
         })
         .eq('id', workspaceId);
-        
+
     if (workspaceError) {
         return { success: false, message: "Failed to update workspace" }
     }
@@ -66,25 +66,59 @@ export async function UpdateWorkspace(formData: FormData): Promise<{ success: bo
     return { success: true, message: "Workspace updated successfully" };
 }
 
-export async function ListWorkspace(): Promise<{ success: boolean, message: string, data?: any[] }> {
+export type WorkspaceListItem = {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    created_at: string;
+    created_by: string;
+    role: 'owner' | 'admin' | 'member';
+    joined_at: string;
+};
+
+export type ListWorkspaceResult = {
+    success: boolean;
+    message: string;
+    data?: {
+        owned: WorkspaceListItem[];
+        joined: WorkspaceListItem[];
+    };
+};
+
+export async function ListWorkspace(): Promise<ListWorkspaceResult> {
     // list all workspaces for a user (both owned and joined)
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { success: false, message: "User not found" };
     }
-    
+
     const { data, error } = await supabase
         .from('workspace_members')
         .select('role, joined_at, workspaces!inner(id, name, slug, description, created_at, created_by, is_deleted)')
         .eq('user_id', user.id)
-        .eq('workspaces.is_deleted', false);
-        
+        .filter('workspaces.is_deleted', 'eq', false);
+
     if (error) {
-        return { success: false, message: "Failed to list workspace" }
+        return { success: false, message: "Failed to list workspace" };
     }
-    
-    const workspaces = data.map((item: any) => ({
+
+    type RawMemberRow = {
+        role: 'owner' | 'admin' | 'member';
+        joined_at: string;
+        workspaces: {
+            id: string;
+            name: string;
+            slug: string;
+            description: string | null;
+            created_at: string;
+            created_by: string;
+            is_deleted: boolean;
+        };
+    };
+
+    const allWorkspaces: WorkspaceListItem[] = (data as unknown as RawMemberRow[]).map((item) => ({
         id: item.workspaces.id,
         name: item.workspaces.name,
         slug: item.workspaces.slug,
@@ -94,8 +128,11 @@ export async function ListWorkspace(): Promise<{ success: boolean, message: stri
         role: item.role,
         joined_at: item.joined_at
     }));
-    
-    return { success: true, message: "Workspace listed successfully", data: workspaces };
+
+    const owned = allWorkspaces.filter(ws => ws.role === 'owner' || ws.role === 'admin');
+    const joined = allWorkspaces.filter(ws => ws.role === 'member');
+
+    return { success: true, message: "Workspace listed successfully", data: { owned, joined } };
 }
 
 export async function GetWorkspace(workspaceId: string): Promise<{ success: boolean, message: string, data?: any }> {
@@ -120,7 +157,7 @@ export async function GetWorkspace(workspaceId: string): Promise<{ success: bool
 
 export async function GetWorkspaceMembers(workspaceId: string): Promise<{ success: boolean, message: string, data?: any[] }> {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
         .from('workspace_members')
         .select('role, joined_at, profiles(id, display_name, email, hqid, avatar_url)')
@@ -129,7 +166,7 @@ export async function GetWorkspaceMembers(workspaceId: string): Promise<{ succes
     if (error) {
         return { success: false, message: "Failed to fetch workspace members" };
     }
-    
+
     const members = data.map((item: any) => ({
         user_id: item.profiles.id,
         role: item.role,
@@ -182,4 +219,4 @@ export async function LeaveWorkspace(formData: FormData): Promise<{ success: boo
     }
     revalidatePath('/dashboard');
     return { success: true, message: "Left workspace successfully" };
-}
+}

@@ -31,6 +31,7 @@ import { KpiMetrics } from "./components/kpi";
 import { WorkspacesList } from "./components/workspace-list";
 import { DashboardBreadcrumbs } from "./components/breadcrumbs";
 import { ApplicationSettings } from "./components/application-settings";
+import { InvitationsBanner } from "./components/invitations-banner";
 
 const ACTIVITY_COOKIE = "plannerhq_last_activity";
 
@@ -167,6 +168,9 @@ export default function DashboardPage() {
             <span>Free Starter Plan</span>
           </motion.div>
         </section>
+
+        {/* Pending Workspace Invites */}
+        <InvitationsBanner />
 
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

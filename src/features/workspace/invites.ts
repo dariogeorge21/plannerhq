@@ -3,155 +3,305 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-export async function InviteUserToWorkspaceByHqid(formData: FormData): Promise<{ success: boolean, message: string }> {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type InviteResult = { success: boolean; message: string };
+
+export type UserInvitation = {
+    id: string;
+    role: string;
+    created_at: string;
+    workspace_name: string;
+    workspace_description: string | null;
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Resolve a profile's UUID from their HQID.
+ * Returns null if not found.
+ */
+async function resolveProfileByHqid(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    hqid: string
+): Promise<string | null> {
+    const { data, error } = await supabase
+        .rpc('get_user_by_hqid', { p_hqid: hqid });
+    if (error || !data || (data as { id: string }[]).length === 0) return null;
+    return (data as { id: string }[])[0].id;
+}
+
+/**
+ * Resolve a profile's UUID from their email.
+ * Returns null if not found.
+ */
+async function resolveProfileByEmail(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    email: string
+): Promise<string | null> {
+    const { data, error } = await supabase
+        .rpc('get_user_by_email', { p_email: email });
+    if (error || !data || (data as { id: string }[]).length === 0) return null;
+    return (data as { id: string }[])[0].id;
+}
+
+/**
+ * Check whether a pending invite already exists for (workspaceId, inviteeId).
+ * Returns true if a duplicate would occur.
+ */
+async function hasPendingInvite(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    workspaceId: string,
+    inviteeId: string
+): Promise<boolean> {
+    const { count } = await supabase
+        .from('workspace_invites')
+        .select('id', { count: 'exact', head: true })
+        .eq('workspace_id', workspaceId)
+        .eq('invitee_id', inviteeId)
+        .eq('status', 'pending');
+    return (count ?? 0) > 0;
+}
+
+/**
+ * Check whether the invitee is already a member of the workspace.
+ */
+async function isAlreadyMember(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    workspaceId: string,
+    inviteeId: string
+): Promise<boolean> {
+    const { count } = await supabase
+        .from('workspace_members')
+        .select('user_id', { count: 'exact', head: true })
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', inviteeId);
+    return (count ?? 0) > 0;
+}
+
+// ─── Invite by HQID ──────────────────────────────────────────────────────────
+
+export async function InviteUserToWorkspaceByHqid(formData: FormData): Promise<InviteResult> {
     const supabase = await createClient();
     const hqid = formData.get('hqid') as string;
     const workspaceId = formData.get('workspaceId') as string;
-    const inviteType = formData.get('inviteType') as string; // 'admin' | 'member' | 'viewer'
+    const role = formData.get('inviteType') as string;
 
-    // Get current user (the inviter)
     const { data: { user: currentUser } } = await supabase.auth.getUser();
-    if (!currentUser) {
-        return { success: false, message: "Not authenticated" };
+    if (!currentUser) return { success: false, message: "Not authenticated" };
+
+    // Resolve the target profile
+    const inviteeId = await resolveProfileByHqid(supabase, hqid);
+    if (!inviteeId) return { success: false, message: "User not found with this HQ ID" };
+
+    // Prevent inviting yourself
+    if (inviteeId === currentUser.id) {
+        return { success: false, message: "You cannot invite yourself" };
     }
 
-    // Resolve the invitee user details by HQID
-    const { data: userResult, error: userError } = await supabase.rpc('get_user_by_hqid', {
-        p_hqid: hqid
-    });
-    const users = userResult as any[];
-    if (userError || !users || users.length === 0) {
-        return { success: false, message: "User not found with this HQID" };
+    // Already a member?
+    if (await isAlreadyMember(supabase, workspaceId, inviteeId)) {
+        return { success: false, message: "This user is already a member of the workspace" };
     }
-    
-    // Call invite function with correct RPC name and parameters
-    const { error: workspaceError } = await supabase.rpc('invite_user_to_workspace_by_hqid', {
+
+    // Already has a pending invite (regardless of whether it was sent by email or hqid)?
+    if (await hasPendingInvite(supabase, workspaceId, inviteeId)) {
+        return { success: false, message: "An invitation has already been sent to this user" };
+    }
+
+    const { error } = await supabase.rpc('invite_user_to_workspace_by_hqid', {
         p_workspace_id: workspaceId,
         p_inviter_id: currentUser.id,
         p_invitee_hqid: hqid,
-        p_role: inviteType
+        p_role: role
     });
 
-    if (workspaceError) {
-        return { success: false, message: "Failed to invite user (possibly already invited/member)" };
+    if (error) {
+        // Unique index violation — race condition or concurrent invite
+        if (error.code === '23505') {
+            return { success: false, message: "An invitation has already been sent to this user" };
+        }
+        return { success: false, message: "Failed to send invitation" };
     }
+
     revalidatePath(`/${workspaceId}`);
     revalidatePath(`/${workspaceId}/settings`);
-    return { success: true, message: "User invited successfully" };
+    return { success: true, message: "Invitation sent successfully" };
 }
 
-export async function InviteUserToWorkspaceByEmail(formData: FormData): Promise<{ success: boolean, message: string }> {
+// ─── Invite by Email ──────────────────────────────────────────────────────────
+
+export async function InviteUserToWorkspaceByEmail(formData: FormData): Promise<InviteResult> {
     const supabase = await createClient();
     const email = formData.get('email') as string;
     const workspaceId = formData.get('workspaceId') as string;
-    const inviteType = formData.get('inviteType') as string; // 'admin' | 'member' | 'viewer'
+    const role = formData.get('inviteType') as string;
 
-    // Get current user (the inviter)
     const { data: { user: currentUser } } = await supabase.auth.getUser();
-    if (!currentUser) {
-        return { success: false, message: "Not authenticated" };
+    if (!currentUser) return { success: false, message: "Not authenticated" };
+
+    // Resolve the target profile
+    const inviteeId = await resolveProfileByEmail(supabase, email);
+    if (!inviteeId) return { success: false, message: "User not found with this email" };
+
+    // Prevent inviting yourself
+    if (inviteeId === currentUser.id) {
+        return { success: false, message: "You cannot invite yourself" };
     }
 
-    // Resolve the invitee user details by email
-    const { data: userResult, error: userError } = await supabase.rpc('get_user_by_email', { 
-        p_email: email
-    });
-    const users = userResult as any[];
-    if (userError || !users || users.length === 0) {
-        return { success: false, message: "User not found with this email" };
+    // Already a member?
+    if (await isAlreadyMember(supabase, workspaceId, inviteeId)) {
+        return { success: false, message: "This user is already a member of the workspace" };
     }
-    
-    // Call invite function with correct RPC name and parameters
-    const { error: workspaceError } = await supabase.rpc('invite_user_to_workspace_by_email', {
+
+    // Already has a pending invite (regardless of whether sent via email or hqid)?
+    if (await hasPendingInvite(supabase, workspaceId, inviteeId)) {
+        return { success: false, message: "An invitation has already been sent to this user" };
+    }
+
+    const { error } = await supabase.rpc('invite_user_to_workspace_by_email', {
         p_workspace_id: workspaceId,
         p_inviter_id: currentUser.id,
         p_invitee_email: email,
-        p_role: inviteType
+        p_role: role
     });
 
-    if (workspaceError) {
-        return { success: false, message: "Failed to invite user (possibly already invited/member)" };
+    if (error) {
+        if (error.code === '23505') {
+            return { success: false, message: "An invitation has already been sent to this user" };
+        }
+        return { success: false, message: "Failed to send invitation" };
     }
+
     revalidatePath(`/${workspaceId}`);
     revalidatePath(`/${workspaceId}/settings`);
-    return { success: true, message: "User invited successfully" };
+    return { success: true, message: "Invitation sent successfully" };
 }
 
-export async function RemoveUserFromWorkspace(formData: FormData): Promise<{ success: boolean, message: string }> {
+// ─── Remove Member ────────────────────────────────────────────────────────────
+
+export async function RemoveUserFromWorkspace(formData: FormData): Promise<InviteResult> {
     const supabase = await createClient();
     const workspaceId = formData.get('workspaceId') as string;
     const userId = formData.get('userId') as string;
-    
-    const { error: workspaceError } = await supabase
+
+    const { error } = await supabase
         .from('workspace_members')
         .delete()
         .eq('workspace_id', workspaceId)
         .eq('user_id', userId);
-        
-    if (workspaceError) {
-        return { success: false, message: "Failed to remove user" };
-    }
+
+    if (error) return { success: false, message: "Failed to remove user" };
+
     revalidatePath(`/${workspaceId}`);
     revalidatePath(`/${workspaceId}/members`);
     return { success: true, message: "User removed successfully" };
 }
 
-export async function ListInvitationsForUser(): Promise<{ success: boolean, message: string, data?: any }> {
+// ─── List Invitations for the logged-in user ──────────────────────────────────
+
+export async function ListInvitationsForUser(): Promise<{
+    success: boolean;
+    message: string;
+    data?: UserInvitation[];
+}> {
     const supabase = await createClient();
-    
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        return { success: false, message: "User not found" };
-    }
+    if (!user) return { success: false, message: "User not found" };
 
-    const { data: invitations, error: invitationError } = await supabase.rpc('list_invitations_for_user', {
-        p_invitee_id: user.id
-    });
-    if (invitationError) {
-        return { success: false, message: "Failed to list invitations" };
-    }
-    return { success: true, message: "Invitations listed successfully", data: invitations };
-}
-
-export async function ListInvitationsForWorkspace(workspaceId: string): Promise<{ success: boolean, message: string, data?: any[] }> {
-    const supabase = await createClient();
-    
     const { data, error } = await supabase
         .from('workspace_invites')
-        .select('*')
-        .eq('workspace_id', workspaceId)
-        .eq('status', 'pending');
+        .select('id, role, created_at, workspaces(name, description)')
+        .eq('invitee_id', user.id)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
     if (error) {
-        return { success: false, message: "Failed to list workspace invites" };
+        console.error("ListInvitationsForUser error:", error.message);
+        return { success: false, message: "Failed to list invitations" };
     }
-    return { success: true, message: "Workspace invites listed successfully", data };
+
+    type RawInviteRow = {
+        id: string;
+        role: string;
+        created_at: string;
+        workspaces: { name: string; description: string | null } | null;
+    };
+
+    const mapped: UserInvitation[] = (data as unknown as RawInviteRow[])
+        .filter(item => item.workspaces !== null)
+        .map(item => ({
+            id: item.id,
+            role: item.role,
+            created_at: item.created_at,
+            workspace_name: item.workspaces!.name,
+            workspace_description: item.workspaces!.description
+        }));
+    return { success: true, message: "Invitations listed successfully", data: mapped };
 }
 
-export async function AcceptInvitation(formData: FormData): Promise<{ success: boolean, message: string }> {
+// ─── List Invitations for a workspace (admin view) ────────────────────────────
+
+export async function ListInvitationsForWorkspace(workspaceId: string): Promise<{
+    success: boolean;
+    message: string;
+    data?: {
+        id: string;
+        invitee_hqid: string;
+        invitee_email: string | null;
+        role: string;
+        status: string;
+        created_at: string;
+        expires_at: string;
+    }[];
+}> {
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+        .from('workspace_invites')
+        .select('id, invitee_hqid, invitee_email, role, status, created_at, expires_at')
+        .eq('workspace_id', workspaceId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+    if (error) return { success: false, message: "Failed to list workspace invites" };
+    return { success: true, message: "Workspace invites listed successfully", data: data as typeof data };
+}
+
+// ─── Accept Invitation ────────────────────────────────────────────────────────
+
+export async function AcceptInvitation(formData: FormData): Promise<InviteResult> {
     const supabase = await createClient();
     const invitationId = formData.get('invitationId') as string;
-    
-    const { error: invitationError } = await supabase.rpc('accept_invitation', {
+
+    const { error } = await supabase.rpc('accept_invitation', {
         p_invitation_id: invitationId
     });
-    if (invitationError) {
+
+    if (error) {
+        console.error("AcceptInvitation error:", error.message);
         return { success: false, message: "Failed to accept invitation" };
     }
+
     revalidatePath('/dashboard');
     return { success: true, message: "Invitation accepted successfully" };
 }
 
-export async function DeclineInvitation(formData: FormData): Promise<{ success: boolean, message: string }> {
+// ─── Decline Invitation ───────────────────────────────────────────────────────
+
+export async function DeclineInvitation(formData: FormData): Promise<InviteResult> {
     const supabase = await createClient();
     const invitationId = formData.get('invitationId') as string;
-    
-    const { error: invitationError } = await supabase.rpc('decline_invitation', {
+
+    const { error } = await supabase.rpc('decline_invitation', {
         p_invitation_id: invitationId
     });
-    if (invitationError) {
+
+    if (error) {
+        console.error("DeclineInvitation error:", error.message);
         return { success: false, message: "Failed to decline invitation" };
     }
     revalidatePath('/dashboard');
     return { success: true, message: "Invitation declined successfully" };
-}
+}

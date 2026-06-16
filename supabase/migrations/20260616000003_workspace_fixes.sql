@@ -160,16 +160,34 @@ DROP POLICY IF EXISTS "Invitee or admins can update invites" ON public.workspace
 DROP POLICY IF EXISTS "Admins and owners can delete invites" ON public.workspace_invites;
 
 -- Workspaces Policies
-CREATE POLICY "Users can view workspaces they are members of"
+-- Helper: is the current user a pending invitee of this workspace?
+-- Needed so invitees can see the workspace name/description in their invitation banner.
+CREATE OR REPLACE FUNCTION public.is_workspace_invitee(p_workspace_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.workspace_invites
+    WHERE workspace_id = p_workspace_id
+    AND invitee_id = (SELECT auth.uid())
+    AND status = 'pending'
+  );
+$$;
+
+-- Allow members AND pending invitees to see the workspace row.
+-- Without this, PostgREST returns null for the workspaces join in invitation queries,
+-- because the invitee is not yet a member and the old policy blocked the row.
+CREATE POLICY "Users can view workspaces they are members of or invited to"
   ON public.workspaces FOR SELECT
   TO authenticated
   USING (
-    EXISTS (
-      SELECT 1 FROM public.workspace_members
-      WHERE workspace_members.workspace_id = workspaces.id
-      AND workspace_members.user_id = auth.uid()
-    )
+    public.is_workspace_member(id)
+    OR public.is_workspace_invitee(id)
   );
+
 
 CREATE POLICY "Users can create workspaces"
   ON public.workspaces FOR INSERT
@@ -337,7 +355,68 @@ ALTER TABLE public.workspace_members
   ADD CONSTRAINT workspace_members_workspace_id_fkey
   FOREIGN KEY (workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
 
--- 11. Role Access Grants (Data API Exposure)
+-- 11. Add missing FK: workspace_invites.workspace_id → workspaces(id)
+-- Without this FK, PostgREST cannot resolve the workspaces relation in embedded selects.
+ALTER TABLE public.workspace_invites
+  DROP CONSTRAINT IF EXISTS workspace_invites_workspace_id_fkey;
+ALTER TABLE public.workspace_invites
+  ADD CONSTRAINT workspace_invites_workspace_id_fkey
+  FOREIGN KEY (workspace_id) REFERENCES public.workspaces(id) ON DELETE CASCADE;
+
+-- 12. Safe RLS policies for workspace_invites
+-- Uses is_workspace_admin() helper (SECURITY DEFINER) to avoid any cross-table recursion.
+DROP POLICY IF EXISTS "Users can view workspace invites" ON public.workspace_invites;
+DROP POLICY IF EXISTS "Admins and owners can invite others" ON public.workspace_invites;
+DROP POLICY IF EXISTS "Invitee or admins can update invites" ON public.workspace_invites;
+DROP POLICY IF EXISTS "Admins and owners can delete invites" ON public.workspace_invites;
+
+CREATE POLICY "Users can view workspace invites"
+  ON public.workspace_invites FOR SELECT
+  TO authenticated
+  USING (
+    invitee_id = (SELECT auth.uid())
+    OR inviter_id = (SELECT auth.uid())
+    OR public.is_workspace_admin(workspace_id)
+  );
+
+CREATE POLICY "Admins and owners can invite others"
+  ON public.workspace_invites FOR INSERT
+  TO authenticated
+  WITH CHECK (public.is_workspace_admin(workspace_id));
+
+CREATE POLICY "Invitee or admins can update invites"
+  ON public.workspace_invites FOR UPDATE
+  TO authenticated
+  USING (
+    invitee_id = (SELECT auth.uid())
+    OR public.is_workspace_admin(workspace_id)
+  )
+  WITH CHECK (
+    invitee_id = (SELECT auth.uid())
+    OR public.is_workspace_admin(workspace_id)
+  );
+
+CREATE POLICY "Admins and owners can delete invites"
+  ON public.workspace_invites FOR DELETE
+  TO authenticated
+  USING (public.is_workspace_admin(workspace_id));
+
+-- 13. Prevent duplicate pending invitations
+-- One pending invite per (workspace, invitee) — regardless of whether the invite
+-- was sent by email or hqid. The application resolves both to a profile UUID first.
+DELETE FROM public.workspace_invites
+WHERE id NOT IN (
+  SELECT DISTINCT ON (workspace_id, invitee_id) id
+  FROM public.workspace_invites
+  WHERE status = 'pending'
+  ORDER BY workspace_id, invitee_id, created_at DESC
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS workspace_invites_unique_pending
+  ON public.workspace_invites (workspace_id, invitee_id)
+  WHERE status = 'pending';
+
+-- 14. Role Access Grants (Data API Exposure)
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.workspaces TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.workspace_members TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.workspace_invites TO authenticated;

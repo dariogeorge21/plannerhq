@@ -40,6 +40,7 @@ type WorkspaceInviteItem = {
   role: 'owner' | 'admin' | 'member';
   status: 'pending' | 'accepted' | 'rejected' | 'expired';
   created_at: string;
+  expires_at: string;
 };
 
 export default function WorkspaceSettingsPage({

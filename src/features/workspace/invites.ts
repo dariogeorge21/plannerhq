@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import type { WorkspaceRole, InviteStatus } from "@/types/workspace";
 import { revalidatePath } from "next/cache";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -250,8 +251,8 @@ export async function ListInvitationsForWorkspace(workspaceId: string): Promise<
         id: string;
         invitee_hqid: string;
         invitee_email: string | null;
-        role: string;
-        status: string;
+        role: WorkspaceRole;
+        status: InviteStatus;
         created_at: string;
         expires_at: string;
     }[];
@@ -266,7 +267,19 @@ export async function ListInvitationsForWorkspace(workspaceId: string): Promise<
         .order('created_at', { ascending: false });
 
     if (error) return { success: false, message: "Failed to list workspace invites" };
-    return { success: true, message: "Workspace invites listed successfully", data: data as typeof data };
+    return {
+        success: true,
+        message: "Workspace invites listed successfully",
+        data: data as unknown as {
+            id: string;
+            invitee_hqid: string;
+            invitee_email: string | null;
+            role: WorkspaceRole;
+            status: InviteStatus;
+            created_at: string;
+            expires_at: string;
+        }[],
+    };
 }
 
 // ─── Accept Invitation ────────────────────────────────────────────────────────

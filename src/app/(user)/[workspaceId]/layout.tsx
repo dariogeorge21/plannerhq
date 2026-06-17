@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   Settings,
   Users,
-  ChevronLeft,
   Menu,
   X,
   ShieldAlert,
@@ -168,8 +167,7 @@ export default function WorkspaceLayout({
             href="/dashboard"
             className="flex items-center justify-center gap-2 w-full rounded-xl border border-neutral-200/80 bg-white hover:bg-neutral-50 px-4 py-2.5 text-xs font-bold text-neutral-700 shadow-2xs active:scale-[0.98] transition-all cursor-pointer"
           >
-            <ChevronLeft className="w-4 h-4 text-neutral-400" />
-            <span>All Workspaces</span>
+            <span className='text-red-600'>Leave Workspace</span>
           </Link>
         </div>
       </aside>
@@ -236,8 +234,7 @@ export default function WorkspaceLayout({
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2 w-full rounded-xl border border-neutral-200/80 bg-white px-4 py-2.5 text-xs font-bold text-neutral-700 cursor-pointer"
                 >
-                  <ChevronLeft className="w-4 h-4 text-neutral-400" />
-                  <span>All Workspaces</span>
+                  <span>Leave Workspace</span>
                 </Link>
               </div>
             </motion.aside>

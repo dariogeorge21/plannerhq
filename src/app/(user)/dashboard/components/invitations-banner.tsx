@@ -4,7 +4,7 @@ import React, { useEffect, useState, useTransition } from "react";
 import { ListInvitationsForUser, AcceptInvitation, DeclineInvitation } from "@/features/workspace/invites";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Check, X, Mail, Sparkles } from "lucide-react";
+import { Loader2, Check, X, Mail } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Invitation {
@@ -24,7 +24,6 @@ export function InvitationsBanner() {
     try {
       const res = await ListInvitationsForUser();
       if (res.success && res.data) {
-
         setInvitations(res.data);
       }
     } catch (err) {
@@ -61,7 +60,7 @@ export function InvitationsBanner() {
 
       const res = await DeclineInvitation(formData);
       if (res.success) {
-        toast.success("Invitation rejected successfully");
+        toast.success("Invitation rejected");
         setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
       } else {
         toast.error(res.message || "Failed to reject invitation");
@@ -69,77 +68,73 @@ export function InvitationsBanner() {
     });
   };
 
-  if (loading || invitations.length === 0) {
-    return null;
-  }
+  if (loading || invitations.length === 0) return null;
 
   return (
-    <div className="w-full space-y-4 relative z-10">
-      <div className="flex items-center gap-2">
-        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-50 text-indigo-600 border border-indigo-100/60">
-          <Mail className="w-3.5 h-3.5" />
-        </div>
-        <h3 className="text-sm font-extrabold uppercase tracking-wider text-neutral-400">
-          Workspace Invitations
+    <div className="w-full space-y-4">
+      <div className="flex items-center gap-2 px-1">
+        <Mail className="w-4 h-4 text-indigo-500" />
+        <h3 className="text-sm font-semibold tracking-tight text-neutral-700">
+          Pending Invitations
         </h3>
       </div>
 
       <div className="space-y-3">
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {invitations.map((inv) => (
             <motion.div
               key={inv.id}
+              layout
               initial={{ opacity: 0, y: -10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98, y: -10 }}
-              transition={{ type: "spring", duration: 0.4 }}
-              className="w-full relative overflow-hidden rounded-2xl border border-neutral-200/50 bg-white/70 backdrop-blur-md px-6 py-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md shadow-neutral-100/10 hover:shadow-neutral-100/20 transition-all"
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="group relative overflow-hidden rounded-2xl border border-indigo-100 bg-white p-5 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-5"
             >
-              {/* Subtle background glow */}
-              <div className="absolute top-0 right-0 w-32 h-full bg-indigo-50/10 rounded-l-full blur-2xl pointer-events-none" />
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500" />
 
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-600 font-bold text-lg select-none">
+              <div className="flex items-center gap-4 pl-2">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-100 text-indigo-700 font-bold text-lg shadow-inner">
                   {inv.workspace_name.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-extrabold text-neutral-950 tracking-tight">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2.5">
+                    <h4 className="text-base font-semibold text-neutral-900 tracking-tight">
                       {inv.workspace_name}
                     </h4>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100/60">
-                      As {inv.role}
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700">
+                      Role: {inv.role}
                     </span>
                   </div>
-                  <p className="text-xs text-neutral-500 font-semibold mt-1">
-                    {inv.workspace_description || "You've been invited to collaborate in this workspace."}
+                  <p className="text-sm text-neutral-500 font-medium line-clamp-1">
+                    {inv.workspace_description || "You've been invited to collaborate on this workspace."}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 relative z-10 sm:self-center">
+              <div className="flex items-center gap-2 sm:self-center pl-2 sm:pl-0">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   disabled={actionPending}
                   onClick={() => handleDecline(inv.id)}
-                  className="inline-flex items-center justify-center gap-1 rounded-xl hover:bg-red-50 hover:text-red-600 text-neutral-500 px-4 py-2 text-xs font-bold transition-all active:scale-[0.98] cursor-pointer"
+                  className="rounded-xl border-neutral-200 text-neutral-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors h-9 px-4"
                 >
-                  <X className="w-3.5 h-3.5" />
-                  <span>Reject</span>
+                  <X className="w-4 h-4 mr-1.5" />
+                  Decline
                 </Button>
                 <Button
                   size="sm"
                   disabled={actionPending}
                   onClick={() => handleAccept(inv.id)}
-                  className="inline-flex items-center justify-center gap-1 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-bold text-white shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                  className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all h-9 px-4"
                 >
                   {actionPending ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
                   ) : (
-                    <Check className="w-3.5 h-3.5" />
+                    <Check className="w-4 h-4 mr-1.5" />
                   )}
-                  <span>Accept</span>
+                  Accept Invite
                 </Button>
               </div>
             </motion.div>

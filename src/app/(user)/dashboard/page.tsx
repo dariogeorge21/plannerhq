@@ -3,24 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  LogOut,
-  User as UserIcon,
-  Mail,
-  Hash,
-  Sparkles,
-  LayoutDashboard,
-  Calendar,
-  CheckSquare,
-  FolderKanban,
-  Settings,
-  Bell,
-  ArrowRight,
-  TrendingUp,
-  Clock,
-  Loader2,
-  AlertCircle
-} from "lucide-react";
+import { LogOut, Settings, Loader2, AlertCircle, Sparkles, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/features/auth/providers/SessionProvider";
@@ -29,7 +12,6 @@ import { deleteCookie } from "@/utils/session";
 import { toast } from "sonner";
 import { KpiMetrics } from "./components/kpi";
 import { WorkspacesList } from "./components/workspace-list";
-import { DashboardBreadcrumbs } from "./components/breadcrumbs";
 import { InvitationsBanner } from "./components/invitations-banner";
 
 const ACTIVITY_COOKIE = "plannerhq_last_activity";
@@ -40,16 +22,11 @@ export default function DashboardPage() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  // Close modal on escape press
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setShowLogoutConfirm(false);
-      }
+      if (e.key === "Escape") setShowLogoutConfirm(false);
     };
-    if (showLogoutConfirm) {
-      window.addEventListener("keydown", handleEscape);
-    }
+    if (showLogoutConfirm) window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [showLogoutConfirm]);
 
@@ -61,251 +38,142 @@ export default function DashboardPage() {
 
     if (res.success) {
       deleteCookie(ACTIVITY_COOKIE);
-      toast.success("Successfully logged out!");
+      toast.success("Successfully logged out");
       router.push("/signin");
     } else {
-      toast.error(res.message || "Failed to log out.");
+      toast.error(res.message || "Failed to log out");
     }
   };
 
-  // Skeleton Loader for loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50/50 flex flex-col font-sans">
-        <header className="h-20 border-b border-neutral-200/50 bg-white/70 backdrop-blur-md flex items-center justify-between px-8">
-          <div className="h-8 w-32 bg-neutral-200 animate-pulse rounded-lg" />
-          <div className="h-10 w-24 bg-neutral-200 animate-pulse rounded-full" />
+      <div className="min-h-screen bg-neutral-50/50 flex flex-col">
+        <header className="h-16 border-b border-neutral-200 bg-white flex items-center justify-between px-6 lg:px-8">
+          <div className="h-6 w-28 bg-neutral-200 animate-pulse rounded" />
+          <div className="flex gap-4"><div className="h-8 w-8 bg-neutral-200 animate-pulse rounded-full" /></div>
         </header>
-        <main className="flex-1 max-w-7xl w-full mx-auto p-8 space-y-6">
-          <div className="h-12 w-64 bg-neutral-200 animate-pulse rounded-xl" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="h-48 bg-neutral-200 animate-pulse rounded-2xl md:col-span-2" />
-            <div className="h-48 bg-neutral-200 animate-pulse rounded-2xl" />
+        <main className="flex-1 max-w-6xl w-full mx-auto p-6 lg:p-10 space-y-8">
+          <div className="h-10 w-64 bg-neutral-200 animate-pulse rounded-lg" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => <div key={i} className="h-32 bg-white border border-neutral-200 shadow-sm animate-pulse rounded-2xl" />)}
           </div>
+          <div className="h-[400px] bg-white border border-neutral-200 shadow-sm animate-pulse rounded-2xl" />
         </main>
       </div>
     );
   }
 
-  // Double check user exists just in case redirect hasn't run yet
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-neutral-50/30 text-neutral-900 font-sans flex flex-col selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[#FAFAFA] text-neutral-900 font-sans selection:bg-indigo-500/20">
       {/* HEADER */}
-      <header className="sticky top-0 z-40 w-full border-b border-neutral-200/50 bg-white/80 backdrop-blur-md shadow-xs transition-all">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-950 text-white transition-transform group-hover:scale-105 group-hover:bg-indigo-600 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.3)]">
-              <Image src="/logo.png" alt="PlannerHQ Logo" width={36} height={36} />
+      <header className="sticky top-0 z-40 w-full border-b border-neutral-200/80 bg-white/80 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2.5 opacity-90 hover:opacity-100 transition-opacity">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg">
+              <Image src="/logo.png" alt="Logo" width={32} height={32} />
             </div>
-            <span className="text-xl font-bold tracking-tight text-neutral-900 transition-colors group-hover:text-indigo-600">
-              PlannerHQ
-            </span>
+            <span className="font-bold tracking-tight text-neutral-900">PlannerHQ</span>
           </Link>
 
-          {/* User Details & Logout */}
-          <div className="flex items-center gap-6">
-            {/* Quick Profile Summary */}
-            <div className="hidden sm:flex items-center gap-3 text-right">
-              <div>
-                <div className="text-sm font-bold text-neutral-950">{user.displayName}</div>
-                <div className="text-xs text-neutral-400 font-medium">{user.email}</div>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-3 mr-2">
+              <div className="text-right">
+                <div className="text-sm font-semibold text-neutral-900 leading-tight">{user.displayName}</div>
+                <div className="text-xs text-neutral-500 font-medium">{user.email}</div>
               </div>
-              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 flex items-center justify-center font-bold text-lg select-none">
+              <div className="h-9 w-9 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
                 {user.displayName.charAt(0).toUpperCase()}
               </div>
             </div>
 
-            {/* Settings Link */}
-            <Link
-              href="/settings"
-              className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:bg-neutral-50 shadow-xs active:scale-[0.98] transition-all text-neutral-500 hover:text-neutral-950 cursor-pointer"
-              title="Settings"
-            >
+            <div className="h-5 w-px bg-neutral-200 hidden sm:block" />
+
+            <Link href="/settings" className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-neutral-100 text-neutral-500 transition-colors">
               <Settings className="w-4 h-4" />
             </Link>
-
-            {/* Logout Button */}
-            <button
-              onClick={() => setShowLogoutConfirm(true)}
-              disabled={isLoggingOut}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:bg-neutral-50 px-4 py-2.5 text-sm font-semibold text-neutral-700 shadow-xs active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
-            >
-              {isLoggingOut ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <LogOut className="w-4 h-4 text-neutral-500 group-hover:text-neutral-700" />
-                  <span>Log Out</span>
-                </>
-              )}
+            <button onClick={() => setShowLogoutConfirm(true)} className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-red-50 text-neutral-500 hover:text-red-600 transition-colors">
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* DASHBOARD CONTENT */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 flex flex-col gap-8">
+      {/* MAIN CONTENT */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-12 flex flex-col gap-10">
 
-        {/* Welcome Section */}
-        <section className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-3xl font-extrabold tracking-tight text-neutral-950 flex items-center gap-2">
-              Welcome back, {user.displayName} <span className="animate-[wave_1.5s_infinite] origin-[70%_70%]">👋</span>
+        {/* Welcome Header */}
+        <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-neutral-200 shadow-sm text-xs font-semibold tracking-wide text-neutral-600 mb-4">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> Free Plan
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
+              Overview
             </h1>
-            <p className="text-neutral-500 mt-1.5 font-medium">
-              Here's what is happening in your workspace today.
+            <p className="text-neutral-500 mt-1 text-base">
+              Welcome back, {user.displayName.split(' ')[0]}. Here's what's happening today.
             </p>
           </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex items-center gap-2.5 bg-indigo-50/50 border border-indigo-100 rounded-xl px-4 py-2 text-indigo-700 text-sm font-semibold w-fit"
-          >
-            <Sparkles className="w-4 h-4 text-indigo-500 animate-pulse" />
-            <span>Free Starter Plan</span>
-          </motion.div>
         </section>
 
-        {/* Pending Workspace Invites */}
+        {/* Dynamic Alerts */}
         <InvitationsBanner />
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* KPIs */}
+        <KpiMetrics />
 
-          {/* Left Columns - Core Details */}
-          <div className="lg:col-span-2 flex flex-col gap-8">
-
-            {/* Quick Stats Grid */}
-            <KpiMetrics />
-          </div>
-        </div>
+        {/* Data Grid */}
         <WorkspacesList />
 
-        {/* Profile Settings Quick Link */}
-        <section className="relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-md p-8 shadow-lg shadow-neutral-100/30 flex flex-col sm:flex-row items-center justify-between gap-6 transition-all hover:shadow-xl duration-350">
-          {/* Glow effects */}
-          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-32 h-32 bg-indigo-100/30 dark:bg-indigo-900/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-32 h-32 bg-purple-100/30 dark:bg-purple-900/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="h-14 w-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-800/50 flex items-center justify-center font-extrabold text-2xl select-none shrink-0">
-              {user.displayName.charAt(0).toUpperCase()}
+        {/* Upsell / Settings callout */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="group relative overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 hover:shadow-md transition-shadow"
+        >
+          <div className="absolute right-0 top-0 w-64 h-64 bg-gradient-to-bl from-indigo-50 via-transparent to-transparent opacity-50 pointer-events-none" />
+          <div className="flex items-center gap-5 relative z-10">
+            <div className="h-12 w-12 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center shrink-0">
+              <Settings className="w-5 h-5 text-neutral-600" />
             </div>
             <div>
-              <h3 className="text-lg font-extrabold text-neutral-950 dark:text-white tracking-tight flex items-center gap-2">
-                Profile Settings
-              </h3>
-              <p className="text-xs text-neutral-450 dark:text-neutral-400 font-medium mt-0.5">
-                Customize your display name, theme selection, and notification preferences.
-              </p>
+              <h3 className="text-base font-bold text-neutral-900 tracking-tight">Account Preferences</h3>
+              <p className="text-sm text-neutral-500 mt-0.5">Manage your personal details, notifications, and security.</p>
             </div>
           </div>
-
-          <Link
-            href="/settings"
-            className="relative z-10 shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-neutral-950 dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-100 text-white dark:text-neutral-950 px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] shadow-sm hover:shadow-md cursor-pointer"
-          >
-            <span>Manage Settings</span>
-            <ArrowRight className="w-4 h-4" />
+          <Link href="/settings" className="shrink-0 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
+            Manage Settings <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
-        </section>
+        </motion.section>
       </main>
 
-
-      {/* Sign Out Confirmation Modal */}
+      {/* Logout Modal */}
       <AnimatePresence>
         {showLogoutConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-neutral-900/20 backdrop-blur-sm" onClick={() => setShowLogoutConfirm(false)} />
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowLogoutConfirm(false)}
-              className="absolute inset-0 bg-neutral-950/40 backdrop-blur-md"
-            />
-
-            {/* Modal Dialog Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              transition={{ type: "spring", duration: 0.4, bounce: 0.15 }}
-              className="relative w-full max-w-md overflow-hidden rounded-3xl border border-neutral-100 bg-white p-8 shadow-2xl z-10 flex flex-col items-center text-center"
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-[400px] overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl z-10"
             >
-              {/* Decorative background glows */}
-              <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-36 h-36 bg-red-100/40 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-36 h-36 bg-indigo-50/40 rounded-full blur-3xl pointer-events-none" />
-
-              {/* Warning/Signout Icon Box */}
-              <div className="relative mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100">
-                <AlertCircle className="w-8 h-8 animate-pulse" />
+              <div className="p-6 text-center flex flex-col items-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 mb-4">
+                  <LogOut className="w-5 h-5 text-neutral-600" />
+                </div>
+                <h3 className="text-lg font-bold text-neutral-900 tracking-tight">Sign out of PlannerHQ</h3>
+                <p className="mt-2 text-sm text-neutral-500">You will be securely logged out of your account on this device.</p>
               </div>
-
-              {/* Modal Typography */}
-              <h3 className="text-xl font-extrabold text-neutral-900 tracking-tight">
-                Confirm Sign Out
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-500 font-medium max-w-[280px] sm:max-w-none">
-                Are you sure you want to sign out of PlannerHQ? You'll need to log in again to access your collaborative workspaces.
-              </p>
-
-              {/* Action Buttons */}
-              <div className="mt-8 flex w-full flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => setShowLogoutConfirm(false)}
-                  className="w-full inline-flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-200/80 hover:bg-neutral-100 hover:border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-700 transition-all active:scale-[0.98] cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-red-600/10 transition-all hover:shadow-red-600/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-                >
-                  {isLoggingOut ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Signing Out...</span>
-                    </>
-                  ) : (
-                    <>
-                      <LogOut className="w-4 h-4" />
-                      <span>Sign Out</span>
-                    </>
-                  )}
+              <div className="p-4 bg-neutral-50/80 border-t border-neutral-100 flex gap-3">
+                <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors">Cancel</button>
+                <button onClick={handleLogout} disabled={isLoggingOut} className="flex-1 flex justify-center items-center rounded-xl bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 transition-all disabled:opacity-70">
+                  {isLoggingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sign Out"}
                 </button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
-      {/* Global CSS for wave keyframes */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        @keyframes wave {
-          0% { transform: rotate( 0.0deg) }
-          10% { transform: rotate(14.0deg) }
-          20% { transform: rotate(-8.0deg) }
-          30% { transform: rotate(14.0deg) }
-          40% { transform: rotate(-4.0deg) }
-          50% { transform: rotate(10.0deg) }
-          60% { transform: rotate( 0.0deg) }
-          100% { transform: rotate( 0.0deg) }
-        }
-      `}} />
     </div>
   );
 }

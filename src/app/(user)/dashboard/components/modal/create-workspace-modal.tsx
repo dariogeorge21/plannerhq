@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CreateWorkspace } from "@/features/workspace/workspace";
 import { toast } from "sonner";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Box } from "lucide-react";
 
 interface CreateWorkspaceModalProps {
   open: boolean;
@@ -48,80 +48,80 @@ export function CreateWorkspaceModal({ open, onOpenChange, onSuccess }: CreateWo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] border border-neutral-100 bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden p-8">
-        {/* Glow Effects */}
-        <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-32 h-32 bg-indigo-100/40 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-32 h-32 bg-purple-100/40 rounded-full blur-3xl pointer-events-none" />
+      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden border-neutral-200/80 shadow-2xl rounded-2xl bg-white">
+        <div className="px-8 pt-8 pb-6">
+          <DialogHeader className="flex flex-col items-start text-left space-y-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 border border-indigo-100/50 text-indigo-600">
+              <Box className="w-5 h-5" />
+            </div>
+            <div>
+              <DialogTitle className="text-xl font-bold tracking-tight text-neutral-900">
+                Create a new workspace
+              </DialogTitle>
+              <DialogDescription className="text-neutral-500 mt-1.5 text-sm">
+                Workspaces are shared environments where teams collaborate on projects, tasks, and settings.
+              </DialogDescription>
+            </div>
+          </DialogHeader>
 
-        <DialogHeader className="relative z-10 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600">
-            <Sparkles className="w-5 h-5 animate-pulse" />
-          </div>
-          <DialogTitle className="text-2xl font-extrabold tracking-tight text-neutral-900">
-            Create Workspace
-          </DialogTitle>
-          <DialogDescription className="text-neutral-500 mt-2 font-medium">
-            Bring your team together in a shared collaborative space.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="relative z-10 space-y-6 mt-4">
-          <div className="space-y-4">
+          <form id="create-workspace-form" onSubmit={handleSubmit} className="space-y-5 mt-6">
             <div className="space-y-2">
-              <Label htmlFor="ws-name" className="text-sm font-semibold text-neutral-700">
-                Workspace Name
+              <Label htmlFor="ws-name" className="text-sm font-semibold text-neutral-900">
+                Workspace Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="ws-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Acme Design, Personal Tasks"
+                placeholder="e.g. Acme Corporation"
                 disabled={isPending}
-                className="w-full rounded-xl border border-neutral-200/80 focus:border-indigo-500/50 bg-white/70 px-4 py-3 shadow-xs outline-hidden focus:ring-2 focus:ring-indigo-500/10 transition-all font-medium"
+                className="w-full rounded-xl border-neutral-200 bg-white px-4 py-2.5 text-sm shadow-xs focus-visible:ring-2 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 transition-all placeholder:text-neutral-400"
               />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="ws-desc" className="text-sm font-semibold text-neutral-700">
-                Description <span className="text-xs text-neutral-400 font-normal">(Optional)</span>
+              <Label htmlFor="ws-desc" className="flex items-center justify-between text-sm font-semibold text-neutral-900">
+                <span>Description</span>
+                <span className="text-xs text-neutral-400 font-medium">Optional</span>
               </Label>
               <Textarea
                 id="ws-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief summary of your projects or team..."
+                placeholder="What is this workspace for?"
                 disabled={isPending}
-                className="w-full min-h-[100px] rounded-xl border border-neutral-200/80 focus:border-indigo-500/50 bg-white/70 px-4 py-3 shadow-xs outline-hidden focus:ring-2 focus:ring-indigo-500/10 transition-all font-medium resize-none"
+                className="w-full min-h-[100px] rounded-xl border-neutral-200 bg-white px-4 py-3 text-sm shadow-xs focus-visible:ring-2 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 transition-all resize-none placeholder:text-neutral-400"
               />
             </div>
-          </div>
+          </form>
+        </div>
 
-          <DialogFooter className="flex gap-3 pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isPending}
-              onClick={() => onOpenChange(false)}
-              className="w-full inline-flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-200/80 hover:bg-neutral-100 hover:border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-700 transition-all active:scale-[0.98] cursor-pointer"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-neutral-950 text-white hover:bg-neutral-800 px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Creating...</span>
-                </>
-              ) : (
-                <span>Create Space</span>
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+        <div className="px-8 py-5 bg-neutral-50/50 border-t border-neutral-100 flex items-center justify-end gap-3">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={isPending}
+            onClick={() => onOpenChange(false)}
+            className="rounded-xl px-5 py-2.5 text-sm font-semibold text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/50 transition-colors"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="create-workspace-form"
+            disabled={isPending}
+            className="rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 px-6 py-2.5 text-sm font-semibold shadow-sm transition-all active:scale-[0.98] disabled:opacity-70"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Creating...
+              </>
+            ) : (
+              "Create Workspace"
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -2,7 +2,13 @@
 
 import React, { useEffect, useState, useTransition, use } from "react";
 import { GetWorkspace, GetWorkspaceMembers, UpdateMemberRole } from "@/features/workspace/workspace";
-import { RemoveUserFromWorkspace, InviteUserToWorkspaceByEmail, InviteUserToWorkspaceByHqid } from "@/features/workspace/invites";
+import { 
+  RemoveUserFromWorkspace, 
+  InviteUserToWorkspaceByEmail, 
+  InviteUserToWorkspaceByHqid,
+  ListInvitationsForWorkspace,
+  CancelInvitation
+} from "@/features/workspace/invites";
 import { useSession } from "@/features/auth/providers/SessionProvider";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,6 +29,7 @@ import {
   Search
 } from "lucide-react";
 import { Workspace, WorkspaceMember } from "@/types/workspace";
+import { ConfirmDeleteModal } from "@/components/ui/confirm-delete-modal";
 
 export default function WorkspaceMembersPage({
   params: paramsPromise,
@@ -43,7 +50,53 @@ export default function WorkspaceMembersPage({
   const [inviteMethod, setInviteMethod] = useState<"email" | "hqid">("email");
   const [inviteValue, setInviteValue] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
-  
+  const [pendingInvites, setPendingInvites] = useState<any[]>([]);
+  const [isPendingInvitesLoading, setIsPendingInvitesLoading] = useState(true);
+
+  const loadData = async () => {
+    try {
+      const [wsRes, memRes, inviteRes] = await Promise.all([
+        GetWorkspace(workspaceId),
+        GetWorkspaceMembers(workspaceId),
+        ListInvitationsForWorkspace(workspaceId)
+      ]);
+
+      if (wsRes.success && wsRes.data) {
+        setWorkspace(wsRes.data);
+      }
+      if (memRes.success && memRes.data) {
+        setMembers(memRes.data);
+      }
+      if (inviteRes.success) {
+        setPendingInvites(inviteRes.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load members list");
+    } finally {
+      setLoading(false);
+      setIsPendingInvitesLoading(false);
+    }
+  };
+
+  const loadPendingInvites = async () => {
+    setIsPendingInvitesLoading(true);
+    try {
+      const res = await ListInvitationsForWorkspace(workspaceId);
+      if (res.success) {
+        setPendingInvites(res.data || []);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsPendingInvitesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [workspaceId]);
+    
   const [isInvitePending, startInviteTransition] = useTransition();
   const [isActionPending, startActionTransition] = useTransition();
 
@@ -58,30 +111,33 @@ export default function WorkspaceMembersPage({
     userName: ""
   });
 
-  const loadData = async () => {
-    try {
-      const [wsRes, memRes] = await Promise.all([
-        GetWorkspace(workspaceId),
-        GetWorkspaceMembers(workspaceId)
-      ]);
+  // Cancel invitation confirmation state
+  const [confirmCancelInvite, setConfirmCancelInvite] = useState<{
+    open: boolean;
+    inviteId: string;
+    inviteName: string;
+  }>({
+    open: false,
+    inviteId: "",
+    inviteName: ""
+  });
 
-      if (wsRes.success && wsRes.data) {
-        setWorkspace(wsRes.data);
+  const handleCancelInvite = (invitationId: string) => {
+    startActionTransition(async () => {
+      const formData = new FormData();
+      formData.append("workspaceId", workspaceId);
+      formData.append("invitationId", invitationId);
+
+      const res = await CancelInvitation(formData);
+      if (res.success) {
+        toast.success(res.message);
+        setConfirmCancelInvite({ open: false, inviteId: "", inviteName: "" });
+        loadPendingInvites();
+      } else {
+        toast.error(res.message || "Failed to cancel invitation");
       }
-      if (memRes.success && memRes.data) {
-        setMembers(memRes.data);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load members list");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
-
-  useEffect(() => {
-    loadData();
-  }, [workspaceId]);
 
   if (loading) {
     return (
@@ -158,6 +214,7 @@ export default function WorkspaceMembersPage({
         toast.success(res.message);
         setInviteValue("");
         setIsInviteOpen(false);
+        loadPendingInvites();
       } else {
         toast.error(res.message || "Failed to send invitation");
       }
@@ -168,6 +225,11 @@ export default function WorkspaceMembersPage({
     member.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.hqid.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredInvites = pendingInvites.filter(invite => 
+    invite.invitee_hqid.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (invite.invitee_email && invite.invitee_email.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -199,6 +261,7 @@ export default function WorkspaceMembersPage({
         />
       </div>
 
+      {/* Members List both pending and active */}
       <div className="border border-neutral-200/50 rounded-2xl overflow-hidden bg-white/80 backdrop-blur-md shadow-lg shadow-neutral-100/30">
         <Table>
           <TableHeader className="bg-neutral-50/50">
@@ -297,53 +360,84 @@ export default function WorkspaceMembersPage({
                 </TableRow>
               );
             })}
+
+            {filteredInvites.map((invite) => {
+              const displayName = invite.invitee_email || invite.invitee_hqid;
+              return (
+                <TableRow key={invite.id} className="border-b border-neutral-100/50 hover:bg-neutral-50/30 transition-colors">
+                  <TableCell className="pl-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-9 w-9 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center font-bold text-sm select-none">
+                        <Mail className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-extrabold text-neutral-950 flex items-center gap-1.5">
+                          <span>{displayName}</span>
+                          <span className="text-[10px] bg-amber-50 text-amber-700 border border-amber-100/60 px-1.5 py-0.5 rounded-sm font-black uppercase">Pending</span>
+                        </div>
+                        <div className="text-xs text-neutral-400 font-semibold">Invited via {invite.invitee_email ? "Email" : "HQID"}</div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-neutral-500 font-bold">
+                    {invite.invitee_hqid ? `@${invite.invitee_hqid}` : "—"}
+                  </TableCell>
+                  <TableCell className="font-semibold text-neutral-500">
+                    {new Date(invite.created_at).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold capitalize select-none bg-neutral-100 text-neutral-600 border border-neutral-200/40">
+                      {invite.role}
+                    </span>
+                  </TableCell>
+                  
+                  {isOwnerOrAdmin && (
+                    <TableCell className="text-right pr-6">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => setConfirmCancelInvite({
+                          open: true,
+                          inviteId: invite.id,
+                          inviteName: displayName
+                        })}
+                        disabled={isActionPending}
+                        className="hover:bg-red-50 hover:text-red-600 rounded-xl text-neutral-400 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  )}
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
 
-      {/* Remove Member Confirmation */}
-      <Dialog 
-        open={confirmRemove.open} 
-        onOpenChange={(open) => setConfirmRemove(prev => ({ ...prev, open }))}
-      >
-        <DialogContent className="sm:max-w-md border border-neutral-100 bg-white/95 backdrop-blur-md rounded-3xl p-8 text-center flex flex-col items-center">
-          <div className="relative mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100">
-            <ShieldAlert className="w-6 h-6 animate-pulse" />
-          </div>
+      <ConfirmDeleteModal
+        isOpen={confirmRemove.open}
+        onClose={() => setConfirmRemove({ open: false, userId: "", userName: "" })}
+        onConfirm={handleRemoveMember}
+        title="Remove Member"
+        description={`Are you sure you want to remove "${confirmRemove.userName}" from this workspace? They will lose access to all collaborative pages and tasks.`}
+        confirmText="Remove User"
+        isLoading={isActionPending}
+      />
 
-          <DialogTitle className="text-xl font-extrabold text-neutral-900 tracking-tight">
-            Remove Member
-          </DialogTitle>
-          <DialogDescription className="mt-2 text-sm leading-relaxed text-neutral-500 font-medium max-w-[280px] sm:max-w-none">
-            Are you sure you want to remove "{confirmRemove.userName}" from this workspace? They will lose access to all collaborative pages and tasks.
-          </DialogDescription>
-
-          <DialogFooter className="mt-8 flex w-full flex-col sm:flex-row gap-3">
-            <Button
-              variant="outline"
-              disabled={isActionPending}
-              onClick={() => setConfirmRemove({ open: false, userId: "", userName: "" })}
-              className="w-full inline-flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-200/80 hover:bg-neutral-100 px-5 py-3 text-sm font-semibold text-neutral-700 transition-all active:scale-[0.98] cursor-pointer"
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={isActionPending}
-              onClick={handleRemoveMember}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-red-600/10 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-            >
-              {isActionPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Removing...</span>
-                </>
-              ) : (
-                <span>Remove User</span>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDeleteModal
+        isOpen={confirmCancelInvite.open}
+        onClose={() => setConfirmCancelInvite({ open: false, inviteId: "", inviteName: "" })}
+        onConfirm={() => handleCancelInvite(confirmCancelInvite.inviteId)}
+        title="Cancel Invitation"
+        description={`Are you sure you want to cancel the invitation sent to "${confirmCancelInvite.inviteName}"? They will no longer be able to accept it and join.`}
+        confirmText="Cancel Invite"
+        isLoading={isActionPending}
+      />
 
       {/* Invite Member Modal */}
       <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>

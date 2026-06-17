@@ -318,3 +318,27 @@ export async function DeclineInvitation(formData: FormData): Promise<InviteResul
     revalidatePath('/dashboard');
     return { success: true, message: "Invitation declined successfully" };
 }
+
+// ─── Cancel Invitation (Admin/Owner) ─────────────────────────────────────────
+
+export async function CancelInvitation(formData: FormData): Promise<InviteResult> {
+    const supabase = await createClient();
+    const workspaceId = formData.get('workspaceId') as string;
+    const invitationId = formData.get('invitationId') as string;
+
+    const { error } = await supabase
+        .from('workspace_invites')
+        .delete()
+        .eq('workspace_id', workspaceId)
+        .eq('id', invitationId);
+
+    if (error) {
+        console.error("CancelInvitation error:", error.message);
+        return { success: false, message: "Failed to cancel invitation" };
+    }
+
+    revalidatePath(`/${workspaceId}`);
+    revalidatePath(`/${workspaceId}/members`);
+    return { success: true, message: "Invitation cancelled successfully" };
+}
+

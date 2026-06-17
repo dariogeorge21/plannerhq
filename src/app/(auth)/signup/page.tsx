@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ArrowRight, Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import Image from "next/image";
-import { signUp, signInWithGoogle } from "@/api/auth";
+import { signUp, signInWithGoogle } from "@/app/api/auth";
 import { toast } from "sonner";
 
 // Helper SVG for Google Icon
@@ -43,9 +43,9 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     const res = await signUp(email, password, name);
-    
+
     setIsLoading(false);
     if (res.success) {
       toast.success("Verification email sent! Please check your inbox.");
@@ -75,7 +75,7 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen flex w-full bg-white font-sans selection:bg-indigo-500/30">
-      
+
       {/* LEFT PANEL - Form */}
       <div className="hidden lg:flex relative w-0 flex-1 bg-neutral-50 overflow-hidden items-center justify-center">
         {/* Abstract Light Theme Background Gradients */}
@@ -86,14 +86,14 @@ export default function SignUpPage() {
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[32px_32px] mask-[radial-gradient(ellipse_80%_80%_at_50%_50%,#000_30%,transparent_100%)]" />
         </div>
 
-        
+
       </div>
 
 
       {/* RIGHT PANEL - Visual Branding */}
       <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-12 lg:flex-none lg:w-1/2 xl:w-[45%] lg:px-20 xl:px-24 border-r border-neutral-200/50">
         <div className="mx-auto w-full max-w-sm lg:max-w-md">
-          
+
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group w-fit mb-10">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-950 text-white transition-transform group-hover:scale-105 group-hover:bg-indigo-600 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.3)]">
@@ -105,7 +105,7 @@ export default function SignUpPage() {
           </Link>
 
           {/* Header */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
@@ -118,7 +118,7 @@ export default function SignUpPage() {
             </p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
@@ -201,7 +201,7 @@ export default function SignUpPage() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                
+
                 {/* Password Strength Indicator */}
                 {password.length > 0 && (
                   <div className="pt-2">
@@ -209,11 +209,10 @@ export default function SignUpPage() {
                       {[1, 2, 3, 4].map((level) => (
                         <div
                           key={level}
-                          className={`h-full flex-1 rounded-full transition-colors duration-300 ${
-                            passwordStrength >= level
+                          className={`h-full flex-1 rounded-full transition-colors duration-300 ${passwordStrength >= level
                               ? currentStrength?.colors
                               : "bg-neutral-200"
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>
@@ -260,9 +259,10 @@ export default function SignUpPage() {
           </motion.div>
         </div>
       </div>
-      
+
       {/* Global CSS for shimmer effect */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes shimmer {
           100% { transform: translateX(100%); }
         }

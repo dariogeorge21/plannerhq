@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ShieldCheck, Loader2, CheckCircle2, RefreshCw } from "lucide-react";
 import Image from "next/image";
-import { verifyOtp } from "@/api/auth";
+import { verifyOtp } from "@/app/api/auth";
 import { createClient } from "@/lib/supabase/client";
 import { setCookie } from "@/utils/session";
 import { toast } from "sonner";
@@ -77,7 +77,7 @@ function VerifyOtpContent() {
         setError(null);
 
         const res = await verifyOtp(email, otp.join(""));
-        
+
         setIsLoading(false);
         if (res.success) {
             // Set initial activity cookie upon successful verification
@@ -109,7 +109,7 @@ function VerifyOtpContent() {
 
         setIsLoading(true);
         const supabase = createClient();
-        
+
         const { error: resendError } = await supabase.auth.resend({
             type: "signup",
             email: email,
@@ -246,10 +246,10 @@ function VerifyOtpContent() {
                                                     />
                                                     <motion.div
                                                         className={`w-full h-full rounded-xl border-2 flex items-center justify-center text-2xl font-bold transition-colors ${digit
-                                                                ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                                                                : error
-                                                                    ? "border-red-300 bg-red-50"
-                                                                    : "border-neutral-200/80 bg-neutral-50/50 text-neutral-900"
+                                                            ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                                                            : error
+                                                                ? "border-red-300 bg-red-50"
+                                                                : "border-neutral-200/80 bg-neutral-50/50 text-neutral-900"
                                                             }`}
                                                         animate={{ scale: digit ? [1, 1.1, 1] : 1 }}
                                                         transition={{ duration: 0.2 }}

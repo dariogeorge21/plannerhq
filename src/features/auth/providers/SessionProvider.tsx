@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { getCookie, setCookie, deleteCookie } from "@/utils/session";
 import { AuthUser } from "@/types/auth";
-import { getCurrentUser } from "@/api/auth";
+import { getCurrentUser } from "@/app/api/auth";
 
 interface SessionContextType {
   user: AuthUser | null;
@@ -73,7 +73,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session) {
           const lastActivity = getCookie(ACTIVITY_COOKIE);
           if (!lastActivity) {
@@ -81,7 +81,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
             await supabase.auth.signOut();
             deleteCookie(ACTIVITY_COOKIE);
             setUser(null);
-            
+
             // Redirect to signin with expired parameter if on a protected route
             const isAuthRoute = ["/signin", "/signup", "/verify-otp", "/forgot-password"].includes(pathname || "");
             if (pathname && !isAuthRoute) {

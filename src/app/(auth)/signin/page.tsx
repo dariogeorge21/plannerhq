@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { ProductShowcase } from "@/components/ProductShowcase";
 import Image from "next/image";
-import { signIn, signOut, signInWithGoogle } from "@/api/auth";
+import { signIn, signOut, signInWithGoogle } from "@/app/api/auth";
 import { setCookie } from "@/utils/session";
 import { toast } from "sonner";
 import { useSession } from "@/features/auth/providers/SessionProvider";
@@ -30,7 +30,7 @@ function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isLoading: sessionLoading } = useSession();
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -58,7 +58,7 @@ function SignInContent() {
         const newUrl = window.location.pathname;
         window.history.replaceState({}, "", newUrl);
       };
-      
+
       handleExpiredSession();
     }
   }, [expired]);

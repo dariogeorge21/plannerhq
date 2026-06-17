@@ -1,17 +1,17 @@
+// src/app/(user)/[workspaceId]/page.tsx
 "use client";
 
 import React, { useEffect, useState, use } from "react";
 import { GetWorkspace, GetWorkspaceMembers } from "@/features/workspace/workspace";
-import { 
-  Users, 
-  Calendar, 
-  Settings, 
-  Sparkles, 
-  FolderOpen, 
-  CheckSquare, 
+import {
+  Users,
+  Calendar,
+  Settings,
+  Sparkles,
+  FolderOpen,
   ArrowRight,
-  TrendingUp,
-  Clock
+  Loader2,
+  ShieldCheck
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,6 @@ export default function WorkspacePage({
         setMembers(memRes.data);
       }
     } catch (err) {
-      console.error(err);
       toast.error("Failed to load workspace information");
     } finally {
       setLoading(false);
@@ -58,128 +57,110 @@ export default function WorkspacePage({
 
   if (loading || !workspace) {
     return (
-      <div className="h-60 flex items-center justify-center">
-        <Clock className="w-6 h-6 animate-spin text-neutral-400" />
+      <div className="h-full w-full flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
       </div>
     );
   }
 
-  // Find owner details
   const owner = members.find(m => m.role === 'owner');
 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+  };
+
   return (
-    <div className="space-y-8 relative">
+    <div className="max-w-6xl mx-auto p-6 lg:p-10 space-y-10 relative">
       {/* Decorative Glow */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-100/30 rounded-full blur-3xl pointer-events-none -z-10" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-50/50 rounded-full blur-3xl pointer-events-none -z-10" />
 
-      {/* Hero Welcome banner */}
-      <section className="relative overflow-hidden rounded-3xl border border-neutral-200/50 bg-white/70 backdrop-blur-md p-8 md:p-10 shadow-lg shadow-neutral-100/30">
-        <div className="absolute top-0 right-0 w-48 h-full bg-linear-to-l from-indigo-50/30 to-transparent blur-2xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-2 max-w-xl"
-          >
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-neutral-950">
-              Welcome to {workspace.name} <span>🚀</span>
+      {/* Hero Header */}
+      <motion.section
+        initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+        className="relative overflow-hidden rounded-[2rem] bg-white border border-neutral-200/60 p-8 md:p-12 shadow-xl shadow-neutral-200/20"
+      >
+        <div className="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-indigo-50/50 to-transparent pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="space-y-4 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold tracking-wide uppercase border border-indigo-100/50">
+              <Sparkles className="w-3.5 h-3.5" /> Workspace Overview
+            </div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900">
+              Welcome to {workspace.name}
             </h1>
-            <p className="text-sm text-neutral-500 font-medium leading-relaxed">
-              {workspace.description || "Start collaborating, planning, and getting things done in this workspace."}
+            <p className="text-base text-neutral-500 font-medium leading-relaxed max-w-xl">
+              {workspace.description || "Start collaborating, planning, and executing your projects within this shared environment."}
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex items-center gap-2.5 bg-indigo-50/50 border border-indigo-100 rounded-xl px-4 py-2 text-indigo-700 text-sm font-semibold w-fit"
-          >
-            <Sparkles className="w-4 h-4 text-indigo-500" />
-            <span>Workspace Dashboard</span>
-          </motion.div>
+          <div className="shrink-0 flex items-center justify-center w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg text-white font-bold text-4xl md:text-5xl shadow-indigo-500/20">
+            {workspace.name.charAt(0).toUpperCase()}
+          </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Workspace Quick Stats */}
-      <section className="grid gap-6 md:grid-cols-3">
-        <Card className="border-neutral-200/50 rounded-2xl bg-white/70 backdrop-blur-md shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-400">Total Members</CardTitle>
-            <Users className="w-4.5 h-4.5 text-indigo-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-extrabold text-neutral-950 mt-1">{members.length}</div>
-            <p className="text-xs text-neutral-400 mt-1 font-semibold">Collaborating in this space</p>
-          </CardContent>
-        </Card>
+      {/* Stats Grid */}
+      <motion.section variants={container} initial="hidden" animate="show" className="grid gap-6 md:grid-cols-3">
+        {[
+          { title: "Total Members", icon: Users, value: members.length, desc: "Collaborators in space", color: "text-blue-600", bg: "bg-blue-50" },
+          { title: "Workspace Owner", icon: ShieldCheck, value: owner ? owner.display_name.split(' ')[0] : "Unknown", desc: owner?.email || "—", color: "text-emerald-600", bg: "bg-emerald-50" },
+          { title: "Created On", icon: Calendar, value: new Date(workspace.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }), desc: "Workspace foundation", color: "text-purple-600", bg: "bg-purple-50" }
+        ].map((stat, i) => (
+          <motion.div key={i} variants={item}>
+            <Card className="border-neutral-200/60 shadow-sm hover:shadow-md transition-shadow duration-300 rounded-2xl overflow-hidden group bg-white">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-500">{stat.title}</CardTitle>
+                <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center transition-transform group-hover:scale-110`}>
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-extrabold tracking-tight text-neutral-900 truncate">{stat.value}</div>
+                <p className="text-sm text-neutral-500 mt-1 font-medium truncate">{stat.desc}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </motion.section>
 
-        <Card className="border-neutral-200/50 rounded-2xl bg-white/70 backdrop-blur-md shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-400">Owner</CardTitle>
-            <Sparkles className="w-4.5 h-4.5 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-base font-extrabold text-neutral-950 mt-2 truncate">
-              {owner ? owner.display_name : "Unknown"}
-            </div>
-            <p className="text-xs text-neutral-400 mt-1 font-semibold truncate">{owner ? owner.email : "—"}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-neutral-200/50 rounded-2xl bg-white/70 backdrop-blur-md shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-400">Created At</CardTitle>
-            <Calendar className="w-4.5 h-4.5 text-neutral-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-base font-extrabold text-neutral-950 mt-2">
-              {new Date(workspace.created_at).toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })}
-            </div>
-            <p className="text-xs text-neutral-400 mt-1 font-semibold">Workspace foundation date</p>
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Grid: Members & Navigation */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Members preview */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-neutral-950">Workspace Members</h3>
-            <Button asChild variant="ghost" size="sm" className="hover:bg-neutral-100 rounded-xl cursor-pointer">
-              <Link href={`/${workspaceId}/members`} className="flex items-center gap-1">
-                <span>View all</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+        {/* Members List */}
+        <div className="lg:col-span-2 space-y-5">
+          <div className="flex items-center justify-between border-b border-neutral-200/60 pb-3">
+            <h3 className="text-lg font-bold text-neutral-900">Recent Members</h3>
+            <Button asChild variant="ghost" size="sm" className="hover:bg-neutral-100 text-neutral-600 rounded-lg">
+              <Link href={`/${workspaceId}/members`} className="flex items-center gap-1.5">
+                View all <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </Button>
           </div>
 
-          <div className="border border-neutral-200/50 rounded-2xl bg-white/70 backdrop-blur-md p-6 shadow-sm space-y-4">
+          <div className="bg-white border border-neutral-200/60 rounded-2xl shadow-sm overflow-hidden">
             <div className="divide-y divide-neutral-100">
-              {members.slice(0, 4).map((member) => (
-                <div key={member.user_id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm select-none">
+              {members.slice(0, 5).map((member) => (
+                <div key={member.user_id} className="flex items-center justify-between p-4 hover:bg-neutral-50/50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-neutral-100 to-neutral-200 border border-neutral-300/50 flex items-center justify-center font-bold text-sm text-neutral-700 shadow-inner">
                       {member.display_name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <div className="text-sm font-extrabold text-neutral-950">{member.display_name}</div>
-                      <div className="text-xs text-neutral-400 font-semibold">{member.email}</div>
+                      <div className="text-sm font-bold text-neutral-900">{member.display_name}</div>
+                      <div className="text-xs text-neutral-500 font-medium">{member.email}</div>
                     </div>
                   </div>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black capitalize select-none ${
-                    member.role === 'owner' 
-                      ? 'bg-indigo-50 text-indigo-700 border border-indigo-100/60' 
-                      : member.role === 'admin'
-                      ? 'bg-purple-50 text-purple-700 border border-purple-100/60'
-                      : 'bg-neutral-100 text-neutral-600 border border-neutral-200/40'
-                  }`}>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${member.role === 'owner' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
+                    member.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                      'bg-neutral-50 text-neutral-600 border-neutral-200'
+                    }`}>
                     {member.role}
                   </span>
                 </div>
@@ -188,28 +169,41 @@ export default function WorkspacePage({
           </div>
         </div>
 
-        {/* Quick Links */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-bold text-neutral-950">Quick Settings</h3>
-          <div className="border border-neutral-200/50 rounded-2xl bg-white/70 backdrop-blur-md p-6 shadow-sm space-y-3">
-            <Button asChild variant="outline" className="w-full justify-start rounded-xl cursor-pointer hover:bg-neutral-50 border-neutral-200/80">
-              <Link href={`/${workspaceId}/settings`}>
-                <Settings className="w-4 h-4 mr-2 text-neutral-500" />
-                <span>Manage Workspace Info</span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start rounded-xl cursor-pointer hover:bg-neutral-50 border-neutral-200/80">
-              <Link href={`/${workspaceId}/members`}>
-                <Users className="w-4 h-4 mr-2 text-neutral-500" />
-                <span>Invite New Members</span>
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full justify-start rounded-xl cursor-pointer hover:bg-neutral-50 border-neutral-200/80">
-              <Link href="/dashboard">
-                <FolderOpen className="w-4 h-4 mr-2 text-neutral-500" />
-                <span>Switch Workspaces</span>
-              </Link>
-            </Button>
+        {/* Quick Links / Actions */}
+        <div className="space-y-5">
+          <div className="flex items-center justify-between border-b border-neutral-200/60 pb-3">
+            <h3 className="text-lg font-bold text-neutral-900">Quick Actions</h3>
+          </div>
+          <div className="grid gap-3">
+            <Link href={`/${workspaceId}/settings`} className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-neutral-200/60 hover:border-indigo-300 hover:shadow-md transition-all">
+              <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                <Settings className="w-5 h-5 text-neutral-600 group-hover:text-indigo-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-bold text-neutral-900">Workspace Settings</div>
+                <div className="text-xs text-neutral-500 font-medium">Manage details & preferences</div>
+              </div>
+            </Link>
+
+            <Link href={`/${workspaceId}/members`} className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-neutral-200/60 hover:border-indigo-300 hover:shadow-md transition-all">
+              <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                <Users className="w-5 h-5 text-neutral-600 group-hover:text-indigo-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-bold text-neutral-900">Invite Members</div>
+                <div className="text-xs text-neutral-500 font-medium">Grow your workspace team</div>
+              </div>
+            </Link>
+
+            <Link href="/dashboard" className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-neutral-200/60 hover:border-indigo-300 hover:shadow-md transition-all">
+              <div className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                <FolderOpen className="w-5 h-5 text-neutral-600 group-hover:text-indigo-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-bold text-neutral-900">Switch Workspace</div>
+                <div className="text-xs text-neutral-500 font-medium">Return to main dashboard</div>
+              </div>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
+// src/features/chat/components/ChatInput.tsx
 import React, { useRef, useEffect } from "react";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { SendIcon } from "lucide-react";
+import { SendIcon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
@@ -16,7 +16,7 @@ export function ChatInput({ onSendMessage, onTyping }: ChatInputProps) {
 
   const handleSend = () => {
     if (hasContent) {
-      onSendMessage(content);
+      onSendMessage(content.trim());
       setContent("");
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
@@ -39,45 +39,48 @@ export function ChatInput({ onSendMessage, onTyping }: ChatInputProps) {
   };
 
   return (
-    <div className="p-4 bg-gradient-to-t from-background via-background to-transparent pt-6 border-t border-border/40">
-      <div className="max-w-4xl mx-auto flex flex-col">
-        <div
-          className={cn(
-            "flex items-end space-x-2 relative rounded-2xl border bg-muted/20 p-2 transition-all duration-200 shadow-sm",
-            "focus-within:bg-background focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30"
-          )}
-        >
-          <Textarea
-            ref={textareaRef}
-            value={content}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message..."
-            className="min-h-[40px] max-h-[150px] resize-none border-0 focus-visible:ring-0 bg-transparent py-2.5 px-2 w-full scrollbar-thin text-[15px] leading-relaxed"
-            rows={1}
-          />
+    <div className="p-4 md:px-6 md:pb-6 bg-white shrink-0">
+      <div
+        className={cn(
+          "relative flex items-end p-2 bg-neutral-50 border border-neutral-200 rounded-2xl transition-all duration-300 shadow-sm",
+          "focus-within:bg-white focus-within:border-indigo-300 focus-within:shadow-md focus-within:ring-4 focus-within:ring-indigo-500/10"
+        )}
+      >
+        <textarea
+          ref={textareaRef}
+          value={content}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Message your workspace..."
+          className="w-full min-h-[44px] max-h-[150px] resize-none bg-transparent border-0 focus:ring-0 px-3 py-3 text-[15px] font-medium leading-relaxed placeholder:text-neutral-400 scrollbar-thin outline-none"
+          rows={1}
+        />
 
+        <div className="flex shrink-0 mb-1 ml-2">
           <Button
             size="icon"
-            className={cn(
-              "h-9 w-9 rounded-full flex-shrink-0 transition-all duration-200 mb-0.5",
-              hasContent
-                ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 scale-100"
-                : "bg-muted text-muted-foreground scale-95 opacity-50 cursor-not-allowed"
-            )}
-            disabled={!hasContent}
             onClick={handleSend}
+            disabled={!hasContent}
+            className={cn(
+              "h-10 w-10 rounded-xl transition-all duration-300",
+              hasContent
+                ? "bg-indigo-600 text-white shadow-md hover:bg-indigo-700 hover:scale-105"
+                : "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+            )}
           >
             <SendIcon className={cn("h-4 w-4", hasContent && "translate-x-0.5")} />
-            <span className="sr-only">Send</span>
           </Button>
         </div>
+      </div>
 
-        <div className="flex justify-between items-center mt-2 px-1">
-          <p className="text-[11px] text-muted-foreground/60 font-medium">
-            <strong>@</strong> to mention • <strong>Shift + Enter</strong> for new line
-          </p>
-        </div>
+      <div className="flex justify-between items-center mt-3 px-2">
+        <p className="text-[11px] font-medium text-neutral-400 flex items-center gap-1.5">
+          <span className="px-1.5 py-0.5 rounded border border-neutral-200 bg-neutral-100 font-bold">↵</span> to send
+          <span className="px-1.5 py-0.5 rounded border border-neutral-200 bg-neutral-100 font-bold ml-1">⇧ ↵</span> to add a new line
+        </p>
+        <p className="text-[11px] font-semibold text-neutral-400 flex items-center gap-1 hover:text-indigo-500 cursor-pointer transition-colors">
+          <Sparkles className="w-3 h-3" /> End-to-end secured
+        </p>
       </div>
     </div>
   );

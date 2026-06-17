@@ -1,10 +1,12 @@
+// src/features/chat/components/ChatLayout.tsx
 "use client";
 
 import { useChat } from "../use-chat";
 import { ChatWindow } from "./ChatWindow";
 import { PresenceSidebar } from "./PresenceSidebar";
-import { HashIcon, InfoIcon, PlusIcon, MessageSquareIcon } from "lucide-react";
+import { HashIcon, InfoIcon, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface ChatLayoutProps {
@@ -25,88 +27,49 @@ export function ChatLayout({ workspaceId }: ChatLayoutProps) {
     setTyping,
     currentUserId,
     activeChannelId,
-    setActiveChannelId,
   } = useChat(workspaceId);
 
   const activeChannel = channels.find((c) => c.id === activeChannelId);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-background border border-border/60 rounded-xl shadow-sm ring-1 ring-black/5 dark:ring-white/5">
-      {/* Channel Sidebar */}
-      <div className="w-48 border-r bg-muted/5 h-full flex flex-col flex-shrink-0">
-        <div className="h-14 px-5 border-b flex items-center justify-between bg-background/50 backdrop-blur sticky top-0 z-10">
-          <h3 className="font-semibold flex items-center text-sm text-foreground">
-            <MessageSquareIcon className="w-4 h-4 mr-2 text-muted-foreground" />
-            Channels
-          </h3>
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-lg">
-            <PlusIcon className="w-4 h-4" />
-          </Button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1 animate-in fade-in duration-300">
-          {loading && channels.length === 0 ? (
-            <div className="space-y-2 px-2">
-              <div className="h-8 bg-muted/40 animate-pulse rounded-lg w-full" />
-              <div className="h-8 bg-muted/40 animate-pulse rounded-lg w-4/5" />
-              <div className="h-8 bg-muted/40 animate-pulse rounded-lg w-3/4" />
-            </div>
-          ) : (
-            channels.map((channel) => {
-              const isActive = channel.id === activeChannelId;
-              return (
-                <button
-                  key={channel.id}
-                  onClick={() => setActiveChannelId(channel.id)}
-                  className={cn(
-                    "w-full flex items-center px-3 py-2 rounded-xl text-[14px] font-medium transition-all group",
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-sm scale-[1.02]"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:translate-x-0.5"
-                  )}
-                >
-                  <HashIcon
-                    className={cn(
-                      "w-4 h-4 mr-2 flex-shrink-0 transition-colors",
-                      isActive ? "text-primary-foreground" : "text-muted-foreground/60 group-hover:text-foreground/85"
-                    )}
-                    strokeWidth={isActive ? 2.5 : 2}
-                  />
-                  <span className="truncate">{channel.name}</span>
-                </button>
-              );
-            })
-          )}
-        </div>
-      </div>
+    <div className="flex h-full w-full overflow-hidden bg-white border border-neutral-200/80 rounded-3xl shadow-xl shadow-neutral-200/40">
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 bg-white">
+
         {/* Chat Header */}
-        <div className="h-14 my-12 border-b border-border/60 flex justify-between items-center px-6 bg-background/80 backdrop-blur-md sticky top-0 z-10">
-          <div className="flex items-center space-x-3 animate-in slide-in-from-left-2 duration-200">
-            <div className="bg-primary/10 p-1.5 rounded-lg flex items-center justify-center">
-              <HashIcon className="w-5 h-5 text-primary" strokeWidth={2.5} />
+        <div className="h-16 px-6 border-b border-neutral-100 flex items-center justify-between bg-white/95 backdrop-blur-md z-10 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100/50">
+              <HashIcon className="w-5 h-5" strokeWidth={2.5} />
             </div>
-            <div className="flex flex-col justify-center">
-              <h2 className="font-bold text-[15px] leading-none text-foreground mb-1">
+            <div>
+              <h2 className="font-extrabold text-neutral-900 tracking-tight leading-tight">
                 {activeChannel?.name || "General"}
               </h2>
-              <p className="text-[12px] font-medium text-muted-foreground leading-none">
+              <p className="text-xs font-medium text-neutral-500 leading-tight mt-0.5">
                 {activeChannel?.description || "Workspace collaboration"}
               </p>
             </div>
           </div>
 
-          {/* Header Actions */}
-          <div className="flex items-center space-x-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-neutral-400 hover:text-neutral-900 rounded-lg hidden md:flex">
               <InfoIcon className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className={cn("h-9 w-9 rounded-lg transition-colors hidden md:flex", sidebarOpen ? "bg-indigo-50 text-indigo-600" : "text-neutral-400 hover:text-neutral-900")}
+            >
+              {sidebarOpen ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4" />}
             </Button>
           </div>
         </div>
 
-        {/* Chat Window */}
+        {/* Chat Window Context */}
         <ChatWindow
           messages={messages}
           currentUserId={currentUserId}
@@ -120,8 +83,13 @@ export function ChatLayout({ workspaceId }: ChatLayoutProps) {
         />
       </div>
 
-      {/* Presence Sidebar */}
-      <div className="lg:block w-48 relative z-0">
+      {/* Presence Sidebar (Collapsible) */}
+      <div
+        className={cn(
+          "h-full border-l border-neutral-100 bg-neutral-50/50 transition-all duration-300 ease-in-out hidden lg:block shrink-0",
+          sidebarOpen ? "w-72 opacity-100" : "w-0 opacity-0 border-none overflow-hidden"
+        )}
+      >
         <PresenceSidebar onlineUsers={onlineUsers} typingUsers={typingUsers} />
       </div>
     </div>

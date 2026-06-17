@@ -1,33 +1,29 @@
+// src/app/(user)/[workspaceId]/settings/page.tsx
 "use client";
 
 import React, { useEffect, useState, useTransition, use } from "react";
 import { GetWorkspace, UpdateWorkspace, ArchieveWorkspace, GetWorkspaceMembers } from "@/features/workspace/workspace";
-import { 
-  InviteUserToWorkspaceByHqid, 
-  InviteUserToWorkspaceByEmail, 
-  ListInvitationsForWorkspace, 
-  DeclineInvitation 
+import {
+  InviteUserToWorkspaceByHqid,
+  InviteUserToWorkspaceByEmail,
+  ListInvitationsForWorkspace,
+  DeclineInvitation
 } from "@/features/workspace/invites";
 import { useSession } from "@/features/auth/providers/SessionProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { 
-  Loader2, 
-  ShieldAlert, 
-  Sparkles, 
-  Settings, 
-  UserPlus, 
-  Archive, 
-  Mail, 
-  Hash, 
-  Clock, 
-  X,
-  Lock
+import {
+  Loader2,
+  ShieldAlert,
+  Settings,
+  Archive,
+  Mail,
+  Hash,
+  Clock,
+  X
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Workspace, WorkspaceMember } from "@/types/workspace";
@@ -36,11 +32,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 type WorkspaceInviteItem = {
   id: string;
   invitee_email: string | null;
-  invitee_hqid: string;
-  role: 'owner' | 'admin' | 'member';
-  status: 'pending' | 'accepted' | 'rejected' | 'expired';
+  invitee_hqid: string | null;
+  role: string;
   created_at: string;
-  expires_at: string;
 };
 
 export default function WorkspaceSettingsPage({
@@ -52,144 +46,81 @@ export default function WorkspaceSettingsPage({
   const workspaceId = params.workspaceId;
   const router = useRouter();
   const { user } = useSession();
-  
+
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [members, setMembers] = useState<WorkspaceMember[]>([]);
-  const [pendingInvites, setPendingInvites] = useState<WorkspaceInviteItem[]>([]);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Forms state
-  const [wsName, setWsName] = useState("");
-  const [wsDescription, setWsDescription] = useState("");
+  // Update state
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [isUpdatePending, startUpdateTransition] = useTransition();
 
-  // Invite states
-  const [inviteMethod, setInviteMethod] = useState<"email" | "hqid">("email");
-  const [inviteValue, setInviteValue] = useState("");
-  const [inviteRole, setInviteRole] = useState("member");
-  const [isInvitePending, startInviteTransition] = useTransition();
-
-  // Archive modal
+  // Archive state
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [isArchivePending, startArchiveTransition] = useTransition();
 
-  const loadData = async () => {
-    try {
-      const [wsRes, memRes, inviteRes] = await Promise.all([
-        GetWorkspace(workspaceId),
-        GetWorkspaceMembers(workspaceId),
-        ListInvitationsForWorkspace(workspaceId)
-      ]);
+  // Invites state
+  const [pendingInvites, setPendingInvites] = useState<WorkspaceInviteItem[]>([]);
+  const [invitesLoading, setInvitesLoading] = useState(true);
 
-      if (wsRes.success && wsRes.data) {
-        setWorkspace(wsRes.data);
-        setWsName(wsRes.data.name);
-        setWsDescription(wsRes.data.description || "");
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [wsRes, memRes] = await Promise.all([
+          GetWorkspace(workspaceId),
+          GetWorkspaceMembers(workspaceId)
+        ]);
+
+        if (wsRes.success && wsRes.data) {
+          setWorkspace(wsRes.data);
+          setName(wsRes.data.name);
+          setDescription(wsRes.data.description || "");
+        }
+
+        if (memRes.success && memRes.data && user) {
+          const currentMem = memRes.data.find((m: WorkspaceMember) => m.user_id === user.id);
+          if (currentMem) setCurrentUserRole(currentMem.role);
+        }
+      } catch (err) {
+        toast.error("Failed to load settings");
+      } finally {
+        setLoading(false);
       }
-      if (memRes.success && memRes.data) {
-        setMembers(memRes.data);
+    };
+    fetchData();
+  }, [workspaceId, user]);
+
+  const loadInvites = async () => {
+    try {
+      const res = await ListInvitationsForWorkspace(workspaceId);
+      if (res.success && res.data) {
+        setPendingInvites(res.data);
       }
-      if (inviteRes.success && inviteRes.data) {
-        setPendingInvites(inviteRes.data);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load settings data");
     } finally {
-      setLoading(false);
+      setInvitesLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
-  }, [workspaceId]);
-
-  if (loading) {
-    return (
-      <div className="h-60 flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
-      </div>
-    );
-  }
-
-  if (!workspace || !user) {
-    return <div className="text-center py-12">Workspace not found</div>;
-  }
-
-  // Check user role
-  const currentUserMembership = members.find(m => m.user_id === user.id);
-  const isOwnerOrAdmin = currentUserMembership?.role === 'owner' || currentUserMembership?.role === 'admin';
-
-  const handleUpdateWorkspace = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!wsName.trim()) {
-      toast.error("Workspace name is required");
-      return;
+    if (currentUserRole === 'owner' || currentUserRole === 'admin') {
+      loadInvites();
     }
+  }, [currentUserRole, workspaceId]);
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return toast.error("Workspace name required");
 
     startUpdateTransition(async () => {
       const formData = new FormData();
       formData.append("workspaceId", workspaceId);
-      formData.append("workspaceName", wsName);
-      formData.append("workspaceDescription", wsDescription);
+      formData.append("workspaceName", name);
+      formData.append("workspaceDescription", description);
 
       const res = await UpdateWorkspace(formData);
-      if (res.success) {
-        toast.success(res.message);
-        // Reload details
-        loadData();
-      } else {
-        toast.error(res.message || "Failed to update workspace details");
-      }
-    });
-  };
-
-  const handleSendInvite = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteValue.trim()) {
-      toast.error(`Please enter an ${inviteMethod === 'email' ? 'email address' : 'HQID'}`);
-      return;
-    }
-
-    startInviteTransition(async () => {
-      const formData = new FormData();
-      formData.append("workspaceId", workspaceId);
-      formData.append("inviteType", inviteRole);
-
-      let res;
-      if (inviteMethod === 'email') {
-        formData.append("email", inviteValue.trim());
-        res = await InviteUserToWorkspaceByEmail(formData);
-      } else {
-        formData.append("hqid", inviteValue.trim());
-        res = await InviteUserToWorkspaceByHqid(formData);
-      }
-
-      if (res.success) {
-        toast.success(res.message);
-        setInviteValue("");
-        // Reload invitations list
-        const inviteRes = await ListInvitationsForWorkspace(workspaceId);
-        if (inviteRes.success && inviteRes.data) {
-          setPendingInvites(inviteRes.data);
-        }
-      } else {
-        toast.error(res.message || "Failed to send invitation");
-      }
-    });
-  };
-
-  const handleCancelInvite = (inviteId: string) => {
-    startInviteTransition(async () => {
-      const formData = new FormData();
-      formData.append("invitationId", inviteId);
-      const res = await DeclineInvitation(formData);
-      if (res.success) {
-        toast.success("Invitation cancelled successfully");
-        setPendingInvites((prev) => prev.filter((i) => i.id !== inviteId));
-      } else {
-        toast.error(res.message || "Failed to cancel invitation");
-      }
+      if (res.success) toast.success(res.message);
+      else toast.error(res.message || "Failed to update workspace");
     });
   };
 
@@ -197,286 +128,168 @@ export default function WorkspaceSettingsPage({
     startArchiveTransition(async () => {
       const formData = new FormData();
       formData.append("workspaceId", workspaceId);
-
       const res = await ArchieveWorkspace(formData);
+
       if (res.success) {
         toast.success(res.message);
         router.push("/dashboard");
       } else {
         toast.error(res.message || "Failed to archive workspace");
+        setShowArchiveConfirm(false);
       }
     });
   };
 
-  if (!isOwnerOrAdmin) {
+  const handleCancelInvite = async (inviteId: string) => {
+    const formData = new FormData();
+    formData.append("invitationId", inviteId);
+    const res = await DeclineInvitation(formData);
+    if (res.success) {
+      toast.success("Invitation cancelled");
+      setPendingInvites(prev => prev.filter(i => i.id !== inviteId));
+    } else {
+      toast.error(res.message || "Failed to cancel invitation");
+    }
+  };
+
+  if (loading || !workspace) {
     return (
-      <div className="max-w-md mx-auto py-12 text-center flex flex-col items-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 mb-6">
-          <Lock className="w-6 h-6" />
-        </div>
-        <h3 className="text-xl font-extrabold text-neutral-900">Settings Restricted</h3>
-        <p className="text-sm text-neutral-500 mt-2 font-medium leading-relaxed">
-          Only workspace owners and administrators can configure details, send invitations, or archive this workspace.
-        </p>
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+
+  const hasPrivilege = currentUserRole === 'owner' || currentUserRole === 'admin';
+
+  if (!hasPrivilege) {
+    return (
+      <div className="max-w-3xl mx-auto mt-10 p-8 bg-white border border-neutral-200/60 rounded-3xl text-center shadow-xl">
+        <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-neutral-900 mb-2">Insufficient Permissions</h2>
+        <p className="text-neutral-500">Only Workspace Owners and Admins can access settings.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 relative">
-      <div className="flex items-center justify-between border-b border-neutral-100 pb-5">
-        <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-neutral-950">Workspace Settings</h1>
-          <p className="text-sm text-neutral-500 font-medium mt-1">Configure profile details and invite collaborators.</p>
-        </div>
+    <div className="max-w-4xl mx-auto p-6 lg:p-10 space-y-10">
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900">Workspace Settings</h1>
+        <p className="text-neutral-500 mt-2 font-medium">Manage your workspace preferences, pending invitations, and danger zone actions.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Side: General Profile Settings */}
-        <div className="lg:col-span-2 space-y-8">
-          <Card className="border-neutral-200/50 bg-white/70 backdrop-blur-md rounded-2xl shadow-xs overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-neutral-950">General Details</CardTitle>
-              <CardDescription className="text-neutral-500">Edit workspace profile information.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleUpdateWorkspace} className="space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="settings-name" className="text-sm font-semibold text-neutral-700">Workspace Name</Label>
-                    <Input
-                      id="settings-name"
-                      value={wsName}
-                      onChange={(e) => setWsName(e.target.value)}
-                      placeholder="Enter workspace name"
-                      disabled={isUpdatePending}
-                      className="w-full rounded-xl border border-neutral-200/80 focus:border-indigo-500/50 bg-white/50 px-4 py-3 outline-hidden focus:ring-2 focus:ring-indigo-500/10 transition-all font-semibold"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="settings-desc" className="text-sm font-semibold text-neutral-700">Description</Label>
-                    <Textarea
-                      id="settings-desc"
-                      value={wsDescription}
-                      onChange={(e) => setWsDescription(e.target.value)}
-                      placeholder="Provide a description for your workspace"
-                      disabled={isUpdatePending}
-                      className="w-full min-h-[120px] rounded-xl border border-neutral-200/80 focus:border-indigo-500/50 bg-white/50 px-4 py-3 outline-hidden focus:ring-2 focus:ring-indigo-500/10 transition-all font-semibold resize-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Button
-                    type="submit"
-                    disabled={isUpdatePending}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-neutral-950 text-white hover:bg-neutral-800 px-5 py-2.5 text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-                  >
-                    {isUpdatePending ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Saving...</span>
-                      </>
-                    ) : (
-                      <span>Save Changes</span>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Danger Zone */}
-          <Card className="border-red-200/60 bg-red-50/20 backdrop-blur-md rounded-2xl shadow-xs overflow-hidden">
-            <CardHeader className="border-b border-red-100/40 pb-5">
-              <CardTitle className="text-lg font-bold text-red-900 flex items-center gap-2">
-                <ShieldAlert className="w-5 h-5 text-red-600" />
-                <span>Danger Zone</span>
-              </CardTitle>
-              <CardDescription className="text-red-700/70">Critical actions that affect workspace lifecycle.</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-red-950">Archive Workspace</h4>
-                  <p className="text-xs text-red-700/80 font-semibold leading-relaxed max-w-md">
-                    Archiving suspends this workspace and all internal project links. This action can only be reversed by administrators.
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setShowArchiveConfirm(true)}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-2.5 text-sm font-semibold text-white transition-all active:scale-[0.98] cursor-pointer"
-                >
-                  <Archive className="w-4 h-4" />
-                  <span>Archive Space</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Side: Inviting and pending invites */}
-        <div className="space-y-8">
-          <Card className="border-neutral-200/50 bg-white/70 backdrop-blur-md rounded-2xl shadow-xs overflow-hidden">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-neutral-950">Invite Members</CardTitle>
-              <CardDescription className="text-neutral-500">Add collaborators to join this workspace.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <form onSubmit={handleSendInvite} className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-neutral-400">Invite Method</Label>
-                  <div className="flex gap-2 p-1 bg-neutral-100/60 border border-neutral-200/30 rounded-xl">
-                    <button
-                      type="button"
-                      onClick={() => { setInviteMethod("email"); setInviteValue(""); }}
-                      className={`w-full py-1.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                        inviteMethod === 'email' ? 'bg-white text-neutral-950 shadow-sm border border-neutral-200/40' : 'text-neutral-400 hover:text-neutral-600'
-                      }`}
-                    >
-                      <Mail className="w-3.5 h-3.5" />
-                      <span>Email</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setInviteMethod("hqid"); setInviteValue(""); }}
-                      className={`w-full py-1.5 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                        inviteMethod === 'hqid' ? 'bg-white text-neutral-950 shadow-sm border border-neutral-200/40' : 'text-neutral-400 hover:text-neutral-600'
-                      }`}
-                    >
-                      <Hash className="w-3.5 h-3.5" />
-                      <span>HQID</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="invite-input" className="text-sm font-semibold text-neutral-700">
-                    {inviteMethod === 'email' ? 'Email Address' : 'Invitee HQID'}
-                  </Label>
-                  <Input
-                    id="invite-input"
-                    value={inviteValue}
-                    onChange={(e) => setInviteValue(e.target.value)}
-                    placeholder={inviteMethod === 'email' ? 'colleague@example.com' : 'e.g. HQ-98A4X2'}
-                    disabled={isInvitePending}
-                    className="w-full rounded-xl border border-neutral-200/80 focus:border-indigo-500/50 bg-white/50 px-4 py-2 text-sm outline-hidden focus:ring-2 focus:ring-indigo-500/10 transition-all font-semibold"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-neutral-700">Role</Label>
-                  <Select value={inviteRole} onValueChange={setInviteRole} disabled={isInvitePending}>
-                    <SelectTrigger className="w-full rounded-xl border border-neutral-200 bg-white/50 px-4 py-2.5 font-semibold text-sm outline-hidden cursor-pointer">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border border-neutral-100 bg-white shadow-lg">
-                      <SelectItem value="member" className="font-semibold text-sm cursor-pointer rounded-lg">Member</SelectItem>
-                      <SelectItem value="admin" className="font-semibold text-sm cursor-pointer rounded-lg">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={isInvitePending}
-                  className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 text-sm font-semibold text-white transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-                >
-                  {isInvitePending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Sending...</span>
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4" />
-                      <span>Send Invite</span>
-                    </>
-                  )}
-                </Button>
-              </form>
-
-              {/* Pending Invites List */}
-              <div className="space-y-3 pt-4 border-t border-neutral-100">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Pending Invites ({pendingInvites.length})</span>
-                </h4>
-
-                {pendingInvites.length === 0 ? (
-                  <p className="text-xs text-neutral-400 font-semibold italic text-center py-2 bg-neutral-50/50 rounded-xl border border-dashed border-neutral-200/40">
-                    No pending invites
-                  </p>
-                ) : (
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {pendingInvites.map((invite) => (
-                      <div key={invite.id} className="flex items-center justify-between p-3 rounded-xl border border-neutral-200/50 bg-white/50 hover:bg-white/80 transition-colors">
-                        <div className="overflow-hidden pr-2">
-                          <div className="text-xs font-bold text-neutral-900 truncate">
-                            {invite.invitee_email || invite.invitee_hqid}
-                          </div>
-                          <span className="inline-flex text-[9px] font-black uppercase tracking-wider text-indigo-600 mt-0.5">
-                            {invite.role}
-                          </span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon-xs"
-                          onClick={() => handleCancelInvite(invite.id)}
-                          disabled={isInvitePending}
-                          className="hover:bg-red-50 hover:text-red-600 text-neutral-400 rounded-lg cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Archive Confirmation Dialog */}
-      <Dialog open={showArchiveConfirm} onOpenChange={setShowArchiveConfirm}>
-        <DialogContent className="sm:max-w-md border border-neutral-100 bg-white/95 backdrop-blur-md rounded-3xl p-8 text-center flex flex-col items-center">
-          <div className="relative mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100">
-            <Archive className="w-6 h-6 animate-pulse" />
+      <div className="space-y-8">
+        {/* General Settings */}
+        <section className="bg-white border border-neutral-200/60 rounded-3xl shadow-sm overflow-hidden">
+          <div className="border-b border-neutral-100 p-6 bg-neutral-50/50 flex items-center gap-3">
+            <Settings className="w-5 h-5 text-neutral-500" />
+            <h2 className="text-lg font-bold text-neutral-900">General Information</h2>
           </div>
+          <form onSubmit={handleUpdate} className="p-6 md:p-8 space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="ws-name" className="text-sm font-semibold text-neutral-900">Workspace Name</Label>
+              <Input
+                id="ws-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isUpdatePending}
+                className="max-w-md rounded-xl border-neutral-300 focus-visible:ring-indigo-500"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="ws-desc" className="text-sm font-semibold text-neutral-900">Description</Label>
+              <Textarea
+                id="ws-desc"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={isUpdatePending}
+                className="max-w-xl min-h-[100px] rounded-xl border-neutral-300 focus-visible:ring-indigo-500 resize-y"
+              />
+            </div>
+            <div className="pt-2">
+              <Button type="submit" disabled={isUpdatePending} className="rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-semibold shadow-sm h-10 px-6">
+                {isUpdatePending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </section>
 
-          <DialogTitle className="text-xl font-extrabold text-neutral-900 tracking-tight">
-            Confirm Workspace Archival
-          </DialogTitle>
-          <DialogDescription className="mt-2 text-sm leading-relaxed text-neutral-500 font-medium max-w-[280px] sm:max-w-none">
-            Are you sure you want to archive "{workspace.name}"? This operation soft-deletes the workspace, and you will be redirected to the dashboard.
-          </DialogDescription>
+        {/* Pending Invitations */}
+        <section className="bg-white border border-neutral-200/60 rounded-3xl shadow-sm overflow-hidden">
+          <div className="border-b border-neutral-100 p-6 bg-neutral-50/50 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-neutral-500" />
+              <h2 className="text-lg font-bold text-neutral-900">Pending Invitations</h2>
+            </div>
+          </div>
+          <div className="p-0">
+            {invitesLoading ? (
+              <div className="p-8 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-neutral-400" /></div>
+            ) : pendingInvites.length === 0 ? (
+              <div className="p-8 text-center text-neutral-500 font-medium">No pending invitations.</div>
+            ) : (
+              <div className="divide-y divide-neutral-100">
+                {pendingInvites.map(inv => (
+                  <div key={inv.id} className="flex items-center justify-between p-4 px-6 hover:bg-neutral-50/50 transition-colors">
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-neutral-900 flex items-center gap-2">
+                        {inv.invitee_email ? <Mail className="w-4 h-4 text-neutral-400" /> : <Hash className="w-4 h-4 text-neutral-400" />}
+                        {inv.invitee_email || inv.invitee_hqid}
+                      </span>
+                      <span className="text-xs text-neutral-500 font-medium mt-1">
+                        Invited as <strong className="uppercase">{inv.role}</strong> on {new Date(inv.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <Button variant="ghost" size="icon" onClick={() => handleCancelInvite(inv.id)} className="text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
 
-          <DialogFooter className="mt-8 flex w-full flex-col sm:flex-row gap-3">
-            <Button
-              variant="outline"
-              disabled={isArchivePending}
-              onClick={() => setShowArchiveConfirm(false)}
-              className="w-full inline-flex items-center justify-center rounded-xl bg-neutral-50 border border-neutral-200/80 hover:bg-neutral-100 px-5 py-3 text-sm font-semibold text-neutral-700 transition-all active:scale-[0.98] cursor-pointer"
-            >
+        {/* Danger Zone */}
+        {currentUserRole === 'owner' && (
+          <section className="border border-red-200 bg-red-50/30 rounded-3xl overflow-hidden">
+            <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div>
+                <h2 className="text-lg font-bold text-red-700 flex items-center gap-2">
+                  <Archive className="w-5 h-5" /> Danger Zone
+                </h2>
+                <p className="text-sm text-red-600/80 mt-1 font-medium max-w-lg">
+                  Archiving this workspace will suspend all activities. Data will be preserved, but members will lose access.
+                </p>
+              </div>
+              <Button variant="destructive" onClick={() => setShowArchiveConfirm(true)} className="rounded-xl font-bold shadow-sm whitespace-nowrap">
+                Archive Workspace
+              </Button>
+            </div>
+          </section>
+        )}
+      </div>
+
+      <Dialog open={showArchiveConfirm} onOpenChange={setShowArchiveConfirm}>
+        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-neutral-200 rounded-3xl">
+          <div className="p-8 text-center flex flex-col items-center">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6 ring-8 ring-red-50">
+              <Archive className="w-8 h-8" />
+            </div>
+            <DialogTitle className="text-xl font-bold text-neutral-900 tracking-tight">Archive Workspace?</DialogTitle>
+            <DialogDescription className="mt-3 text-neutral-500 text-sm leading-relaxed">
+              Are you sure you want to archive <strong>"{workspace.name}"</strong>? You can restore it later, but all active collaborations will be paused immediately.
+            </DialogDescription>
+          </div>
+          <div className="p-6 bg-neutral-50 border-t border-neutral-100 flex gap-3">
+            <Button variant="outline" disabled={isArchivePending} onClick={() => setShowArchiveConfirm(false)} className="flex-1 rounded-xl border-neutral-300 font-semibold">
               Cancel
             </Button>
-            <Button
-              disabled={isArchivePending}
-              onClick={handleArchiveWorkspace}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-red-600/10 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
-            >
-              {isArchivePending ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Archiving...</span>
-                </>
-              ) : (
-                <span>Archive Space</span>
-              )}
+            <Button variant="destructive" disabled={isArchivePending} onClick={handleArchiveWorkspace} className="flex-1 rounded-xl font-semibold shadow-sm">
+              {isArchivePending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Archive Space"}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

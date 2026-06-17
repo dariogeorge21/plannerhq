@@ -1,3 +1,4 @@
+// src/app/(user)/[workspaceId]/layout.tsx
 "use client";
 
 import React, { useEffect, useState, use } from "react";
@@ -13,7 +14,8 @@ import {
   X,
   ShieldAlert,
   Loader2,
-  MessageSquareIcon
+  MessageSquareIcon,
+  ChevronsLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,6 +36,7 @@ export default function WorkspaceLayout({
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const fetchWorkspaceDetails = async () => {
     try {
@@ -44,8 +47,7 @@ export default function WorkspaceLayout({
         toast.error("Workspace not found or access denied");
       }
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to load workspace details");
+      toast.error("Failed to fetch workspace details");
     } finally {
       setLoading(false);
     }
@@ -55,30 +57,30 @@ export default function WorkspaceLayout({
     fetchWorkspaceDetails();
   }, [workspaceId]);
 
-  if (authLoading || loading) {
+  if (loading || authLoading) {
     return (
-      <div className="min-h-screen bg-neutral-50/30 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-          <p className="text-sm font-semibold text-neutral-500">Loading workspace...</p>
+          <p className="text-sm font-medium text-neutral-500 animate-pulse">Loading workspace...</p>
         </div>
       </div>
     );
   }
 
-  if (!user || !workspace) {
+  if (!workspace) {
     return (
-      <div className="min-h-screen bg-neutral-50/30 flex items-center justify-center px-6">
-        <div className="max-w-md w-full bg-white border border-neutral-200/80 rounded-3xl p-8 text-center shadow-xl flex flex-col items-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600 border border-red-100 mb-6">
-            <ShieldAlert className="w-7 h-7" />
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white border border-neutral-200/60 rounded-3xl p-8 text-center shadow-2xl shadow-neutral-200/40">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <ShieldAlert className="w-8 h-8" />
           </div>
-          <h3 className="text-xl font-extrabold text-neutral-900">Access Denied</h3>
-          <p className="text-sm text-neutral-500 mt-2 mb-6 font-medium leading-relaxed">
-            You do not have permission to view this workspace, or it may have been archived.
+          <h1 className="text-2xl font-bold text-neutral-900 mb-2 tracking-tight">Access Denied</h1>
+          <p className="text-neutral-500 mb-8 leading-relaxed">
+            You don't have permission to view this workspace, or it does not exist.
           </p>
-          <Button asChild className="w-full rounded-xl bg-neutral-950 text-white hover:bg-neutral-800 py-3">
-            <Link href="/dashboard">Back to Dashboard</Link>
+          <Button asChild className="w-full rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 h-12 font-semibold">
+            <Link href="/dashboard">Return to Dashboard</Link>
           </Button>
         </div>
       </div>
@@ -86,112 +88,103 @@ export default function WorkspaceLayout({
   }
 
   const navLinks = [
-    {
-      name: "Workspace Home",
-      href: `/${workspaceId}`,
-      icon: LayoutDashboard,
-      active: pathname === `/${workspaceId}`
-    },
-    {
-      name: "Members",
-      href: `/${workspaceId}/members`,
-      icon: Users,
-      active: pathname === `/${workspaceId}/members`
-    },
-    {
-      name: "Settings",
-      href: `/${workspaceId}/settings`,
-      icon: Settings,
-      active: pathname === `/${workspaceId}/settings`
-    },
-    {
-      name: "Chat",
-      href: `/${workspaceId}/chat`,
-      icon: MessageSquareIcon,
-      active: pathname === `/${workspaceId}/chat`
-    }
+    { name: "Overview", href: `/${workspaceId}`, icon: LayoutDashboard, exact: true },
+    { name: "Chat", href: `/${workspaceId}/chat`, icon: MessageSquareIcon, exact: false },
+    { name: "Members", href: `/${workspaceId}/members`, icon: Users, exact: false },
+    { name: "Settings", href: `/${workspaceId}/settings`, icon: Settings, exact: false },
   ];
 
+  const isActive = (href: string, exact: boolean) => {
+    if (exact) return pathname === href;
+    return pathname.startsWith(href);
+  };
+
   return (
-    <div className="min-h-screen bg-neutral-50/20 text-neutral-900 font-sans flex flex-col lg:flex-row selection:bg-indigo-500/30">
+    <div className="flex h-screen bg-neutral-50 overflow-hidden font-sans selection:bg-indigo-500/20">
 
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden lg:flex w-72 border-r border-neutral-200/50 bg-white/80 backdrop-blur-md flex-col shrink-0">
-        {/* Workspace Brand Block */}
-        <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="h-10 w-10 shrink-0 rounded-xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-600 flex items-center justify-center font-bold text-lg select-none">
+      <motion.aside
+        initial={false}
+        animate={{ width: isCollapsed ? 80 : 280 }}
+        className="hidden md:flex flex-col bg-white border-r border-neutral-200/60 relative z-20 shadow-sm"
+      >
+        <div className="h-16 flex items-center px-6 border-b border-neutral-100">
+          <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shrink-0 shadow-inner">
               {workspace.name.charAt(0).toUpperCase()}
             </div>
-            <div className="overflow-hidden">
-              <h2 className="text-sm font-extrabold text-neutral-950 truncate leading-tight">
+            {!isCollapsed && (
+              <span className="font-bold text-neutral-900 tracking-tight truncate">
                 {workspace.name}
-              </h2>
-              <span className="text-[10px] text-neutral-400 font-bold tracking-wider uppercase block mt-0.5">
-                Active Workspace
               </span>
-            </div>
-          </div>
+            )}
+          </Link>
         </div>
 
-        {/* Navigation Section */}
-        <nav className="flex-1 px-4 py-6 space-y-1.5">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="absolute -right-3 top-20 bg-white border border-neutral-200 shadow-sm w-6 h-6 rounded-full flex items-center justify-center text-neutral-400 hover:text-indigo-600 transition-colors z-30"
+        >
+          <ChevronsLeft className={`w-3.5 h-3.5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
+        </button>
+
+        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-none">
           {navLinks.map((link) => {
-            const Icon = link.icon;
+            const active = isActive(link.href, link.exact);
             return (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all relative ${link.active
-                  ? "text-indigo-600 bg-indigo-50/50 border border-indigo-100/50"
-                  : "text-neutral-500 hover:text-neutral-950 hover:bg-neutral-50/50"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${active
+                    ? "bg-indigo-50/80 text-indigo-700"
+                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
                   }`}
               >
-                {link.active && (
-                  <motion.div
-                    layoutId="active-nav-indicator"
-                    className="absolute left-0 w-1 h-6 bg-indigo-600 rounded-r-full"
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  />
+                <link.icon className={`w-5 h-5 shrink-0 ${active ? "text-indigo-600" : "text-neutral-400 group-hover:text-neutral-600"}`} />
+                {!isCollapsed && (
+                  <span className={`text-sm font-semibold ${active ? "text-indigo-700" : ""}`}>
+                    {link.name}
+                  </span>
                 )}
-                <Icon className={`w-4 h-4 ${link.active ? "text-indigo-600" : "text-neutral-400"}`} />
-                <span>{link.name}</span>
+                {isCollapsed && (
+                  <div className="absolute left-14 bg-neutral-900 text-white text-xs font-semibold px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl z-50">
+                    {link.name}
+                  </div>
+                )}
               </Link>
             );
           })}
         </nav>
 
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-neutral-100 space-y-3 bg-neutral-50/30">
+        <div className="p-4 border-t border-neutral-100">
           <Link
             href="/dashboard"
-            className="flex items-center justify-center gap-2 w-full rounded-xl border border-neutral-200/80 bg-white hover:bg-neutral-50 px-4 py-2.5 text-xs font-bold text-neutral-700 shadow-2xs active:scale-[0.98] transition-all cursor-pointer"
+            className={`flex items-center justify-center gap-2 w-full rounded-xl border border-neutral-200/80 bg-white px-4 py-2.5 text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors shadow-xs ${isCollapsed ? 'px-0' : ''}`}
           >
-            <span className='text-red-600'>Leave Workspace</span>
+            {isCollapsed ? <ChevronsLeft className="w-5 h-5" /> : <span>Exit Workspace</span>}
           </Link>
         </div>
-      </aside>
+      </motion.aside>
 
       {/* MOBILE HEADER */}
-      <header className="lg:hidden sticky top-0 z-40 w-full border-b border-neutral-200/50 bg-white/80 backdrop-blur-md flex items-center justify-between px-6 h-16 shadow-2xs">
-        <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="h-8 w-8 shrink-0 rounded-lg bg-indigo-600/10 border border-indigo-500/20 text-indigo-600 flex items-center justify-center font-bold text-sm select-none">
+      <header className="md:hidden flex items-center justify-between h-16 bg-white/80 backdrop-blur-xl border-b border-neutral-200/60 px-5 fixed top-0 w-full z-40">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-inner">
             {workspace.name.charAt(0).toUpperCase()}
           </div>
-          <h2 className="text-sm font-extrabold text-neutral-950 truncate max-w-[150px]">
+          <span className="font-bold text-neutral-900 tracking-tight truncate max-w-[150px]">
             {workspace.name}
-          </h2>
-        </div>
-
+          </span>
+        </Link>
         <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="h-9 w-9 rounded-xl border border-neutral-200 bg-white flex items-center justify-center text-neutral-600 cursor-pointer"
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-neutral-100 text-neutral-600 transition-colors"
         >
-          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          <Menu className="w-5 h-5" />
         </button>
       </header>
 
-      {/* MOBILE DRAWER */}
+      {/* MOBILE SIDEBAR MODAL */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -200,41 +193,50 @@ export default function WorkspaceLayout({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="lg:hidden fixed inset-0 z-40 bg-neutral-950/20 backdrop-blur-xs"
+              className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-40 md:hidden"
             />
             <motion.aside
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-              className="lg:hidden fixed top-16 left-0 bottom-0 z-45 w-72 bg-white border-r border-neutral-100 flex flex-col"
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-[280px] bg-white shadow-2xl z-50 flex flex-col md:hidden"
             >
-              <nav className="flex-1 px-4 py-6 space-y-1.5">
+              <div className="h-16 flex items-center justify-between px-6 border-b border-neutral-100">
+                <span className="font-bold text-neutral-900">Menu</span>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                 {navLinks.map((link) => {
-                  const Icon = link.icon;
+                  const active = isActive(link.href, link.exact);
                   return (
                     <Link
                       key={link.name}
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${link.active
-                        ? "text-indigo-600 bg-indigo-50/50 border border-indigo-100/50"
-                        : "text-neutral-500 hover:text-neutral-950 hover:bg-neutral-50/50"
+                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold transition-all ${active
+                          ? "text-indigo-700 bg-indigo-50 border border-indigo-100/50"
+                          : "text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50"
                         }`}
                     >
-                      <Icon className={`w-4 h-4 ${link.active ? "text-indigo-600" : "text-neutral-400"}`} />
+                      <link.icon className={`w-5 h-5 ${active ? "text-indigo-600" : "text-neutral-400"}`} />
                       <span>{link.name}</span>
                     </Link>
                   );
                 })}
               </nav>
-              <div className="p-4 border-t border-neutral-100 bg-neutral-50/30">
+              <div className="p-5 border-t border-neutral-100 bg-neutral-50/50">
                 <Link
                   href="/dashboard"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full rounded-xl border border-neutral-200/80 bg-white px-4 py-2.5 text-xs font-bold text-neutral-700 cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full rounded-xl bg-white border border-neutral-200/80 px-4 py-3 text-sm font-bold text-neutral-700 shadow-sm"
                 >
-                  <span>Leave Workspace</span>
+                  Exit Workspace
                 </Link>
               </div>
             </motion.aside>
@@ -243,10 +245,8 @@ export default function WorkspaceLayout({
       </AnimatePresence>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-y-auto px-6 py-8 lg:p-10 relative">
-        <div className="max-w-9xl mx-auto space-y-8">
-          {children}
-        </div>
+      <main className="flex-1 overflow-y-auto pt-16 md:pt-0 relative bg-[#FAFAFA]">
+        {children}
       </main>
     </div>
   );

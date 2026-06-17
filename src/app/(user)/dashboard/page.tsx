@@ -24,13 +24,12 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "@/features/auth/providers/SessionProvider";
-import { signOut } from "@/api/auth";
+import { signOut } from "@/app/api/auth";
 import { deleteCookie } from "@/utils/session";
 import { toast } from "sonner";
 import { KpiMetrics } from "./components/kpi";
 import { WorkspacesList } from "./components/workspace-list";
 import { DashboardBreadcrumbs } from "./components/breadcrumbs";
-import { ApplicationSettings } from "./components/application-settings";
 import { InvitationsBanner } from "./components/invitations-banner";
 
 const ACTIVITY_COOKIE = "plannerhq_last_activity";
@@ -121,6 +120,15 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Settings Link */}
+            <Link
+              href="/settings"
+              className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-white border border-neutral-200/80 hover:border-neutral-300 hover:bg-neutral-50 shadow-xs active:scale-[0.98] transition-all text-neutral-500 hover:text-neutral-950 cursor-pointer"
+              title="Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Link>
+
             {/* Logout Button */}
             <button
               onClick={() => setShowLogoutConfirm(true)}
@@ -183,7 +191,35 @@ export default function DashboardPage() {
           </div>
         </div>
         <WorkspacesList />
-        <ApplicationSettings />
+
+        {/* Profile Settings Quick Link */}
+        <section className="relative overflow-hidden rounded-3xl border border-neutral-200/50 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-md p-8 shadow-lg shadow-neutral-100/30 flex flex-col sm:flex-row items-center justify-between gap-6 transition-all hover:shadow-xl duration-350">
+          {/* Glow effects */}
+          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-32 h-32 bg-indigo-100/30 dark:bg-indigo-900/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-32 h-32 bg-purple-100/30 dark:bg-purple-900/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="h-14 w-14 rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-800/50 flex items-center justify-center font-extrabold text-2xl select-none shrink-0">
+              {user.displayName.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h3 className="text-lg font-extrabold text-neutral-950 dark:text-white tracking-tight flex items-center gap-2">
+                Profile Settings
+              </h3>
+              <p className="text-xs text-neutral-450 dark:text-neutral-400 font-medium mt-0.5">
+                Customize your display name, theme selection, and notification preferences.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/settings"
+            className="relative z-10 shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-neutral-950 dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-100 text-white dark:text-neutral-950 px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] shadow-sm hover:shadow-md cursor-pointer"
+          >
+            <span>Manage Settings</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </section>
       </main>
 
 

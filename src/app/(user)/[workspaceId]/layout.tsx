@@ -1,21 +1,20 @@
 "use client";
 
 import React, { useEffect, useState, use } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { GetWorkspace } from "@/features/workspace/workspace";
 import { useSession } from "@/features/auth/providers/SessionProvider";
-import { 
-  LayoutDashboard, 
-  Settings, 
-  Users, 
-  ChevronLeft, 
-  Menu, 
-  X, 
-  Sparkles, 
+import {
+  LayoutDashboard,
+  Settings,
+  Users,
+  ChevronLeft,
+  Menu,
+  X,
   ShieldAlert,
   Loader2,
-  FolderOpen
+  MessageSquareIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -105,12 +104,18 @@ export default function WorkspaceLayout({
       href: `/${workspaceId}/settings`,
       icon: Settings,
       active: pathname === `/${workspaceId}/settings`
+    },
+    {
+      name: "Chat",
+      href: `/${workspaceId}/chat`,
+      icon: MessageSquareIcon,
+      active: pathname === `/${workspaceId}/chat`
     }
   ];
 
   return (
     <div className="min-h-screen bg-neutral-50/20 text-neutral-900 font-sans flex flex-col lg:flex-row selection:bg-indigo-500/30">
-      
+
       {/* DESKTOP SIDEBAR */}
       <aside className="hidden lg:flex w-72 border-r border-neutral-200/50 bg-white/80 backdrop-blur-md flex-col shrink-0">
         {/* Workspace Brand Block */}
@@ -138,11 +143,10 @@ export default function WorkspaceLayout({
               <Link
                 key={link.name}
                 href={link.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all relative ${
-                  link.active 
-                    ? "text-indigo-600 bg-indigo-50/50 border border-indigo-100/50" 
-                    : "text-neutral-500 hover:text-neutral-950 hover:bg-neutral-50/50"
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all relative ${link.active
+                  ? "text-indigo-600 bg-indigo-50/50 border border-indigo-100/50"
+                  : "text-neutral-500 hover:text-neutral-950 hover:bg-neutral-50/50"
+                  }`}
               >
                 {link.active && (
                   <motion.div
@@ -215,11 +219,10 @@ export default function WorkspaceLayout({
                       key={link.name}
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
-                        link.active 
-                          ? "text-indigo-600 bg-indigo-50/50 border border-indigo-100/50" 
-                          : "text-neutral-500 hover:text-neutral-950 hover:bg-neutral-50/50"
-                      }`}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${link.active
+                        ? "text-indigo-600 bg-indigo-50/50 border border-indigo-100/50"
+                        : "text-neutral-500 hover:text-neutral-950 hover:bg-neutral-50/50"
+                        }`}
                     >
                       <Icon className={`w-4 h-4 ${link.active ? "text-indigo-600" : "text-neutral-400"}`} />
                       <span>{link.name}</span>
@@ -244,7 +247,7 @@ export default function WorkspaceLayout({
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 overflow-y-auto px-6 py-8 lg:p-10 relative">
-        <div className="max-w-5xl mx-auto space-y-8">
+        <div className="max-w-9xl mx-auto space-y-8">
           {children}
         </div>
       </main>

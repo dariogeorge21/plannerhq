@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Workspace, WorkspaceMember } from "@/types/workspace";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export default function WorkspacePage({
   params: paramsPromise,
@@ -65,7 +65,7 @@ export default function WorkspacePage({
 
   const owner = members.find(m => m.role === 'owner');
 
-  const container = {
+  const container: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
@@ -73,7 +73,7 @@ export default function WorkspacePage({
     }
   };
 
-  const item = {
+  const item: Variants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };

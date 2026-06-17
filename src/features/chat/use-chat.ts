@@ -4,11 +4,11 @@ import { RealtimeChannel } from "@supabase/supabase-js";
 import { ViewMessagesForChannel, SendMessageForChannel } from "./chat";
 import { ViewChannels } from "./channel";
 import { setupPresenceListener, trackUserPresence } from "./presence";
-import { ChannelMessageWithUser, ChatPresenceState } from "./types";
+import { Channel, ChannelMessageWithUser, ChatPresenceState } from "./types";
 
 export function useChat(workspaceId: string, customChannelId?: string) {
   const supabase = createClient();
-  
+
   const [activeChannelId, setActiveChannelId] = useState<string | null>(customChannelId || null);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [messages, setMessages] = useState<ChannelMessageWithUser[]>([]);
@@ -38,7 +38,7 @@ export function useChat(workspaceId: string, customChannelId?: string) {
             .select("*")
             .eq("id", authData.user.id)
             .single();
-          
+
           if (profile) {
             currentUserRef.current = {
               id: profile.id,
@@ -72,14 +72,15 @@ export function useChat(workspaceId: string, customChannelId?: string) {
 
   // 2. Load messages and setup Realtime subscription when channel ID resolves
   useEffect(() => {
-    if (!activeChannelId || !workspaceId) return;
+    const channelId = activeChannelId;
+    if (!channelId || !workspaceId) return;
 
     let isSubscribed = true;
 
-    async function loadInitialMessages() {
+    async function loadInitialMessages(cid: string) {
       try {
         setLoading(true);
-        const { messages: initialMsgs } = await ViewMessagesForChannel(workspaceId, activeChannelId);
+        const { messages: initialMsgs } = await ViewMessagesForChannel(workspaceId, cid);
         if (isSubscribed) {
           setMessages(initialMsgs);
           setHasMore(false);
@@ -91,10 +92,10 @@ export function useChat(workspaceId: string, customChannelId?: string) {
       }
     }
 
-    loadInitialMessages();
+    loadInitialMessages(channelId);
 
     // Create Realtime channel
-    const rtChannel = supabase.channel(`workspace-chat:${activeChannelId}`, {
+    const rtChannel = supabase.channel(`workspace-chat:${channelId}`, {
       config: {
         presence: {
           key: currentUserRef.current?.id || 'unknown',
@@ -113,7 +114,7 @@ export function useChat(workspaceId: string, customChannelId?: string) {
       },
       async (payload) => {
         const newMsg = payload.new as any;
-        
+
         // Fetch user profile details for the new message
         const { data: profile } = await supabase
           .from("profiles")
@@ -150,7 +151,7 @@ export function useChat(workspaceId: string, customChannelId?: string) {
     rtChannel.on("broadcast", { event: "typing" }, (payload) => {
       const p = payload.payload as { user_id: string; display_name: string; typing: boolean };
       if (p.user_id === currentUserRef.current?.id) return;
-      
+
       if (isSubscribed) {
         setTypingUsers((prev) => {
           const newMap = { ...prev };
@@ -182,7 +183,7 @@ export function useChat(workspaceId: string, customChannelId?: string) {
   }, [activeChannelId, workspaceId]);
 
   // Load more placeholder
-  const loadMore = useCallback(async () => {}, []);
+  const loadMore = useCallback(async () => { }, []);
 
   // Send message
   const sendMessage = useCallback(async (content: string) => {

@@ -72,7 +72,7 @@ export function ChatLayout({ workspaceId }: ChatLayoutProps) {
         {/* Chat Window Context */}
         <ChatWindow
           messages={messages}
-          currentUserId={currentUserId}
+          currentUserId={currentUserId ?? undefined}
           loading={loading}
           hasMore={hasMore}
           loadingMore={loadingMore}

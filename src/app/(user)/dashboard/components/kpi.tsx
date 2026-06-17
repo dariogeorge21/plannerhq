@@ -2,9 +2,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MOCK_USER } from "@/data/mock-dashboard";
 import { Layout, Users, Zap } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
-const container = {
+const container: Variants = {
     hidden: { opacity: 0 },
     show: {
         opacity: 1,
@@ -12,7 +12,7 @@ const container = {
     }
 };
 
-const item = {
+const item: Variants = {
     hidden: { opacity: 0, y: 10 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
 };
@@ -71,7 +71,7 @@ export function KpiMetrics() {
                             </div>
                             <div className="flex items-center gap-2 mt-2">
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${metric.trend.toLowerCase() === 'active' ? 'bg-emerald-50 text-emerald-700' :
-                                        'bg-indigo-50 text-indigo-700'
+                                    'bg-indigo-50 text-indigo-700'
                                     }`}>
                                     {metric.trend}
                                 </span>

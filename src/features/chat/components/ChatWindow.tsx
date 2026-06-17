@@ -1,13 +1,13 @@
 // src/features/chat/components/ChatWindow.tsx
 import React, { useRef, useEffect } from "react";
-import { ChatMessageWithUser } from "./types";
 import { MessageBubble } from "./MessageBubble";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, MessageSquareDashed } from "lucide-react";
 import { ChatInput } from "./ChatInput";
+import { ChannelMessageWithUser } from "../types";
 
 interface ChatWindowProps {
-  messages: ChatMessageWithUser[];
+  messages: ChannelMessageWithUser[];
   currentUserId?: string;
   loading: boolean;
   hasMore: boolean;

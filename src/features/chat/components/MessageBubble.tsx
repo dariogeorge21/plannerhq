@@ -1,10 +1,10 @@
 // src/features/chat/components/MessageBubble.tsx
 import React from "react";
-import { ChatMessageWithUser } from "../types";
+import { ChannelMessageWithUser } from "../types";
 import { cn } from "@/lib/utils";
 
 interface MessageBubbleProps {
-  message: ChatMessageWithUser;
+  message: ChannelMessageWithUser;
   isCurrentUser: boolean;
   showAvatar: boolean;
   isConsecutivePrev: boolean;

@@ -15,7 +15,8 @@ import {
   ShieldAlert,
   Loader2,
   MessageSquareIcon,
-  ChevronsLeft
+  ChevronsLeft,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -89,6 +90,7 @@ export default function WorkspaceLayout({
 
   const navLinks = [
     { name: "Overview", href: `/${workspaceId}`, icon: LayoutDashboard, exact: true },
+    { name: "Notes", href: `/${workspaceId}/docs`, icon: FileText, exact: false },
     { name: "Chat", href: `/${workspaceId}/chat`, icon: MessageSquareIcon, exact: false },
     { name: "Members", href: `/${workspaceId}/members`, icon: Users, exact: false },
     { name: "Settings", href: `/${workspaceId}/settings`, icon: Settings, exact: false },

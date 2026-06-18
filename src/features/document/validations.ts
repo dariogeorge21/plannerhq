@@ -43,3 +43,13 @@ export const SaveDocumentContentSchema = z.object({
   documentId: z.string().uuid("Invalid document ID"),
   content: z.any(),
 });
+
+export const CreateVersionSchema = z.object({
+  documentId: z.string().uuid("Invalid document ID"),
+  label: z.string().max(100).optional(),
+});
+
+export const RestoreVersionSchema = z.object({
+  documentId: z.string().uuid("Invalid document ID"),
+  versionId: z.string().uuid("Invalid version ID"),
+});

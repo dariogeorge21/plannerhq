@@ -24,3 +24,17 @@ export interface DocumentContent {
   content: any;
   updated_at: string;
 }
+
+export interface DocumentVersion {
+  id: string;
+  document_id: string;
+  version_number: number;
+  title: string | null;
+  content: any;
+  content_json: any | null;
+  byte_size: number | null;
+  created_by: string | null;
+  label: string | null;
+  is_deleted: boolean;
+  created_at: string;
+}

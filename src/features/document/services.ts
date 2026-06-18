@@ -152,4 +152,89 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
 
     if (error) throw new Error(error.message);
   },
+
+  async listVersions(documentId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from("document_versions")
+      .select("*")
+      .eq("document_id", documentId)
+      .eq("is_deleted", false)
+      .order("version_number", { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async getVersion(versionId: string): Promise<any> {
+    const { data, error } = await supabase
+      .from("document_versions")
+      .select("*")
+      .eq("id", versionId)
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async createVersion(documentId: string, userId: string, label?: string): Promise<any> {
+    const { data: contentData } = await supabase
+      .from("document_content")
+      .select("*")
+      .eq("document_id", documentId)
+      .single();
+
+    if (!contentData || !contentData.content) {
+      throw new Error("No document content found to version");
+    }
+
+    const { data: maxVersionData } = await supabase
+      .from("document_versions")
+      .select("version_number")
+      .eq("document_id", documentId)
+      .order("version_number", { ascending: false })
+      .limit(1)
+      .single();
+      
+    const versionNumber = maxVersionData ? maxVersionData.version_number + 1 : 1;
+    
+    const { data, error } = await supabase
+      .from("document_versions")
+      .insert({
+        document_id: documentId,
+        version_number: versionNumber,
+        content: contentData.content,
+        created_by: userId,
+        label: label || `Version ${versionNumber}`,
+      })
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async restoreVersion(documentId: string, versionId: string): Promise<void> {
+    const { data: versionData } = await supabase
+      .from("document_versions")
+      .select("*")
+      .eq("id", versionId)
+      .single();
+      
+    if (!versionData) throw new Error("Version not found");
+
+    const { error } = await supabase
+      .from("document_content")
+      .upsert({ document_id: documentId, content: versionData.content, updated_at: new Date().toISOString() });
+      
+    if (error) throw new Error(error.message);
+  },
+
+  async deleteVersion(versionId: string): Promise<void> {
+    const { error } = await supabase
+      .from("document_versions")
+      .update({ is_deleted: true })
+      .eq("id", versionId);
+
+    if (error) throw new Error(error.message);
+  },
 });

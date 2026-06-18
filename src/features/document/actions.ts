@@ -11,6 +11,8 @@ import {
   UpdateDocumentSchema,
   ReorderDocumentsSchema,
   SaveDocumentContentSchema,
+  CreateVersionSchema,
+  RestoreVersionSchema,
 } from "./validations";
 
 export async function createSectionAction(payload: unknown) {
@@ -138,6 +140,56 @@ export async function saveDocumentContentAction(payload: unknown, workspaceId: s
     
     await service.saveDocumentContent(data.documentId, data.content);
     // Note: intentionally not revalidating everything for performance on typing autosave
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function createVersionAction(payload: unknown, userId: string) {
+  try {
+    const data = CreateVersionSchema.parse(payload);
+    const supabase = await createClient();
+    const service = createDocumentService(supabase);
+    
+    const version = await service.createVersion(data.documentId, userId, data.label);
+    return { success: true, data: version };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function listVersionsAction(documentId: string) {
+  try {
+    const supabase = await createClient();
+    const service = createDocumentService(supabase);
+    
+    const versions = await service.listVersions(documentId);
+    return { success: true, data: versions };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function restoreVersionAction(payload: unknown) {
+  try {
+    const data = RestoreVersionSchema.parse(payload);
+    const supabase = await createClient();
+    const service = createDocumentService(supabase);
+    
+    await service.restoreVersion(data.documentId, data.versionId);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteVersionAction(versionId: string) {
+  try {
+    const supabase = await createClient();
+    const service = createDocumentService(supabase);
+    
+    await service.deleteVersion(versionId);
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

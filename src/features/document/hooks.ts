@@ -104,3 +104,91 @@ export function useSaveDocumentContent(workspaceId: string) {
     },
   });
 }
+
+export function useUpdateSection(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { sectionId: string; name: string }) =>
+      updateSectionAction(data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sections", workspaceId] }),
+  });
+}
+
+export function useDeleteSection(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (sectionId: string) => deleteSectionAction(sectionId, workspaceId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sections", workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] });
+    },
+  });
+}
+
+export function useReorderSections(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (updates: { id: string; position: number }[]) =>
+      reorderSectionsAction(updates, workspaceId),
+    onMutate: async (updates) => {
+      await queryClient.cancelQueries({ queryKey: ["sections", workspaceId] });
+      const previousSections = queryClient.getQueryData<any[]>(["sections", workspaceId]);
+
+      if (previousSections) {
+        const updatedSections = previousSections.map((section) => {
+          const update = updates.find((u) => u.id === section.id);
+          return update ? { ...section, position: update.position } : section;
+        }).sort((a, b) => a.position - b.position);
+
+        queryClient.setQueryData(["sections", workspaceId], updatedSections);
+      }
+      return { previousSections };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousSections) {
+        queryClient.setQueryData(["sections", workspaceId], context.previousSections);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["sections", workspaceId] });
+    },
+  });
+}
+
+export function useDeleteDocument(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (documentId: string) => deleteDocumentAction(documentId, workspaceId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] }),
+  });
+}
+
+export function useReorderDocuments(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (updates: { id: string; position: number; sectionId: string }[]) =>
+      reorderDocumentsAction(updates, workspaceId),
+    onMutate: async (updates) => {
+      await queryClient.cancelQueries({ queryKey: ["documents", workspaceId] });
+      const previousDocuments = queryClient.getQueryData<any[]>(["documents", workspaceId]);
+
+      if (previousDocuments) {
+        const updatedDocuments = previousDocuments.map((doc) => {
+          const update = updates.find((u) => u.id === doc.id);
+          return update ? { ...doc, position: update.position, section_id: update.sectionId } : doc;
+        }).sort((a, b) => a.position - b.position);
+
+        queryClient.setQueryData(["documents", workspaceId], updatedDocuments);
+      }
+      return { previousDocuments };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousDocuments) {
+        queryClient.setQueryData(["documents", workspaceId], context.previousDocuments);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] });
+    },
+  });
+}

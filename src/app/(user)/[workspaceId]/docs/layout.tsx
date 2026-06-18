@@ -163,7 +163,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             </div>
           ) : (
             sections?.map((section, sIndex) => (
-              <div key={section.id} className="mb-2">
+              <motion.div layout key={section.id} className="mb-2">
                 <div 
                   className="flex items-center justify-between p-2 hover:bg-neutral-100 rounded-xl cursor-pointer group transition-colors"
                   onClick={() => toggleSection(section.id)}
@@ -232,7 +232,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                       className="ml-5 border-l border-neutral-200 pl-3 mt-1 space-y-0.5 overflow-hidden"
                     >
                       {documents?.filter(d => d.section_id === section.id).map((doc, dIndex, arr) => (
-                        <div key={doc.id} className="flex items-center justify-between group p-1.5 hover:bg-indigo-50 rounded-lg transition-colors">
+                        <motion.div layout key={doc.id} className="flex items-center justify-between group p-1.5 hover:bg-indigo-50 rounded-lg transition-colors">
                           <Link 
                             href={`/${workspaceId}/docs/${doc.id}`}
                             className="flex items-center gap-2.5 flex-1 min-w-0 text-sm text-neutral-600 group-hover:text-indigo-700"
@@ -271,7 +271,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                               <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                       {documents?.filter(d => d.section_id === section.id).length === 0 && (
                         <div className="p-2 flex items-center gap-2">
@@ -288,7 +288,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
             ))
           )}
           {sections?.length === 0 && (

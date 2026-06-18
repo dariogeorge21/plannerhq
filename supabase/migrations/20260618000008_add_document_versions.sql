@@ -77,7 +77,7 @@ CREATE POLICY "Admins can hard-delete versions in their workspaces"
     EXISTS (
       SELECT 1 FROM public.documents d
       WHERE d.id = document_versions.document_id
-      AND public.has_workspace_role(d.workspace_id, ARRAY['owner', 'admin'])
+      AND public.is_workspace_admin(d.workspace_id)
     )
   );
 

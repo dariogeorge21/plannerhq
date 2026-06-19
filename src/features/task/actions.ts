@@ -18,7 +18,10 @@ export async function createSectionAction(payload: unknown) {
     const supabase = await createClient();
     const service = createTaskService(supabase);
 
-    const section = await service.createSection(data.workspace_id, data.name);
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error("Unauthorized");
+
+    const section = await service.createSection(data.workspace_id, data.name, userData.user.id);
     revalidatePath(`/${data.workspace_id}/tasks`);
     console.log(section)
     return { success: true, data: section };
@@ -76,6 +79,9 @@ export async function createTaskAction(payload: unknown) {
     const supabase = await createClient();
     const service = createTaskService(supabase);
 
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error("Unauthorized");
+
     const task = await service.createTask(
       data.workspace_id,
       data.section_id || null,
@@ -84,12 +90,14 @@ export async function createTaskAction(payload: unknown) {
       data.status,
       data.priority,
       data.due_date || null,
-      data.parent_id || null
+      data.parent_id || null,
+      userData.user.id
     );
     revalidatePath(`/${data.workspace_id}/tasks`);
     console.log(task)
     return { success: true, data: task };
   } catch (error: any) {
+    console.error("createTaskAction error:", error);
     return { success: false, error: error.message };
   }
 }

@@ -13,20 +13,20 @@ export const createTaskService = (supabase: SupabaseClient) => ({
     return data || [];
   },
 
-  async createSection(workspaceId: string, name: string): Promise<TaskSection> {
+  async createSection(workspaceId: string, name: string, userId: string): Promise<TaskSection> {
     const { data: maxPosData } = await supabase
       .from("task_sections")
       .select("sort_order")
       .eq("workspace_id", workspaceId)
       .order("sort_order", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     const sort_order = maxPosData ? maxPosData.sort_order + 1024 : 1024;
 
     const { data, error } = await supabase
       .from("task_sections")
-      .insert({ workspace_id: workspaceId, name, sort_order })
+      .insert({ workspace_id: workspaceId, name, sort_order, created_by: userId })
       .select()
       .single();
 
@@ -77,7 +77,8 @@ export const createTaskService = (supabase: SupabaseClient) => ({
     status: string = "todo",
     priority: string = "none",
     dueDate: string | null = null,
-    parentId: string | null = null
+    parentId: string | null = null,
+    userId: string
   ): Promise<Task> {
     let sort_order = 1024;
     
@@ -88,7 +89,7 @@ export const createTaskService = (supabase: SupabaseClient) => ({
         .eq("section_id", sectionId)
         .order("sort_order", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
         if (maxPosData) sort_order = maxPosData.sort_order + 1024;
     } else {
         const { data: maxPosData } = await supabase
@@ -98,7 +99,7 @@ export const createTaskService = (supabase: SupabaseClient) => ({
         .eq("workspace_id", workspaceId)
         .order("sort_order", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
         if (maxPosData) sort_order = maxPosData.sort_order + 1024;
     }
 
@@ -114,6 +115,7 @@ export const createTaskService = (supabase: SupabaseClient) => ({
         priority,
         due_date: dueDate,
         sort_order,
+        created_by: userId,
       })
       .select()
       .single();

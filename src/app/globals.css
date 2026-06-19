@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "tippy.js/dist/tippy.css";
+@import "tippy.js/animations/shift-away.css";
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -162,46 +165,63 @@
   }
 }
 
-/* Tiptap Editor & Prose Styling */
+/* ────────────────────────────────────────────────────────────────────────────
+   Tiptap Editor & Prose Styling
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Base ProseMirror reset */
 .ProseMirror {
   outline: none !important;
+  caret-color: #7c3aed;
 }
 
+/* Placeholder */
 .ProseMirror p.is-editor-empty:first-child::before {
-  color: #a3a3a3;
+  color: #c4b5fd40;
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
-  font-style: italic;
 }
 
+/* Text selection */
+.ProseMirror ::selection {
+  background: rgba(124, 58, 237, 0.12);
+}
+
+/* ── Task Lists ─────────────────────────────────────────────────────────────── */
 .ProseMirror ul[data-type="taskList"] {
   list-style: none;
   padding: 0;
+  margin: 0.5em 0;
 }
 
 .ProseMirror ul[data-type="taskList"] li {
   display: flex;
   align-items: flex-start;
-  margin-top: 0.25em;
-  margin-bottom: 0.25em;
+  gap: 0.6rem;
+  margin: 0.3em 0;
+  padding: 0.15em 0;
 }
 
 .ProseMirror ul[data-type="taskList"] li > label {
   flex: 0 0 auto;
-  margin-right: 0.75rem;
   user-select: none;
-  margin-top: 0.25rem;
+  margin-top: 0.15em;
 }
 
 .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
-  width: 1.1em;
-  height: 1.1em;
+  width: 1em;
+  height: 1em;
   border-radius: 4px;
-  border: 1px solid #d4d4d4;
+  border: 1.5px solid #d4d4d4;
   cursor: pointer;
-  accent-color: var(--color-indigo-600);
+  accent-color: #7c3aed;
+  transition: border-color 0.15s;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:hover {
+  border-color: #7c3aed;
 }
 
 .ProseMirror ul[data-type="taskList"] li > div {
@@ -210,21 +230,63 @@
 
 .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
   text-decoration: line-through;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
+/* ── Horizontal Rule ────────────────────────────────────────────────────────── */
 .ProseMirror hr {
   border: none;
-  border-top: 1px solid #e5e5e5;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #e5e7eb 20%, #e5e7eb 80%, transparent);
   margin: 2rem 0;
 }
 
-/* Collaboration Carets */
+/* ── Code Blocks ────────────────────────────────────────────────────────────── */
+.ProseMirror pre {
+  background: #0f0f11;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+  font-size: 0.875em;
+  line-height: 1.7;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.ProseMirror pre code {
+  background: none;
+  color: #e5e7eb;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ── Blockquote ─────────────────────────────────────────────────────────────── */
+.ProseMirror blockquote {
+  border-left: 3px solid #7c3aed;
+  padding-left: 1rem;
+  margin-left: 0;
+  color: #6b7280;
+  font-style: normal;
+}
+
+/* ── Tippy (slash menu, bubble menu) ───────────────────────────────────────── */
+.tippy-box {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.tippy-content {
+  padding: 0 !important;
+}
+
+/* ── Collaboration Carets ───────────────────────────────────────────────────── */
 .collaboration-cursor__caret {
   border-left: 2px solid #0d0d0d;
   border-right: 2px solid #0d0d0d;
-  margin-left: -2px;
-  margin-right: -2px;
+  margin-left: -1px;
+  margin-right: -1px;
   pointer-events: none;
   position: relative;
   word-break: normal;
@@ -237,12 +299,12 @@
   font-size: 11px;
   font-style: normal;
   font-weight: 600;
-  left: -2px;
+  left: -1px;
   line-height: normal;
   padding: 2px 6px;
   position: absolute;
   top: -1.6em;
   user-select: none;
   white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }

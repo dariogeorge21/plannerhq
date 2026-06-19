@@ -2,32 +2,35 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { createLowlight } from "lowlight";
 import { debounce } from "lodash";
 
 import { useDocument, useUpdateDocument } from "@/features/document/hooks";
-import { Loader2, Bold, Italic, Strikethrough, Heading1, Heading2, Heading3, List, ListOrdered, Code, Quote, CheckSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2, FileText } from "lucide-react";
 
-import Collaboration from "@tiptap/extension-collaboration";
-import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { useCollaborationProvider } from "@/features/collaboration/provider";
 import OfflineBanner from "./OfflineBanner";
 import PresenceAvatars from "./PresenceAvatars";
 import VersionHistoryPanel from "./VersionHistoryPanel";
+import EditorToolbar from "./EditorToolbar";
+import { getEditorExtensions } from "@/lib/editor/extensions";
 
-const lowlight = createLowlight();
-
-export default function DocumentEditor({ workspaceId, documentId }: { workspaceId: string; documentId: string }) {
+export default function DocumentEditor({
+  workspaceId,
+  documentId,
+}: {
+  workspaceId: string;
+  documentId: string;
+}) {
   const { data: doc, isLoading: isDocLoading } = useDocument(documentId);
   const updateDocument = useUpdateDocument(workspaceId);
-  
-  const { provider, doc: ydoc, isConnected, isOffline, activeUsers } = useCollaborationProvider(documentId, workspaceId);
+
+  const {
+    provider,
+    doc: ydoc,
+    isConnected,
+    isOffline,
+    activeUsers,
+  } = useCollaborationProvider(documentId, workspaceId);
 
   const [title, setTitle] = useState("");
 
@@ -42,134 +45,130 @@ export default function DocumentEditor({ workspaceId, documentId }: { workspaceI
     [documentId, updateDocument]
   );
 
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTitle(e.target.value);
     debouncedUpdateTitle(e.target.value);
+    e.target.style.height = "auto";
+    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        history: false, // Required for Collaboration
-      }),
-      Placeholder.configure({ placeholder: "Press '/' for commands, or start writing..." }),
-      TaskList,
-      TaskItem.configure({ nested: true }),
-      CodeBlockLowlight.configure({ lowlight }),
-      Collaboration.configure({
-        document: ydoc,
-      }),
-      ...(provider ? [CollaborationCaret.configure({
-        provider: provider.awareness ? provider : null, // Pass provider if it has awareness
-      })] : []),
-    ],
+    extensions: getEditorExtensions(ydoc, provider),
     editorProps: {
       attributes: {
-        class: "prose prose-sm sm:prose lg:prose-lg xl:prose-xl focus:outline-none min-h-[500px] max-w-none text-neutral-800",
+        class: [
+          "prose prose-neutral max-w-none focus:outline-none",
+          "min-h-[500px]",
+          // Headings
+          "prose-headings:font-bold prose-headings:tracking-tight",
+          "prose-h1:text-4xl prose-h1:mb-4 prose-h1:mt-8",
+          "prose-h2:text-2xl prose-h2:mb-3 prose-h2:mt-6",
+          "prose-h3:text-xl prose-h3:mb-2 prose-h3:mt-5",
+          // Paragraphs
+          "prose-p:leading-[1.8] prose-p:text-neutral-700",
+          // Code
+          "prose-pre:bg-neutral-900 prose-pre:text-neutral-50 prose-pre:rounded-xl prose-pre:shadow-lg",
+          "prose-code:bg-neutral-100 prose-code:text-violet-700 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:text-[0.875em] prose-code:font-mono",
+          // Links
+          "prose-a:text-violet-600 hover:prose-a:text-violet-800 prose-a:underline",
+          // Blockquote
+          "prose-blockquote:border-l-violet-400 prose-blockquote:text-neutral-600 prose-blockquote:not-italic",
+          // Lists
+          "prose-ul:marker:text-neutral-400 prose-ol:marker:text-neutral-400",
+          // HR
+          "prose-hr:border-neutral-200",
+        ].join(" "),
       },
     },
   });
 
-  // Since editor and provider might initialize at different times, 
-  // we might need to recreate extensions if provider becomes available,
-  // or just pass provider as early as possible.
-  useEffect(() => {
-    if (editor && provider && !editor.extensionManager.extensions.find(e => e.name === "collaborationCaret")) {
-      // Not cleanly possible to add dynamically in react, but provider is set after mount.
-      // Actually @tiptap/extension-collaboration-caret can update provider.
-    }
-  }, [editor, provider]);
-
+  // ── Loading state ────────────────────────────────────────────────────────────
   if (isDocLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-7 h-7 animate-spin text-violet-400" />
+          <p className="text-sm text-neutral-400 font-medium">Loading document…</p>
+        </div>
       </div>
     );
   }
 
+  // ── Not found ────────────────────────────────────────────────────────────────
   if (!doc) {
     return (
-      <div className="flex h-full items-center justify-center flex-col gap-2">
-        <p className="text-neutral-500">Document not found</p>
+      <div className="flex h-full items-center justify-center flex-col gap-3">
+        <div className="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center">
+          <FileText className="w-6 h-6 text-neutral-400" />
+        </div>
+        <p className="text-neutral-500 font-medium">Document not found</p>
       </div>
     );
   }
 
+  // ── Main ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="h-full w-full flex flex-col max-w-4xl mx-auto py-8 px-8 md:px-12">
+    <div className="h-full w-full flex flex-col overflow-hidden">
       <OfflineBanner isOffline={isOffline} />
-      
-      {/* Document Header */}
-      <div className="mb-4 mt-4 flex items-start justify-between gap-4">
-        <input
-          type="text"
-          value={title}
-          onChange={handleTitleChange}
-          placeholder="Untitled Document"
-          className="flex-1 text-4xl md:text-5xl font-bold bg-transparent border-none outline-none text-neutral-900 placeholder-neutral-300 focus:placeholder-transparent resize-none overflow-hidden"
-          disabled={isOffline}
-        />
-        
-        {/* Presence and Version History */}
-        <div className="flex items-center gap-3">
-          <PresenceAvatars users={activeUsers} />
-          <VersionHistoryPanel documentId={documentId} />
+
+      {/* ── Top-right presence strip ─────────────────────────────────────────── */}
+      <div className="fixed top-4 right-4 flex items-center gap-3 z-50">
+        <div className="flex items-center gap-2 text-xs text-neutral-400 mr-2">
+          {!isConnected && !isOffline && (
+            <span className="flex items-center gap-1 text-amber-500">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span className="text-xs">Connecting…</span>
+            </span>
+          )}
+          {isConnected && (
+            <span
+              className="flex items-center gap-1.5 text-emerald-600 text-xs font-medium"
+              title="Connected to Realtime"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)] animate-pulse" />
+              Live
+            </span>
+          )}
         </div>
+        <PresenceAvatars users={activeUsers} />
+        <VersionHistoryPanel documentId={documentId} />
       </div>
 
-      <div className="flex items-center gap-2 mb-8 text-xs text-neutral-400">
-        {!isConnected && !isOffline && (
-          <span className="flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Connecting...</span>
-        )}
-        {isConnected && <span>Connected to Realtime</span>}
-      </div>
+      {/* ── Scrollable document area ─────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Document inner container */}
+        <div className="max-w-[800px] mx-auto px-6 sm:px-10 md:px-14 lg:px-16 pb-32">
+          {/* Document title */}
+          <div className="pt-16 pb-6">
+            <textarea
+              value={title}
+              onChange={handleTitleChange}
+              placeholder="Untitled"
+              rows={1}
+              disabled={isOffline}
+              className="
+                w-full bg-transparent border-none outline-none resize-none overflow-hidden
+                text-[2.6rem] sm:text-[3rem] font-black tracking-tight leading-tight
+                text-neutral-900 placeholder-neutral-300
+                transition-colors duration-200
+                disabled:opacity-50
+              "
+              style={{ minHeight: "64px" }}
+            />
+          </div>
 
-      {/* Toolbar (Sticky) */}
-      {editor && (
-        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 bg-white/90 backdrop-blur-md p-2 rounded-xl border border-neutral-200/60 shadow-sm mb-6">
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("bold") ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleBold().run()} disabled={isOffline}>
-            <Bold className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("italic") ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleItalic().run()} disabled={isOffline}>
-            <Italic className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("strike") ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleStrike().run()} disabled={isOffline}>
-            <Strikethrough className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-6 bg-neutral-200 mx-1" />
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("heading", { level: 1 }) ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} disabled={isOffline}>
-            <Heading1 className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("heading", { level: 2 }) ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} disabled={isOffline}>
-            <Heading2 className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("heading", { level: 3 }) ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} disabled={isOffline}>
-            <Heading3 className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-6 bg-neutral-200 mx-1" />
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("bulletList") ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleBulletList().run()} disabled={isOffline}>
-            <List className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("orderedList") ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleOrderedList().run()} disabled={isOffline}>
-            <ListOrdered className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("taskList") ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleTaskList().run()} disabled={isOffline}>
-            <CheckSquare className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-6 bg-neutral-200 mx-1" />
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("codeBlock") ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleCodeBlock().run()} disabled={isOffline}>
-            <Code className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-lg ${editor.isActive("blockquote") ? "bg-indigo-50 text-indigo-700" : ""}`} onClick={() => editor.chain().focus().toggleBlockquote().run()} disabled={isOffline}>
-            <Quote className="w-4 h-4" />
-          </Button>
+          {/* Formatting toolbar */}
+          <EditorToolbar editor={editor} />
+
+          {/* Editor content */}
+          <div
+            className={`transition-opacity duration-300 ${
+              isOffline ? "opacity-40 pointer-events-none" : "opacity-100"
+            }`}
+          >
+            <EditorContent editor={editor} />
+          </div>
         </div>
-      )}
-
-      {/* Editor Content */}
-      <div className={`flex-1 pb-32 ${isOffline ? 'opacity-60 pointer-events-none' : ''}`}>
-        <EditorContent editor={editor} />
       </div>
     </div>
   );

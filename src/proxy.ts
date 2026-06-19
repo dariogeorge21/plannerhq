@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const ACTIVITY_COOKIE = "plannerhq_last_activity";
 const INACTIVITY_TIMEOUT = 24 * 60 * 60; // 24 hours in seconds
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,

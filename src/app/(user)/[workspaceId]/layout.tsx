@@ -16,7 +16,9 @@ import {
   Loader2,
   MessageSquareIcon,
   ChevronsLeft,
-  FileText
+  FileText,
+  SquareKanban
+
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -92,6 +94,7 @@ export default function WorkspaceLayout({
     { name: "Overview", href: `/${workspaceId}`, icon: LayoutDashboard, exact: true },
     { name: "Notes", href: `/${workspaceId}/docs`, icon: FileText, exact: false },
     { name: "Chat", href: `/${workspaceId}/chat`, icon: MessageSquareIcon, exact: false },
+    { name: "Tasks", href: `/${workspaceId}/tasks`, icon: SquareKanban, exact: false },
     { name: "Members", href: `/${workspaceId}/members`, icon: Users, exact: false },
     { name: "Settings", href: `/${workspaceId}/settings`, icon: Settings, exact: false },
   ];
@@ -138,8 +141,8 @@ export default function WorkspaceLayout({
                 key={link.name}
                 href={link.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${active
-                    ? "bg-indigo-50/80 text-indigo-700"
-                    : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+                  ? "bg-indigo-50/80 text-indigo-700"
+                  : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
                   }`}
               >
                 <link.icon className={`w-5 h-5 shrink-0 ${active ? "text-indigo-600" : "text-neutral-400 group-hover:text-neutral-600"}`} />
@@ -222,8 +225,8 @@ export default function WorkspaceLayout({
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold transition-all ${active
-                          ? "text-indigo-700 bg-indigo-50 border border-indigo-100/50"
-                          : "text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50"
+                        ? "text-indigo-700 bg-indigo-50 border border-indigo-100/50"
+                        : "text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50"
                         }`}
                     >
                       <link.icon className={`w-5 h-5 ${active ? "text-indigo-600" : "text-neutral-400"}`} />

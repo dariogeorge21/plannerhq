@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { 
   useSections, 
   useDocuments, 
@@ -27,19 +27,21 @@ import {
   ArrowDown,
   Trash2,
   Edit2,
-  MoreVertical
+  MoreHorizontal
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
+  const pathname = usePathname();
   const workspaceId = params?.workspaceId as string;
   const { data: sections, isLoading: sectionsLoading } = useSections(workspaceId);
   const { data: documents } = useDocuments(workspaceId);
@@ -68,8 +70,17 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   const [deleteTarget, setDeleteTarget] = useState<{ id: string, type: 'section' | 'document', name: string } | null>(null);
 
   const toggleSection = (id: string) => {
-    setExpandedSections(prev => ({ ...prev, [id]: !prev[id] }));
+    setExpandedSections(prev => ({ ...prev, [id]: prev[id] === undefined ? false : !prev[id] }));
   };
+
+  // Initialize expanded state for all sections (default true)
+  React.useEffect(() => {
+    if (sections && Object.keys(expandedSections).length === 0) {
+      const initial: Record<string, boolean> = {};
+      sections.forEach(s => initial[s.id] = true);
+      setExpandedSections(initial);
+    }
+  }, [sections]);
 
   const handleCreateSectionSubmit = () => {
     if (sectionName.trim()) {
@@ -128,7 +139,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
   const moveDocument = (sectionId: string, docIndex: number, direction: 'up' | 'down') => {
     if (!documents) return;
-    const sectionDocs = documents.filter(d => d.section_id === sectionId);
+    const sectionDocs = documents.filter(d => d.section_id === sectionId).sort((a,b) => a.position - b.position);
     if (direction === 'up' && docIndex > 0) {
       const temp = sectionDocs[docIndex];
       sectionDocs[docIndex] = sectionDocs[docIndex - 1];
@@ -146,155 +157,158 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] md:h-screen w-full overflow-hidden">
+    <div className="flex h-[calc(100vh-64px)] md:h-screen w-full overflow-hidden bg-[#FAFAFA]">
       {/* Secondary Sidebar for Notes */}
-      <aside className="w-72 border-r border-neutral-200 bg-neutral-50/50 flex flex-col h-full flex-shrink-0 relative">
-        <div className="p-4 border-b border-neutral-200 flex items-center justify-between bg-white shadow-sm z-10">
-          <h2 className="font-bold text-neutral-800">Notes & Docs</h2>
-          <Button variant="outline" size="sm" onClick={() => setIsSectionModalOpen(true)} className="h-8 gap-1 rounded-lg">
-            <Plus className="w-3.5 h-3.5" />
-            <span className="text-xs">Section</span>
+      <aside className="w-[300px] border-r border-neutral-200/60 bg-white flex flex-col h-full flex-shrink-0 relative z-10 shadow-sm">
+        <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-white">
+          <h2 className="font-extrabold tracking-tight text-neutral-900 text-lg">Docs</h2>
+          <Button variant="ghost" size="icon" onClick={() => setIsSectionModalOpen(true)} className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 rounded-lg">
+            <Plus className="w-5 h-5" />
           </Button>
         </div>
-        <div className="flex-1 overflow-y-auto p-3 scrollbar-thin scrollbar-thumb-neutral-200">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-neutral-200">
           {sectionsLoading ? (
             <div className="flex justify-center p-8">
               <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
-            sections?.map((section, sIndex) => (
-              <motion.div layout key={section.id} className="mb-2">
-                <div 
-                  className="flex items-center justify-between p-2 hover:bg-neutral-100 rounded-xl cursor-pointer group transition-colors"
-                  onClick={() => toggleSection(section.id)}
-                >
-                  <div className="flex items-center gap-2.5 text-sm font-semibold text-neutral-700">
-                    <motion.div animate={{ rotate: expandedSections[section.id] ? 90 : 0 }}>
-                      <ChevronRight className="w-4 h-4 text-neutral-400" />
-                    </motion.div>
-                    <Folder className="w-4.5 h-4.5 text-indigo-500" />
-                    <span className="truncate max-w-[120px]">{section.name}</span>
+            sections?.map((section, sIndex) => {
+              const isExpanded = expandedSections[section.id];
+              const sectionDocs = documents?.filter(d => d.section_id === section.id).sort((a,b) => a.position - b.position) || [];
+
+              return (
+                <div key={section.id} className="flex flex-col">
+                  <div 
+                    className="flex items-center justify-between group cursor-pointer mb-1"
+                    onClick={() => toggleSection(section.id)}
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <Button variant="ghost" size="icon" className="h-5 w-5 p-0 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-md">
+                        {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                      </Button>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate group-hover:text-neutral-900 transition-colors">
+                        {section.name}
+                      </h3>
+                    </div>
+                    
+                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 rounded-md hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700" 
+                        onClick={(e) => { e.stopPropagation(); moveSection(sIndex, 'up'); }}
+                        disabled={sIndex === 0}
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 rounded-md hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700" 
+                        onClick={(e) => { e.stopPropagation(); moveSection(sIndex, 'down'); }}
+                        disabled={sIndex === sections.length - 1}
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 rounded-md hover:bg-indigo-50 hover:text-indigo-600" 
+                        onClick={(e) => { e.stopPropagation(); setSelectedSectionId(section.id); setIsDocModalOpen(true); }}
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700" onClick={(e) => e.stopPropagation()}>
+                            <MoreHorizontal className="w-3.5 h-3.5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-40 rounded-xl">
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setEditSectionId(section.id); setEditSectionName(section.name); setIsEditSectionModalOpen(true); }} className="rounded-lg">
+                            <Edit2 className="w-4 h-4 mr-2" /> Rename
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section', name: section.name }); setDeleteModalOpen(true); }} className="text-red-600 focus:text-red-700 rounded-lg">
+                            <Trash2 className="w-4 h-4 mr-2" /> Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-all gap-0.5">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7 rounded-lg hover:bg-neutral-200 text-neutral-500 hover:text-neutral-700" 
-                      onClick={(e) => { e.stopPropagation(); moveSection(sIndex, 'up'); }}
-                      disabled={sIndex === 0}
-                      title="Move Up"
-                    >
-                      <ArrowUp className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7 rounded-lg hover:bg-neutral-200 text-neutral-500 hover:text-neutral-700" 
-                      onClick={(e) => { e.stopPropagation(); moveSection(sIndex, 'down'); }}
-                      disabled={sIndex === sections.length - 1}
-                      title="Move Down"
-                    >
-                      <ArrowDown className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-7 w-7 rounded-lg hover:bg-indigo-50 hover:text-indigo-600" 
-                      onClick={(e) => { e.stopPropagation(); setSelectedSectionId(section.id); setIsDocModalOpen(true); }}
-                      title="New Document"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg hover:bg-neutral-200 text-neutral-500 hover:text-neutral-700" onClick={(e) => e.stopPropagation()}>
-                          <MoreVertical className="w-3.5 h-3.5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setEditSectionId(section.id); setEditSectionName(section.name); setIsEditSectionModalOpen(true); }}>
-                          <Edit2 className="w-4 h-4 mr-2" /> Rename
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setDeleteTarget({ id: section.id, type: 'section', name: section.name }); setDeleteModalOpen(true); }} className="text-red-600 focus:text-red-700">
-                          <Trash2 className="w-4 h-4 mr-2" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-                
-                <AnimatePresence>
-                  {expandedSections[section.id] && (
-                    <motion.div 
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="ml-5 border-l border-neutral-200 pl-3 mt-1 space-y-0.5 overflow-hidden"
-                    >
-                      {documents?.filter(d => d.section_id === section.id).map((doc, dIndex, arr) => (
-                        <motion.div layout key={doc.id} className="flex items-center justify-between group p-1.5 hover:bg-indigo-50 rounded-lg transition-colors">
-                          <Link 
-                            href={`/${workspaceId}/docs/${doc.id}`}
-                            className="flex items-center gap-2.5 flex-1 min-w-0 text-sm text-neutral-600 group-hover:text-indigo-700"
-                          >
-                            <FileText className="w-4 h-4 text-neutral-400 group-hover:text-indigo-500 transition-colors flex-shrink-0" />
-                            <span className="truncate">{doc.title}</span>
-                          </Link>
-                          <div className="flex items-center opacity-0 group-hover:opacity-100 transition-all gap-0.5">
+                  
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="flex flex-col gap-0.5 overflow-hidden ml-2 border-l border-neutral-100 pl-2"
+                      >
+                        {sectionDocs.map((doc, dIndex, arr) => {
+                          const isActive = pathname.includes(`/docs/${doc.id}`);
+                          return (
+                            <div key={doc.id} className="flex items-center justify-between group rounded-lg transition-colors">
+                              <Link 
+                                href={`/${workspaceId}/docs/${doc.id}`}
+                                className={`flex items-center gap-2.5 flex-1 min-w-0 text-sm py-1.5 px-2 rounded-lg transition-colors ${
+                                  isActive 
+                                    ? 'bg-indigo-50 text-indigo-700 font-semibold' 
+                                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+                                }`}
+                              >
+                                <FileText className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-indigo-600' : 'text-neutral-400'}`} />
+                                <span className="truncate">{doc.title}</span>
+                              </Link>
+                              
+                              <div className="flex items-center opacity-0 group-hover:opacity-100 transition-all gap-0.5 pr-1">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-neutral-200 text-neutral-400 hover:text-neutral-700">
+                                      <MoreHorizontal className="w-3.5 h-3.5" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-40 rounded-xl">
+                                    <DropdownMenuItem onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveDocument(section.id, dIndex, 'up'); }} disabled={dIndex === 0} className="rounded-lg">
+                                      <ArrowUp className="w-4 h-4 mr-2" /> Move Up
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveDocument(section.id, dIndex, 'down'); }} disabled={dIndex === arr.length - 1} className="rounded-lg">
+                                      <ArrowDown className="w-4 h-4 mr-2" /> Move Down
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: doc.id, type: 'document', name: doc.title }); setDeleteModalOpen(true); }} className="text-red-600 focus:text-red-700 rounded-lg">
+                                      <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {sectionDocs.length === 0 && (
+                          <div className="py-1 px-2">
                             <Button 
                               variant="ghost" 
-                              size="icon" 
-                              className="h-6 w-6 rounded-md hover:bg-neutral-200 text-neutral-500 hover:text-neutral-700" 
-                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveDocument(section.id, dIndex, 'up'); }}
-                              disabled={dIndex === 0}
-                              title="Move Up"
+                              size="sm" 
+                              className="h-7 px-2 text-xs font-medium text-neutral-400 hover:text-indigo-600 hover:bg-indigo-50 justify-start w-full rounded-md"
+                              onClick={() => { setSelectedSectionId(section.id); setIsDocModalOpen(true); }}
                             >
-                              <ArrowUp className="w-3 h-3" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-6 w-6 rounded-md hover:bg-neutral-200 text-neutral-500 hover:text-neutral-700" 
-                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); moveDocument(section.id, dIndex, 'down'); }}
-                              disabled={dIndex === arr.length - 1}
-                              title="Move Down"
-                            >
-                              <ArrowDown className="w-3 h-3" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-6 w-6 rounded-md hover:bg-red-50 text-neutral-400 hover:text-red-600" 
-                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: doc.id, type: 'document', name: doc.title }); setDeleteModalOpen(true); }}
-                              title="Delete"
-                            >
-                              <Trash2 className="w-3 h-3" />
+                              <Plus className="w-3 h-3 mr-1.5" /> Add page
                             </Button>
                           </div>
-                        </motion.div>
-                      ))}
-                      {documents?.filter(d => d.section_id === section.id).length === 0 && (
-                        <div className="p-2 flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-7 px-2 text-xs text-neutral-400 hover:text-indigo-600 justify-start w-full"
-                            onClick={() => { setSelectedSectionId(section.id); setIsDocModalOpen(true); }}
-                          >
-                            <Plus className="w-3 h-3 mr-1" /> Add Page
-                          </Button>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ))
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            })
           )}
-          {sections?.length === 0 && (
-            <div className="text-center p-8">
+          {sections?.length === 0 && !sectionsLoading && (
+            <div className="text-center p-8 bg-neutral-50/50 rounded-2xl border border-dashed border-neutral-200 mt-4">
               <Folder className="w-8 h-8 text-neutral-300 mx-auto mb-3" />
-              <p className="text-sm text-neutral-500 mb-4">No sections yet</p>
+              <p className="text-sm font-medium text-neutral-900 mb-1">No sections yet</p>
+              <p className="text-xs text-neutral-500 mb-4">Create a section to organize your docs</p>
               <Button variant="default" size="sm" onClick={() => setIsSectionModalOpen(true)} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">
                 Create Section
               </Button>
@@ -302,15 +316,16 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           )}
         </div>
       </aside>
-      <main className="flex-1 overflow-y-auto bg-white shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.05)] z-20">
+      
+      <main className="flex-1 overflow-y-auto bg-white z-20">
         {children}
       </main>
 
       {/* Modals */}
       <Dialog open={isSectionModalOpen} onOpenChange={setIsSectionModalOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border-neutral-200/60 shadow-xl">
           <DialogHeader>
-            <DialogTitle>Create New Section</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">Create New Section</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input 
@@ -319,19 +334,20 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               onChange={(e) => setSectionName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateSectionSubmit()}
               autoFocus
+              className="rounded-xl border-neutral-200/60 focus-visible:ring-indigo-500"
             />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsSectionModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateSectionSubmit} disabled={!sectionName.trim()}>Create</Button>
+            <Button variant="ghost" onClick={() => setIsSectionModalOpen(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleCreateSectionSubmit} disabled={!sectionName.trim()} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">Create Section</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
       <Dialog open={isEditSectionModalOpen} onOpenChange={setIsEditSectionModalOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border-neutral-200/60 shadow-xl">
           <DialogHeader>
-            <DialogTitle>Rename Section</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">Rename Section</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input 
@@ -340,19 +356,20 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               onChange={(e) => setEditSectionName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleEditSectionSubmit()}
               autoFocus
+              className="rounded-xl border-neutral-200/60 focus-visible:ring-indigo-500"
             />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsEditSectionModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleEditSectionSubmit} disabled={!editSectionName.trim()}>Save</Button>
+            <Button variant="ghost" onClick={() => setIsEditSectionModalOpen(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleEditSectionSubmit} disabled={!editSectionName.trim()} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isDocModalOpen} onOpenChange={setIsDocModalOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl border-neutral-200/60 shadow-xl">
           <DialogHeader>
-            <DialogTitle>Create New Document</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">Create New Document</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input 
@@ -361,11 +378,12 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               onChange={(e) => setDocTitle(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateDocSubmit()}
               autoFocus
+              className="rounded-xl border-neutral-200/60 focus-visible:ring-indigo-500"
             />
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsDocModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreateDocSubmit} disabled={!docTitle.trim()}>Create</Button>
+            <Button variant="ghost" onClick={() => setIsDocModalOpen(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleCreateDocSubmit} disabled={!docTitle.trim()} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">Create Document</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

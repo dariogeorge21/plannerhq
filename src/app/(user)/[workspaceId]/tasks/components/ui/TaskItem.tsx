@@ -1,25 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { Task } from "@/features/task/types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, MoreHorizontal, Eye, EyeOff } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { GripVertical, MoreHorizontal, CheckCircle2, Clock, CalendarDays, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useToggleTaskCompletion, useDeleteTask, useMarkTaskReviewed } from "@/features/task/hooks";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
+import { useToggleTaskCompletion, useDeleteTask, useMarkTaskReviewed, useUpdateTask } from "@/features/task/hooks";
+import { motion } from "framer-motion";
+import { ConfirmDeleteModal } from "@/components/ui/confirm-delete-modal";
+import { useState } from "react";
 
 interface TaskItemProps {
   task: Task;
   workspaceId: string;
   userId: string;
+  isKanban?: boolean;
 }
 
-export function TaskItem({ task, workspaceId, userId }: TaskItemProps) {
+export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskItemProps) {
   const toggleCompletion = useToggleTaskCompletion(workspaceId);
   const deleteTask = useDeleteTask(workspaceId);
+  const updateTask = useUpdateTask(workspaceId);
   const markReviewed = useMarkTaskReviewed(workspaceId);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const {
     attributes,
@@ -28,22 +33,22 @@ export function TaskItem({ task, workspaceId, userId }: TaskItemProps) {
     transform,
     transition,
     isDragging
-  } = useSortable({ id: task.id });
+  } = useSortable({ id: task.id, data: { type: "Task", task } });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 100 : 1,
   };
 
-  const handleToggle = (checked: boolean) => {
-    toggleCompletion.mutate({ taskId: task.id, completed: checked });
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleCompletion.mutate({ taskId: task.id, completed: !task.completed });
   };
 
   const handleDelete = () => {
-    if (confirm("Delete this task?")) {
-      deleteTask.mutate(task.id);
-    }
+    setIsDeleteDialogOpen(true);
   };
 
   const handleReview = () => {
@@ -52,57 +57,254 @@ export function TaskItem({ task, workspaceId, userId }: TaskItemProps) {
 
   const hasReviewed = task.reviewed_by?.includes(userId);
 
+  // Status mapping
+  const statusColors = {
+    todo: "bg-neutral-200",
+    in_progress: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]",
+    done: "bg-emerald-500",
+    blocked: "bg-red-500",
+    cancelled: "bg-neutral-300"
+  };
+
+  // Priority mapping
+  const priorityStyles = {
+    none: "",
+    low: "bg-blue-50 text-blue-700 border-blue-200",
+    medium: "bg-amber-50 text-amber-700 border-amber-200",
+    high: "bg-orange-50 text-orange-700 border-orange-200",
+    urgent: "bg-red-500 text-white border-red-600"
+  };
+
+  const priorityLabels = {
+    none: "",
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    urgent: "Urgent"
+  };
+
+  // Due date formatting (simplified)
+  const formatDueDate = (dateString: string | null) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (date.toDateString() === today.toDateString()) return "Today";
+    if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow";
+    
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
+
+  const formattedDate = formatDueDate(task.due_date);
+  const isOverdue = task.due_date && new Date(task.due_date) < new Date(new Date().setHours(0,0,0,0)) && !task.completed;
+
+  if (isKanban) {
+    return (
+      <>
+      <div 
+        ref={setNodeRef} 
+        style={style} 
+        className={`group flex flex-col gap-2 p-3 bg-white border ${task.completed ? 'border-neutral-200/50 bg-neutral-50/50' : 'border-neutral-200/80'} rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-grab active:cursor-grabbing`}
+        {...attributes} 
+        {...listeners}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            <button 
+              onClick={handleToggle}
+              className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                task.completed 
+                  ? 'bg-indigo-500 border-indigo-500 text-white' 
+                  : 'border-neutral-300 hover:border-indigo-400 text-transparent hover:text-indigo-200 bg-white'
+              }`}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+            </button>
+            <div className="flex flex-col min-w-0">
+              <span className={`text-sm font-semibold truncate ${task.completed ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>
+                {task.title}
+              </span>
+              {task.description && (
+                <span className="text-xs text-neutral-500 line-clamp-2 mt-0.5">{task.description}</span>
+              )}
+            </div>
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 flex-shrink-0 text-neutral-400 hover:text-neutral-900">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 rounded-xl">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="rounded-lg">Change Status</DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent className="rounded-xl">
+                    <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, status: 'todo' })}>Todo</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, status: 'in_progress' })}>In Progress</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, status: 'blocked' })}>Blocked</DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="rounded-lg">Set Priority</DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent className="rounded-xl">
+                    <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'none' })}>None</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'low' })}>Low</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'medium' })}>Medium</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'high' })}>High</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'urgent' })}>Urgent</DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600 rounded-lg">Delete Task</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          <div className={`w-2 h-2 rounded-full ${statusColors[task.status]}`} title={task.status.replace('_', ' ')} />
+          
+          {task.priority !== 'none' && (
+            <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md border ${priorityStyles[task.priority]}`}>
+              {priorityLabels[task.priority]}
+            </span>
+          )}
+
+          {formattedDate && (
+            <div className={`flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-md border ${isOverdue ? 'bg-red-50 text-red-600 border-red-200' : 'bg-neutral-50 text-neutral-600 border-neutral-200'}`}>
+              <CalendarDays className="w-3 h-3 mr-1" />
+              {formattedDate}
+            </div>
+          )}
+          
+          {hasReviewed && (
+            <div className="flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-100" title="You reviewed this">
+              <Eye className="w-3 h-3 mr-1" /> Reviewed
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <ConfirmDeleteModal 
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onConfirm={() => {
+          deleteTask.mutate(task.id);
+          setIsDeleteDialogOpen(false);
+        }}
+        title="Delete Task"
+        description="Are you sure you want to delete this task? This action cannot be undone."
+      />
+      </>
+    );
+  }
+
+  // List View
   return (
+    <>
     <div 
       ref={setNodeRef} 
       style={style} 
-      className="flex items-center gap-3 p-2 bg-background border rounded-md shadow-sm group hover:border-border/80 transition-colors"
+      className={`group flex items-center gap-3 p-2.5 bg-white border ${task.completed ? 'border-neutral-200/40 bg-neutral-50/30' : 'border-neutral-200/80'} rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all`}
     >
-      <div {...attributes} {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 text-muted-foreground flex-shrink-0">
+      <div {...attributes} {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 text-neutral-400 p-1 hover:bg-neutral-100 rounded-md transition-all flex-shrink-0">
         <GripVertical className="h-4 w-4" />
       </div>
       
-      <Checkbox 
-        checked={task.completed} 
-        onCheckedChange={handleToggle}
-        className="flex-shrink-0"
-      />
+      <button 
+        onClick={handleToggle}
+        className={`flex-shrink-0 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+          task.completed 
+            ? 'bg-indigo-500 border-indigo-500 text-white' 
+            : 'border-neutral-300 hover:border-indigo-400 text-transparent hover:text-indigo-200'
+        }`}
+      >
+        <CheckCircle2 className="w-3.5 h-3.5" />
+      </button>
       
-      <div className={`flex-1 min-w-0 ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-        <p className="text-sm font-medium truncate">{task.title}</p>
-        {task.description && (
-          <p className="text-xs text-muted-foreground truncate">{task.description}</p>
-        )}
+      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${statusColors[task.status]}`} title={task.status.replace('_', ' ')} />
+
+      <div className={`flex-1 min-w-0 flex items-center gap-2 ${task.completed ? 'opacity-60' : ''}`}>
+        <span className={`text-sm font-semibold truncate ${task.completed ? 'line-through text-neutral-500' : 'text-neutral-900'}`}>
+          {task.title}
+        </span>
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        {hasReviewed ? (
-          <div className="flex items-center text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full" title="You reviewed this">
-            <Eye className="h-3 w-3 mr-1" /> Reviewed
-          </div>
-        ) : (
-          <Button variant="ghost" size="sm" className="h-7 text-xs opacity-0 group-hover:opacity-100" onClick={handleReview}>
-            Mark Reviewed
-          </Button>
+        {task.priority !== 'none' && (
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${priorityStyles[task.priority]}`}>
+            {priorityLabels[task.priority]}
+          </span>
         )}
 
-        {task.priority !== 'none' && (
-          <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
-            {task.priority}
-          </span>
+        {formattedDate && (
+          <div className={`flex items-center text-xs font-medium px-2 py-0.5 rounded-md border ${isOverdue ? 'bg-red-50 text-red-600 border-red-200' : 'bg-neutral-50 text-neutral-500 border-neutral-200'}`}>
+            <CalendarDays className="w-3.5 h-3.5 mr-1.5" />
+            {formattedDate}
+          </div>
+        )}
+
+        {hasReviewed ? (
+          <div className="flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100" title="You reviewed this">
+            <Eye className="w-3 h-3 mr-1" /> Reviewed
+          </div>
+        ) : (
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 text-neutral-500 hover:text-indigo-600" onClick={handleReview}>
+            Review
+          </Button>
         )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100">
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-neutral-900">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleDelete} className="text-destructive">Delete Task</DropdownMenuItem>
+          <DropdownMenuContent align="end" className="w-48 rounded-xl">
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="rounded-lg">Change Status</DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="rounded-xl">
+                  <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, status: 'todo' })}>Todo</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, status: 'in_progress' })}>In Progress</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, status: 'blocked' })}>Blocked</DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="rounded-lg">Set Priority</DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="rounded-xl">
+                  <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'none' })}>None</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'low' })}>Low</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'medium' })}>Medium</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'high' })}>High</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateTask.mutate({ id: task.id, priority: 'urgent' })}>Urgent</DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600 rounded-lg">Delete Task</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </div>
+    <ConfirmDeleteModal 
+      isOpen={isDeleteDialogOpen}
+      onClose={() => setIsDeleteDialogOpen(false)}
+      onConfirm={() => {
+        deleteTask.mutate(task.id);
+        setIsDeleteDialogOpen(false);
+      }}
+      title="Delete Task"
+      description="Are you sure you want to delete this task? This action cannot be undone."
+    />
+    </>
   );
 }

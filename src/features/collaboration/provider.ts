@@ -1,13 +1,16 @@
 import * as Y from "yjs";
 import { SupabaseProvider } from "@supabase-labs/y-supabase";
-import { useSupabase } from "@/hooks/useSupabase";
-import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState, useMemo } from "react";
 import { createAwarenessUser } from "./awareness";
 import { AwarenessState } from "./types";
 
 export function useCollaborationProvider(documentId: string, workspaceId: string) {
-  const supabase = useSupabase();
+  // Use useMemo to ensure we only create the client once
+  const supabase = useMemo(() => createClient(), []);
+  
   const [provider, setProvider] = useState<SupabaseProvider | null>(null);
+  // Y.Doc should also be created once per document
   const [doc] = useState(() => new Y.Doc());
   const [isConnected, setIsConnected] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
@@ -18,10 +21,8 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
 
     const room = `doc:${workspaceId}:${documentId}`;
     
-    // We try to match the @supabase-labs/y-supabase signature based on user prompt and standard signature.
     let p: SupabaseProvider;
     try {
-      // In some versions, the signature is (doc, supabase, { channel, id, tableName, columnName })
       p = new SupabaseProvider(doc, supabase, {
         channel: room,
         id: documentId,
@@ -29,7 +30,6 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
         columnName: "content",
       } as any);
     } catch (e) {
-      // Fallback to prompt's format if it's an older or different version
       p = new (SupabaseProvider as any)(room, doc, supabase, {
         persistence: true,
       });
@@ -50,11 +50,9 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
       else if (event.status === "disconnected") handleDisconnect();
     });
 
-    // Fallbacks if the provider uses different event names
     p.on("connect", handleConnect);
     p.on("disconnect", handleDisconnect);
 
-    // Set Awareness info
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         const userAwareness = createAwarenessUser(data.user);
@@ -64,7 +62,6 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
       }
     });
 
-    // Listen to awareness changes
     if (p.awareness) {
       p.awareness.on("change", () => {
         const states = p.awareness.getStates();

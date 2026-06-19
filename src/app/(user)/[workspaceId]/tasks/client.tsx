@@ -152,7 +152,7 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
                 <LayoutGrid className="w-4 h-4 mr-1.5" /> Board
               </Button>
             </div>
-            <Button onClick={handleCreateSection} className="h-10 rounded-xl shadow-md bg-indigo-600 hover:bg-indigo-700">
+            <Button onClick={() => setIsCreateModalOpen(true)} className="h-10 rounded-xl shadow-md bg-indigo-600 hover:bg-indigo-700">
               <Plus className="mr-2 h-4 w-4" />
               Add Section
             </Button>
@@ -166,41 +166,47 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
           transition={{ duration: 0.4 }}
           className="grid gap-4 md:grid-cols-3"
         >
-          <Card className="border-neutral-200/60 shadow-sm rounded-2xl bg-white">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-5">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-500">Total Tasks</CardTitle>
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                <ListTodo className="w-4 h-4 text-blue-600" />
-              </div>
-            </CardHeader>
-            <CardContent className="px-5 pb-4">
-              <div className="text-2xl font-extrabold text-neutral-900">{totalTasks}</div>
-            </CardContent>
-          </Card>
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="glass-card border-white/20 shadow-sm rounded-3xl h-full">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 pt-5 px-6">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-500">Total Tasks</CardTitle>
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100">
+                  <ListTodo className="w-5 h-5 text-blue-600" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-5">
+                <div className="text-3xl font-extrabold text-neutral-900">{totalTasks}</div>
+              </CardContent>
+            </Card>
+          </motion.div>
           
-          <Card className="border-neutral-200/60 shadow-sm rounded-2xl bg-white">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-5">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-500">In Progress</CardTitle>
-              <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                <Clock className="w-4 h-4 text-amber-600" />
-              </div>
-            </CardHeader>
-            <CardContent className="px-5 pb-4">
-              <div className="text-2xl font-extrabold text-neutral-900">{inProgressTasks}</div>
-            </CardContent>
-          </Card>
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="glass-card border-white/20 shadow-sm rounded-3xl h-full">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 pt-5 px-6">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-500">In Progress</CardTitle>
+                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center border border-amber-100">
+                  <Clock className="w-5 h-5 text-amber-600" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-5">
+                <div className="text-3xl font-extrabold text-neutral-900">{inProgressTasks}</div>
+              </CardContent>
+            </Card>
+          </motion.div>
           
-          <Card className="border-neutral-200/60 shadow-sm rounded-2xl bg-white">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 pt-4 px-5">
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-500">Completed</CardTitle>
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              </div>
-            </CardHeader>
-            <CardContent className="px-5 pb-4">
-              <div className="text-2xl font-extrabold text-neutral-900">{completedTasks}</div>
-            </CardContent>
-          </Card>
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="glass-card border-white/20 shadow-sm rounded-3xl h-full">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 pt-5 px-6">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-500">Completed</CardTitle>
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-5">
+                <div className="text-3xl font-extrabold text-neutral-900">{completedTasks}</div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
 
         {/* Toolbar */}

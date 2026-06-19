@@ -13,7 +13,7 @@ const lowlight = createLowlight();
 export const getEditorExtensions = (ydoc: any, provider: any) => {
   return [
     StarterKit.configure({
-      history: false, // Required for Collaboration
+      undoRedo: false, // Required for Collaboration
       heading: {
         levels: [1, 2, 3],
       },

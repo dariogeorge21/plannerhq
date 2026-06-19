@@ -133,7 +133,7 @@ export default function WorkspaceLayout({
           <ChevronsLeft className={`w-3.5 h-3.5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
         </button>
 
-        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-none">
+        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-none relative">
           {navLinks.map((link) => {
             const active = isActive(link.href, link.exact);
             return (
@@ -141,13 +141,23 @@ export default function WorkspaceLayout({
                 key={link.name}
                 href={link.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${active
-                  ? "bg-indigo-50/80 text-indigo-700"
-                  : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+                  ? "text-indigo-700"
+                  : "text-neutral-500 hover:text-neutral-900"
                   }`}
               >
-                <link.icon className={`w-5 h-5 shrink-0 ${active ? "text-indigo-600" : "text-neutral-400 group-hover:text-neutral-600"}`} />
+                {active && (
+                  <motion.div
+                    layoutId="activeSidebarPill"
+                    className="absolute inset-0 bg-indigo-50/80 rounded-xl -z-10"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                {!active && (
+                  <div className="absolute inset-0 bg-neutral-50 rounded-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+                <link.icon className={`w-5 h-5 shrink-0 relative z-10 ${active ? "text-indigo-600" : "text-neutral-400 group-hover:text-neutral-600"}`} />
                 {!isCollapsed && (
-                  <span className={`text-sm font-semibold ${active ? "text-indigo-700" : ""}`}>
+                  <span className={`text-sm font-semibold relative z-10 ${active ? "text-indigo-700" : ""}`}>
                     {link.name}
                   </span>
                 )}

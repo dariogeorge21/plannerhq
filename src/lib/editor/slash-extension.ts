@@ -1,6 +1,6 @@
 import { Extension } from "@tiptap/core";
 import Suggestion from "@tiptap/suggestion";
-import { ReactRenderer } from "@tiptap/react";
+import { ReactRenderer, Editor } from "@tiptap/react";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import { getSuggestionItems } from "./slash-commands";
 import { SlashCommandMenu } from "@/components/editor/SlashCommandMenu";
@@ -23,7 +23,7 @@ export const SlashCommandExtension = Extension.create({
             onStart(props: Record<string, unknown>) {
               component = new ReactRenderer(SlashCommandMenu, {
                 props,
-                editor: props.editor as Parameters<typeof ReactRenderer>[1]["editor"],
+                editor: props.editor as Editor,
               });
 
               if (!props.clientRect) return;
@@ -71,9 +71,9 @@ export const SlashCommandExtension = Extension.create({
           range,
           props,
         }: {
-          editor: Parameters<typeof ReactRenderer>[1]["editor"];
+          editor: Editor;
           range: { from: number; to: number };
-          props: { command: (args: { editor: Parameters<typeof ReactRenderer>[1]["editor"]; range: { from: number; to: number } }) => void };
+          props: { command: (args: { editor: Editor; range: { from: number; to: number } }) => void };
         }) => {
           props.command({ editor, range });
         },

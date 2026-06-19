@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { KpiMetrics } from "./components/kpi";
 import { WorkspacesList } from "./components/workspace-list";
 import { InvitationsBanner } from "./components/invitations-banner";
+import { SkeletonLoader } from "@/components/shared/skeleton-loader";
 
 const ACTIVITY_COOKIE = "plannerhq_last_activity";
 
@@ -49,15 +50,15 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-neutral-50/50 flex flex-col">
         <header className="h-16 border-b border-neutral-200 bg-white flex items-center justify-between px-6 lg:px-8">
-          <div className="h-6 w-28 bg-neutral-200 animate-pulse rounded" />
-          <div className="flex gap-4"><div className="h-8 w-8 bg-neutral-200 animate-pulse rounded-full" /></div>
+          <SkeletonLoader className="h-6 w-28" />
+          <div className="flex gap-4"><SkeletonLoader className="h-8 w-8 rounded-full" /></div>
         </header>
         <main className="flex-1 max-w-6xl w-full mx-auto p-6 lg:p-10 space-y-8">
-          <div className="h-10 w-64 bg-neutral-200 animate-pulse rounded-lg" />
+          <SkeletonLoader className="h-10 w-64" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3].map(i => <div key={i} className="h-32 bg-white border border-neutral-200 shadow-sm animate-pulse rounded-2xl" />)}
+            {[1, 2, 3].map(i => <SkeletonLoader key={i} className="h-32 rounded-2xl" />)}
           </div>
-          <div className="h-[400px] bg-white border border-neutral-200 shadow-sm animate-pulse rounded-2xl" />
+          <SkeletonLoader className="h-[400px] rounded-2xl" />
         </main>
       </div>
     );
@@ -130,21 +131,24 @@ export default function DashboardPage() {
         {/* Upsell / Settings callout */}
         <motion.section
           initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="group relative overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6 hover:shadow-md transition-shadow"
+          whileHover={{ scale: 1.01 }}
+          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          className="group relative overflow-hidden rounded-3xl glass-card p-6 flex flex-col sm:flex-row items-center justify-between gap-6 cursor-pointer"
+          onClick={() => router.push("/settings")}
         >
-          <div className="absolute right-0 top-0 w-64 h-64 bg-gradient-to-bl from-indigo-50 via-transparent to-transparent opacity-50 pointer-events-none" />
+          <div className="absolute right-0 top-0 w-64 h-64 bg-gradient-to-bl from-indigo-500/10 via-transparent to-transparent opacity-50 pointer-events-none" />
           <div className="flex items-center gap-5 relative z-10">
-            <div className="h-12 w-12 rounded-xl bg-neutral-50 border border-neutral-100 flex items-center justify-center shrink-0">
-              <Settings className="w-5 h-5 text-neutral-600" />
+            <div className="h-14 w-14 rounded-2xl bg-white/50 border border-white/20 shadow-sm flex items-center justify-center shrink-0 backdrop-blur-md">
+              <Settings className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-neutral-900 tracking-tight">Account Preferences</h3>
-              <p className="text-sm text-neutral-500 mt-0.5">Manage your personal details, notifications, and security.</p>
+              <h3 className="text-lg font-bold text-neutral-900 tracking-tight">Account Preferences</h3>
+              <p className="text-sm text-neutral-500 mt-1">Manage your personal details, notifications, and security.</p>
             </div>
           </div>
-          <Link href="/settings" className="shrink-0 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
+          <div className="shrink-0 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 group-hover:text-indigo-700 transition-colors">
             Manage Settings <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </div>
         </motion.section>
       </main>
 

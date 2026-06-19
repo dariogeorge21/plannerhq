@@ -21,19 +21,14 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
 
     const room = `doc:${workspaceId}:${documentId}`;
     
-    let p: SupabaseProvider;
-    try {
-      p = new SupabaseProvider(doc, supabase, {
-        channel: room,
-        id: documentId,
-        tableName: "document_content",
-        columnName: "content",
-      } as any);
-    } catch (e) {
-      p = new (SupabaseProvider as any)(room, doc, supabase, {
-        persistence: true,
-      });
-    }
+    const p = new SupabaseProvider(room, doc, supabase, {
+      awareness: true,
+      persistence: {
+        table: "document_content",
+        roomColumn: "document_id",
+        stateColumn: "content",
+      },
+    });
 
     const handleConnect = () => {
       setIsConnected(true);
@@ -45,9 +40,9 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
       setIsOffline(true);
     };
 
-    p.on("status", (event: { status: string }) => {
-      if (event.status === "connected") handleConnect();
-      else if (event.status === "disconnected") handleDisconnect();
+    p.on("status", (status) => {
+      if (status === "connected") handleConnect();
+      else if (status === "disconnected") handleDisconnect();
     });
 
     p.on("connect", handleConnect);
@@ -56,15 +51,17 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         const userAwareness = createAwarenessUser(data.user);
-        if (p.awareness) {
-          p.awareness.setLocalStateField("user", userAwareness);
+        const awareness = p.getAwareness();
+        if (awareness) {
+          awareness.setLocalStateField("user", userAwareness);
         }
       }
     });
 
-    if (p.awareness) {
-      p.awareness.on("change", () => {
-        const states = p.awareness.getStates();
+    const awareness = p.getAwareness();
+    if (awareness) {
+      awareness.on("change", () => {
+        const states = awareness.getStates();
         const users: AwarenessState[] = [];
         states.forEach((state: any, clientId: number) => {
           if (state.user) {

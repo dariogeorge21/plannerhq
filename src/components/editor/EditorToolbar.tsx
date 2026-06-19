@@ -246,7 +246,6 @@ export default function EditorToolbar({ editor }: EditorToolbarProps) {
       {/* ── Bubble Menu (on text selection) ─────────────────────────────────── */}
       <BubbleMenu
         editor={editor}
-        tippyOptions={{ duration: 150, placement: "top", animation: "shift-away" }}
         className="
           flex items-center gap-0.5 p-1
           rounded-xl border border-neutral-200/80

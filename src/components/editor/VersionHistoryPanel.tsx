@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { listVersionsAction, createVersionAction, restoreVersionAction } from "@/features/document/actions";
-import { useSupabase } from "@/hooks/useSupabase";
+import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import VersionRestoreDialog from "./VersionRestoreDialog";
 
@@ -15,7 +15,7 @@ export default function VersionHistoryPanel({ documentId }: { documentId: string
   const [loading, setLoading] = useState(false);
   const [newLabel, setNewLabel] = useState("");
   const [isPending, startTransition] = useTransition();
-  const supabase = useSupabase();
+  const supabase = createClient();
   const [user, setUser] = useState<any>(null);
 
   const [restoreOpen, setRestoreOpen] = useState(false);
@@ -92,38 +92,43 @@ export default function VersionHistoryPanel({ documentId }: { documentId: string
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-4 space-y-4">
+          <div className="flex-1 overflow-y-auto pr-4 space-y-6 mt-4">
             {loading ? (
               <p className="text-sm text-neutral-500">Loading versions...</p>
             ) : versions.length === 0 ? (
               <p className="text-sm text-neutral-500">No versions found.</p>
             ) : (
-              versions.map((v) => (
-                <div key={v.id} className="p-3 border rounded-lg bg-neutral-50 hover:bg-neutral-100 transition-colors">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-sm text-neutral-900">{v.label || `Version ${v.version_number}`}</h4>
-                    <span className="text-xs font-mono text-neutral-500 bg-neutral-200 px-2 py-0.5 rounded">
-                      v{v.version_number}
-                    </span>
-                  </div>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    {format(new Date(v.created_at), "MMM d, yyyy h:mm a")}
-                  </p>
-                  <div className="flex justify-end mt-3">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="h-7 text-xs"
-                      onClick={() => {
-                        setSelectedVersion(v);
-                        setRestoreOpen(true);
-                      }}
-                    >
-                      Restore
-                    </Button>
+              <div className="relative border-l border-neutral-200 ml-3 pl-6 space-y-8 pb-8">
+                {versions.map((v) => (
+                  <div key={v.id} className="relative group">
+                    <div className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-white border-2 border-neutral-300 group-hover:border-indigo-500 transition-colors" />
+                  <div className="p-4 border rounded-xl bg-white shadow-sm hover:shadow-md hover:border-indigo-100 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-sm text-neutral-900">{v.label || `Version ${v.version_number}`}</h4>
+                      <span className="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                        v{v.version_number}
+                      </span>
+                    </div>
+                    <p className="text-xs text-neutral-500 mb-4">
+                      {format(new Date(v.created_at), "MMM d, yyyy 'at' h:mm a")}
+                    </p>
+                    <div className="flex justify-end mt-2">
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="h-8 text-xs font-medium"
+                        onClick={() => {
+                          setSelectedVersion(v);
+                          setRestoreOpen(true);
+                        }}
+                      >
+                        Restore this version
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              ))
+              ))}
+              </div>
             )}
           </div>
         </SheetContent>

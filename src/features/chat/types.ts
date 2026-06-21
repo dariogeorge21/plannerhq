@@ -21,6 +21,7 @@ export interface Channel {
   workspace_id: string;
   created_by: string;
   slug: string;
+  is_direct: boolean;
   updated_at: string;
   created_at: string;
 }

@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { ViewMessagesForChannel, SendMessageForChannel } from "./chat";
-import { ViewChannels } from "./channel";
+import { ViewChannels, GetOrCreateDirectChannel } from "./channel";
+import { GetWorkspaceMembers } from "../workspace/workspace";
 import { setupPresenceListener, trackUserPresence } from "./presence";
 import { Channel, ChannelMessageWithUser, ChatPresenceState } from "./types";
 
@@ -14,6 +15,7 @@ export function useChat(workspaceId: string, customChannelId?: string) {
   const [messages, setMessages] = useState<ChannelMessageWithUser[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<ChatPresenceState[]>([]);
   const [typingUsers, setTypingUsers] = useState<Record<string, string>>({}); // userId -> displayName
+  const [workspaceMembers, setWorkspaceMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -52,8 +54,14 @@ export function useChat(workspaceId: string, customChannelId?: string) {
         // Resolve active channel ID if not passed
         const channelsData = await ViewChannels(workspaceId);
         setChannels(channelsData);
+
+        const membersResponse = await GetWorkspaceMembers(workspaceId);
+        if (membersResponse.success && membersResponse.data) {
+          setWorkspaceMembers(membersResponse.data);
+        }
+
         if (!customChannelId) {
-          const generalChannel = channelsData.find(c => c.slug === 'general') || channelsData[0];
+          const generalChannel = channelsData.find(c => c.slug === 'general' && !c.is_direct) || channelsData.find(c => !c.is_direct) || channelsData[0];
           if (generalChannel) {
             setActiveChannelId(generalChannel.id);
           }
@@ -228,6 +236,25 @@ export function useChat(workspaceId: string, customChannelId?: string) {
     }, 3000);
   }, []);
 
+  const startDirectChat = useCallback(async (memberId: string) => {
+    try {
+      setLoading(true);
+      const channel = await GetOrCreateDirectChannel(workspaceId, memberId);
+      // Ensure it's in our channels list
+      setChannels(prev => {
+        if (!prev.find(c => c.id === channel.id)) {
+          return [...prev, channel];
+        }
+        return prev;
+      });
+      setActiveChannelId(channel.id);
+    } catch (err) {
+      console.error("Failed to start direct chat:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [workspaceId]);
+
   return {
     channels,
     messages,
@@ -242,5 +269,7 @@ export function useChat(workspaceId: string, customChannelId?: string) {
     currentUserId,
     activeChannelId,
     setActiveChannelId,
+    workspaceMembers,
+    startDirectChat,
   };
 }

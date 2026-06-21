@@ -4,7 +4,7 @@ import * as React from "react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
-interface SkeletonLoaderProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface SkeletonLoaderProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onDrag" | "onDragStart" | "onDragEnd" | "onAnimationStart"> {}
 
 export function SkeletonLoader({ className, ...props }: SkeletonLoaderProps) {
   return (

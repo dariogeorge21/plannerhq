@@ -14,6 +14,7 @@ import {
   useUnassignUser 
 } from "@/features/task/hooks";
 import { useWorkspaceMembers } from "@/features/workspace/hooks";
+import TaskAttachment from "@/features/file/components/TaskAttachment";
 import { DeadlinePicker } from "@/components/ui/deadline-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -231,6 +232,9 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                 className="min-h-[150px] resize-y border-neutral-200 bg-neutral-50/50 focus-visible:bg-white rounded-xl"
               />
             </div>
+            
+            {/* Attachments */}
+            <TaskAttachment taskId={task.id} workspaceId={workspaceId} />
             
             <div className="mt-auto pt-6 text-xs text-neutral-400 flex flex-col gap-1">
               <div>Created on {format(new Date(task.created_at), "MMM d, yyyy 'at' h:mm a")}</div>

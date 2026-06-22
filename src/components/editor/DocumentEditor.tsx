@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { debounce } from "lodash";
 
@@ -13,6 +13,9 @@ import PresenceAvatars from "./PresenceAvatars";
 import VersionHistoryPanel from "./VersionHistoryPanel";
 import EditorToolbar from "./EditorToolbar";
 import { getEditorExtensions } from "@/lib/editor/extensions";
+import { useUploadFile } from "@/features/file/hooks";
+import { getSignedUrlAction } from "@/features/file/actions";
+import { toast } from "sonner";
 
 export default function DocumentEditor({
   workspaceId,
@@ -33,6 +36,8 @@ export default function DocumentEditor({
   } = useCollaborationProvider(documentId, workspaceId);
 
   const [title, setTitle] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadFile = useUploadFile(workspaceId);
 
   useEffect(() => {
     if (doc) setTitle(doc.title);
@@ -53,7 +58,7 @@ export default function DocumentEditor({
   };
 
   const editor = useEditor({
-    extensions: getEditorExtensions(ydoc, provider),
+    extensions: getEditorExtensions(ydoc, provider, workspaceId, documentId),
     editorProps: {
       attributes: {
         class: [
@@ -81,6 +86,48 @@ export default function DocumentEditor({
       },
     },
   });
+
+  useEffect(() => {
+    const handleOpenUpload = () => {
+      fileInputRef.current?.click();
+    };
+
+    window.addEventListener('open-editor-file-upload', handleOpenUpload);
+    return () => window.removeEventListener('open-editor-file-upload', handleOpenUpload);
+  }, []);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editor) return;
+
+    try {
+      toast.loading(`Uploading ${file.name}...`, { id: `upload-${file.name}` });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("workspaceId", workspaceId);
+      formData.append("entityType", "document");
+      formData.append("entityId", documentId);
+
+      const result = await uploadFile.mutateAsync(formData);
+      toast.success(`Uploaded ${file.name}`, { id: `upload-${file.name}` });
+
+      const urlResult = await getSignedUrlAction(result.storage_path);
+      const fileUrl = urlResult.success ? urlResult.data : "#";
+
+      editor.chain().focus().insertContent([
+        {
+          type: 'text',
+          marks: [{ type: 'link', attrs: { href: fileUrl, target: '_blank' } }],
+          text: file.name,
+        },
+        { type: 'text', text: ' ' }
+      ]).run();
+    } catch (error: any) {
+      toast.error(`Upload failed: ${error.message}`, { id: `upload-${file.name}` });
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   // ── Loading state ────────────────────────────────────────────────────────────
   if (isDocLoading) {
@@ -168,6 +215,13 @@ export default function DocumentEditor({
           >
             <EditorContent editor={editor} />
           </div>
+          
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileSelect} 
+            className="hidden" 
+          />
         </div>
       </div>
     </div>

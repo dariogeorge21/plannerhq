@@ -4,7 +4,7 @@ import { Section, Document, DocumentContent } from "./types";
 export const createDocumentService = (supabase: SupabaseClient) => ({
   async getSections(workspaceId: string): Promise<Section[]> {
     const { data, error } = await supabase
-      .from("sections")
+      .from("document_sections")
       .select("*")
       .eq("workspace_id", workspaceId)
       .order("position", { ascending: true });
@@ -15,7 +15,7 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
 
   async createSection(workspaceId: string, name: string): Promise<Section> {
     const { data: maxPosData } = await supabase
-      .from("sections")
+      .from("document_sections")
       .select("position")
       .eq("workspace_id", workspaceId)
       .order("position", { ascending: false })
@@ -25,7 +25,7 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
     const position = maxPosData ? maxPosData.position + 1024 : 1024;
 
     const { data, error } = await supabase
-      .from("sections")
+      .from("document_sections")
       .insert({ workspace_id: workspaceId, name, position })
       .select()
       .single();
@@ -36,7 +36,7 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
 
   async updateSection(sectionId: string, name: string): Promise<Section> {
     const { data, error } = await supabase
-      .from("sections")
+      .from("document_sections")
       .update({ name })
       .eq("id", sectionId)
       .select()
@@ -47,14 +47,14 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
   },
 
   async deleteSection(sectionId: string): Promise<void> {
-    const { error } = await supabase.from("sections").delete().eq("id", sectionId);
+    const { error } = await supabase.from("document_sections").delete().eq("id", sectionId);
     if (error) throw new Error(error.message);
   },
 
   async reorderSections(updates: { id: string; position: number }[]): Promise<void> {
     // Basic approach: loop and update. A bulk upsert could be used but let's keep it simple.
     for (const update of updates) {
-      await supabase.from("sections").update({ position: update.position }).eq("id", update.id);
+      await supabase.from("document_sections").update({ position: update.position }).eq("id", update.id);
     }
   },
 
@@ -194,9 +194,9 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
       .order("version_number", { ascending: false })
       .limit(1)
       .single();
-      
+
     const versionNumber = maxVersionData ? maxVersionData.version_number + 1 : 1;
-    
+
     const { data, error } = await supabase
       .from("document_versions")
       .insert({
@@ -219,13 +219,13 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
       .select("*")
       .eq("id", versionId)
       .single();
-      
+
     if (!versionData) throw new Error("Version not found");
 
     const { error } = await supabase
       .from("document_content")
       .upsert({ document_id: documentId, content: versionData.content, updated_at: new Date().toISOString() });
-      
+
     if (error) throw new Error(error.message);
   },
 

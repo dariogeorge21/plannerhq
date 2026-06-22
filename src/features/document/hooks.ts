@@ -15,7 +15,7 @@ import {
 
 export function useSections(workspaceId: string | undefined) {
   return useQuery({
-    queryKey: ["sections", workspaceId],
+    queryKey: ["document_sections", workspaceId],
     queryFn: async () => {
       if (!workspaceId) return [];
       const supabase = createClient();
@@ -69,7 +69,7 @@ export function useCreateSection(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (name: string) => createSectionAction({ workspaceId, name }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sections", workspaceId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] }),
   });
 }
 
@@ -110,7 +110,7 @@ export function useUpdateSection(workspaceId: string) {
   return useMutation({
     mutationFn: (data: { sectionId: string; name: string }) =>
       updateSectionAction(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["sections", workspaceId] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] }),
   });
 }
 
@@ -119,7 +119,7 @@ export function useDeleteSection(workspaceId: string) {
   return useMutation({
     mutationFn: (sectionId: string) => deleteSectionAction(sectionId, workspaceId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sections", workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] });
       queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] });
     },
   });
@@ -131,8 +131,8 @@ export function useReorderSections(workspaceId: string) {
     mutationFn: (updates: { id: string; position: number }[]) =>
       reorderSectionsAction(updates, workspaceId),
     onMutate: async (updates) => {
-      await queryClient.cancelQueries({ queryKey: ["sections", workspaceId] });
-      const previousSections = queryClient.getQueryData<any[]>(["sections", workspaceId]);
+      await queryClient.cancelQueries({ queryKey: ["document_sections", workspaceId] });
+      const previousSections = queryClient.getQueryData<any[]>(["document_sections", workspaceId]);
 
       if (previousSections) {
         const updatedSections = previousSections.map((section) => {
@@ -140,17 +140,17 @@ export function useReorderSections(workspaceId: string) {
           return update ? { ...section, position: update.position } : section;
         }).sort((a, b) => a.position - b.position);
 
-        queryClient.setQueryData(["sections", workspaceId], updatedSections);
+        queryClient.setQueryData(["document_sections", workspaceId], updatedSections);
       }
       return { previousSections };
     },
     onError: (err, newTodo, context) => {
       if (context?.previousSections) {
-        queryClient.setQueryData(["sections", workspaceId], context.previousSections);
+        queryClient.setQueryData(["document_sections", workspaceId], context.previousSections);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["sections", workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] });
     },
   });
 }

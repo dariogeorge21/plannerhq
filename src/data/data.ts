@@ -16,8 +16,8 @@ export const PricingPlans = [
   },
   {
     name: "Pro",
-    monthlyPrice: "$15",
-    yearlyPrice: "$12",
+    monthlyPrice: "₹299",
+    yearlyPrice: "₹399",
     description: "Advanced collaboration for growing teams.",
     features: [
       "Up to 10 workspaces",
@@ -33,8 +33,8 @@ export const PricingPlans = [
   },
   {
     name: "Ultra",
-    monthlyPrice: "$30",
-    yearlyPrice: "$24",
+    monthlyPrice: "₹899",
+    yearlyPrice: "₹799",
     description: "All-in-one solution for large teams and enterprises.",
     features: [
       "Up to 100 workspaces",

@@ -1,5 +1,6 @@
 export type CalendarEventPriority = 'low' | 'medium' | 'high';
 export type AttendeeRsvpStatus = 'pending' | 'accepted' | 'declined';
+export type CalendarItemType = 'event' | 'task';
 
 export interface CalendarEvent {
   id: string;

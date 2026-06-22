@@ -109,6 +109,9 @@ export default function DocumentEditor({
       formData.append("entityId", documentId);
 
       const result = await uploadFile.mutateAsync(formData);
+      if (!result?.storage_path) {
+        throw new Error("Upload did not return file path");
+      }
       toast.success(`Uploaded ${file.name}`, { id: `upload-${file.name}` });
 
       const urlResult = await getSignedUrlAction(result.storage_path);

@@ -71,7 +71,7 @@ export function DayView({
           </div>
 
           {/* Day Column */}
-          <div 
+          <div
             className="flex-1 relative cursor-pointer"
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
@@ -101,7 +101,7 @@ export function DayView({
                 </div>
               );
             })}
-            
+
             {/* Tasks */}
             {dayTasks.map(task => {
               const due = new Date(task.due_date);

@@ -146,7 +146,6 @@ export function DeadlinePicker({ value, onChange, trigger }: DeadlinePickerProps
               mode="single"
               selected={date}
               onSelect={onDateSelect}
-              initialFocus
               className="p-0 border-0"
             />
             

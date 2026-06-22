@@ -2,7 +2,7 @@
 -- Date: 2026-06-18
 
 -- 1. Create sections table
-CREATE TABLE IF NOT EXISTS public.sections (
+CREATE TABLE IF NOT EXISTS public.document_sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   workspace_id UUID NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.sections (
 -- 2. Create documents table
 CREATE TABLE IF NOT EXISTS public.documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  section_id UUID NOT NULL REFERENCES public.sections(id) ON DELETE CASCADE,
+  section_id UUID NOT NULL REFERENCES public.document_sections(id) ON DELETE CASCADE,
   workspace_id UUID NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
   title TEXT NOT NULL DEFAULT 'Untitled',
   position INTEGER NOT NULL DEFAULT 0,
@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS public.document_content (
 );
 
 -- 4. Triggers for updated_at
-DROP TRIGGER IF EXISTS set_sections_updated_at ON public.sections;
-CREATE TRIGGER set_sections_updated_at BEFORE UPDATE ON public.sections
+DROP TRIGGER IF EXISTS set_document_sections_updated_at ON public.document_sections;
+CREATE TRIGGER set_document_sections_updated_at BEFORE UPDATE ON public.document_sections
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 DROP TRIGGER IF EXISTS set_documents_updated_at ON public.documents;
@@ -45,30 +45,30 @@ CREATE TRIGGER set_document_content_updated_at BEFORE UPDATE ON public.document_
   FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- 5. Enable RLS
-ALTER TABLE public.sections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.document_sections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.document_content ENABLE ROW LEVEL SECURITY;
 
 -- 6. RLS Policies
 -- Sections
-CREATE POLICY "Users can view sections in their workspaces"
-  ON public.sections FOR SELECT
+CREATE POLICY "Users can view document_section in their workspaces"
+  ON public.document_sections FOR SELECT
   TO authenticated
   USING (public.is_workspace_member(workspace_id));
 
-CREATE POLICY "Users can create sections in their workspaces"
-  ON public.sections FOR INSERT
+CREATE POLICY "Users can create document_section in their workspaces"
+  ON public.document_section FOR INSERT
   TO authenticated
   WITH CHECK (public.is_workspace_member(workspace_id));
 
-CREATE POLICY "Users can update sections in their workspaces"
-  ON public.sections FOR UPDATE
+CREATE POLICY "Users can update document_section in their workspaces"
+  ON public.document_section FOR UPDATE
   TO authenticated
   USING (public.is_workspace_member(workspace_id))
   WITH CHECK (public.is_workspace_member(workspace_id));
 
-CREATE POLICY "Users can delete sections in their workspaces"
-  ON public.sections FOR DELETE
+CREATE POLICY "Users can delete document_section in their workspaces"
+  ON public.document_section FOR DELETE
   TO authenticated
   USING (public.is_workspace_member(workspace_id));
 
@@ -125,11 +125,11 @@ CREATE POLICY "Users can update document content in their workspaces"
   );
 
 -- 7. Grants
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.sections TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.document_sections TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.documents TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.document_content TO authenticated;
 
 -- 8. Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_sections_workspace_id ON public.sections(workspace_id);
+CREATE INDEX IF NOT EXISTS idx_sections_workspace_id ON public.document_sections(workspace_id);
 CREATE INDEX IF NOT EXISTS idx_documents_section_id ON public.documents(section_id);
 CREATE INDEX IF NOT EXISTS idx_documents_workspace_id ON public.documents(workspace_id);

@@ -7,10 +7,13 @@ import { createLowlight } from "lowlight";
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { SlashCommandExtension } from "./slash-extension";
+import { getFileMentionExtension } from "@/features/file/components/editor/FileMentionExtension";
+import { EditorFileUploadPlugin } from "@/features/file/components/editor/EditorFileUploadPlugin";
+import Link from "@tiptap/extension-link";
 
 const lowlight = createLowlight();
 
-export const getEditorExtensions = (ydoc: any, provider: any) => {
+export const getEditorExtensions = (ydoc: any, provider: any, workspaceId?: string, documentId?: string) => {
   return [
     StarterKit.configure({
       undoRedo: false, // Required for Collaboration
@@ -32,5 +35,8 @@ export const getEditorExtensions = (ydoc: any, provider: any) => {
     ...(provider ? [CollaborationCaret.configure({
       provider: provider.awareness ? provider : null,
     })] : []),
+    ...(workspaceId ? [getFileMentionExtension(workspaceId)] : []),
+    ...(workspaceId && documentId ? [EditorFileUploadPlugin.configure({ workspaceId, documentId })] : []),
+    Link.configure({ openOnClick: false }),
   ];
 };

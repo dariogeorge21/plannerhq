@@ -13,6 +13,7 @@ import {
   AlignLeft,
   Table2,
   Image,
+  Paperclip,
 } from "lucide-react";
 
 export interface CommandItem {
@@ -129,6 +130,19 @@ const ALL_ITEMS: CommandItem[] = [
     group: "advanced",
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).setHorizontalRule().run();
+    },
+  },
+  {
+    title: "Upload file",
+    description: "Upload and link a file.",
+    icon: Paperclip,
+    keywords: ["upload", "file", "attachment", "pdf"],
+    group: "advanced",
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).run();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('open-editor-file-upload'));
+      }
     },
   },
 ];

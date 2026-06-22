@@ -21,3 +21,22 @@ export function useWorkspace() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
+
+export function useWorkspaceMembers() {
+  const params = useParams();
+  const workspaceId = params?.workspaceId as string | undefined;
+
+  return useQuery({
+    queryKey: ["workspace_members", workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return [];
+      const res = await import("./workspace").then(m => m.GetWorkspaceMembers(workspaceId));
+      if (res.success && res.data) {
+        return res.data;
+      }
+      return [];
+    },
+    enabled: !!workspaceId,
+    staleTime: 5 * 60 * 1000,
+  });
+}

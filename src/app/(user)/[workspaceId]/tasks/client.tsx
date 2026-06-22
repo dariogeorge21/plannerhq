@@ -14,11 +14,13 @@ import { arrayMove, SortableContext, verticalListSortingStrategy, sortableKeyboa
 import { TaskSectionList } from "./components/ui/TaskSectionList";
 import { KanbanBoard } from "./components/ui/KanbanBoard";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Filter, Sparkles, LayoutList, LayoutGrid, CheckCircle2, Clock, ListTodo } from "lucide-react";
+import { Plus, Search, Filter, Sparkles, LayoutList, LayoutGrid, CheckCircle2, Clock, ListTodo, AlertCircle, X, Flag, CalendarDays } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 interface TasksClientProps {
   workspaceId: string;
@@ -38,8 +40,13 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
 
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [filterDeadline, setFilterDeadline] = useState<string>("all");
+  
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newSectionName, setNewSectionName] = useState("");
+  const [dismissedBanner, setDismissedBanner] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -102,18 +109,53 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
     }
   };
 
-  // Filter tasks based on search
+  // Filter tasks
   const filteredTasks = useMemo(() => {
-    return tasks.filter(t => 
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      (t.description && t.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  }, [tasks, searchQuery]);
+    return tasks.filter(t => {
+      // Search
+      const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (t.description && t.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      if (!matchesSearch) return false;
+
+      // Status
+      if (filterStatus !== "all" && t.status !== filterStatus) return false;
+
+      // Priority
+      if (filterPriority !== "all" && t.priority !== filterPriority) return false;
+
+      // Deadline
+      if (filterDeadline !== "all") {
+        const d = t.due_date ? new Date(t.due_date) : null;
+        const now = new Date();
+        const today = new Date(now.setHours(0,0,0,0));
+        
+        if (filterDeadline === "overdue") {
+          if (!d || d >= today || t.completed) return false;
+        } else if (filterDeadline === "today") {
+          if (!d || d.toDateString() !== today.toDateString()) return false;
+        } else if (filterDeadline === "none") {
+          if (d) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [tasks, searchQuery, filterStatus, filterPriority, filterDeadline]);
 
   // Stats
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.completed).length;
   const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
+  const overdueTasks = tasks.filter(t => t.due_date && new Date(t.due_date) < new Date() && !t.completed).length;
+  
+  const hasActiveFilters = filterStatus !== "all" || filterPriority !== "all" || filterDeadline !== "all";
+  
+  const clearFilters = () => {
+    setFilterStatus("all");
+    setFilterPriority("all");
+    setFilterDeadline("all");
+    setSearchQuery("");
+  };
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -159,12 +201,41 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
           </div>
         </div>
 
+        <AnimatePresence>
+          {overdueTasks > 0 && !dismissedBanner && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden rounded-2xl"
+            >
+              <div className="bg-red-50 border border-red-200 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </div>
+                  <p className="text-sm font-medium text-red-800">
+                    You have <span className="font-bold">{overdueTasks} overdue</span> task{overdueTasks > 1 ? 's' : ''}.
+                  </p>
+                  <Button variant="link" size="sm" className="h-auto p-0 text-red-600 hover:text-red-700 font-semibold" onClick={() => setFilterDeadline('overdue')}>
+                    View Overdue
+                  </Button>
+                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:bg-red-100" onClick={() => setDismissedBanner(true)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Stats Grid */}
         <motion.div 
           initial={{ opacity: 0, y: 15 }} 
           animate={{ opacity: 1, y: 0 }} 
           transition={{ duration: 0.4 }}
-          className="grid gap-4 md:grid-cols-3"
+          className="grid gap-4 md:grid-cols-4"
         >
           <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
             <Card className="glass-card border-white/20 shadow-sm rounded-3xl h-full">
@@ -207,11 +278,36 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
               </CardContent>
             </Card>
           </motion.div>
+
+          <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 300 }}>
+            <Card className="glass-card border-white/20 shadow-sm rounded-3xl h-full relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10">
+                <AlertCircle className="w-16 h-16 text-red-600" />
+              </div>
+              <CardHeader className="flex flex-row items-center justify-between pb-2 pt-5 px-6 relative z-10">
+                <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-500">Overdue</CardTitle>
+                <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center border border-red-100">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                </div>
+              </CardHeader>
+              <CardContent className="px-6 pb-5 relative z-10">
+                <div className="flex items-center gap-2">
+                  <div className="text-3xl font-extrabold text-neutral-900">{overdueTasks}</div>
+                  {overdueTasks > 0 && (
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
 
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row gap-3 items-center w-full">
-          <div className="relative w-full max-w-sm">
+        <div className="flex flex-col xl:flex-row gap-3 items-start xl:items-center w-full bg-white/50 p-2 rounded-2xl border border-neutral-200/60 shadow-sm backdrop-blur-sm">
+          <div className="relative w-full xl:max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
             <Input 
               placeholder="Search tasks..." 
@@ -220,9 +316,62 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
               className="pl-9 h-10 rounded-xl border-neutral-200/60 bg-white"
             />
           </div>
-          <Button variant="outline" className="h-10 rounded-xl border-neutral-200/60 bg-white text-neutral-600">
-            <Filter className="w-4 h-4 mr-2" /> Filters
-          </Button>
+          
+          <div className="flex flex-wrap items-center gap-2 w-full">
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="h-10 rounded-xl border-neutral-200/60 bg-white w-[140px]">
+                <div className="flex items-center gap-2 text-neutral-600">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <SelectValue placeholder="Status" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="todo">To Do</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="blocked">Blocked</SelectItem>
+                <SelectItem value="done">Done</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterPriority} onValueChange={setFilterPriority}>
+              <SelectTrigger className="h-10 rounded-xl border-neutral-200/60 bg-white w-[140px]">
+                <div className="flex items-center gap-2 text-neutral-600">
+                  <Flag className="w-4 h-4" />
+                  <SelectValue placeholder="Priority" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterDeadline} onValueChange={setFilterDeadline}>
+              <SelectTrigger className="h-10 rounded-xl border-neutral-200/60 bg-white w-[140px]">
+                <div className="flex items-center gap-2 text-neutral-600">
+                  <CalendarDays className="w-4 h-4" />
+                  <SelectValue placeholder="Deadline" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">All Deadlines</SelectItem>
+                <SelectItem value="overdue">Overdue</SelectItem>
+                <SelectItem value="today">Due Today</SelectItem>
+                <SelectItem value="none">No Deadline</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilters && (
+              <Button variant="ghost" onClick={clearFilters} className="h-10 rounded-xl text-neutral-500 hover:text-neutral-900 ml-auto">
+                Clear filters <X className="w-4 h-4 ml-2" />
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Board Content */}

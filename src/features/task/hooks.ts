@@ -88,6 +88,19 @@ export function useTasks(workspaceId: string | undefined) {
   });
 }
 
+export function useTaskAssignees(workspaceId: string | undefined) {
+  return useQuery({
+    queryKey: ["task_assignees", workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return [];
+      const supabase = createClient();
+      const service = createTaskService(supabase);
+      return service.getAssignees(workspaceId);
+    },
+    enabled: !!workspaceId,
+  });
+}
+
 export function useCreateTaskSection(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -148,7 +161,7 @@ export function useReorderTaskSections(workspaceId: string) {
 export function useCreateTask(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { title: string; section_id?: string | null; parent_id?: string | null }) =>
+    mutationFn: (data: { title: string; section_id?: string | null; parent_id?: string | null; due_date?: string | null }) =>
       createTaskAction({ workspace_id: workspaceId, ...data, status: 'todo', priority: 'none', sort_order: 0 }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
   });
@@ -159,6 +172,15 @@ export function useUpdateTask(workspaceId: string) {
   return useMutation({
     mutationFn: (data: Partial<Task> & { id: string }) =>
       updateTaskAction({ ...data, workspace_id: workspaceId }, workspaceId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
+  });
+}
+
+export function useSetDeadline(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { taskId: string; due_date: string | null }) =>
+      updateTaskAction({ id: data.taskId, due_date: data.due_date, workspace_id: workspaceId }, workspaceId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
   });
 }
@@ -241,5 +263,23 @@ export function useMarkTaskReviewed(workspaceId: string) {
     mutationFn: (data: { taskId: string; userId: string }) =>
       markTaskReviewedAction(data.taskId, data.userId, workspaceId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
+  });
+}
+
+export function useAssignUser(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { task_id: string; user_id: string }) =>
+      assignUserAction(data, workspaceId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["task_assignees", workspaceId] }),
+  });
+}
+
+export function useUnassignUser(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { task_id: string; user_id: string }) =>
+      unassignUserAction(data.task_id, data.user_id, workspaceId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["task_assignees", workspaceId] }),
   });
 }

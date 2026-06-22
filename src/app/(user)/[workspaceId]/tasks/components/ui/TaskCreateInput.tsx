@@ -5,6 +5,8 @@ import { useCreateTask } from "@/features/task/hooks";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus } from "lucide-react";
 
+import { DeadlinePicker } from "@/components/ui/deadline-picker";
+
 interface TaskCreateInputProps {
   workspaceId: string;
   sectionId: string | null;
@@ -13,6 +15,7 @@ interface TaskCreateInputProps {
 
 export function TaskCreateInput({ workspaceId, sectionId, onClose }: TaskCreateInputProps) {
   const [title, setTitle] = useState("");
+  const [dueDate, setDueDate] = useState<string | null>(null);
   const createTask = useCreateTask(workspaceId);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -29,7 +32,7 @@ export function TaskCreateInput({ workspaceId, sectionId, onClose }: TaskCreateI
 
     let finalTitle = title;
     let completed = false;
-    
+
     // Slash command shorthand for checking
     if (finalTitle.startsWith("/checkbox ") || finalTitle.startsWith("[ ] ")) {
       finalTitle = finalTitle.replace(/^(\/checkbox\s+|\[\s\]\s+)/i, "");
@@ -38,9 +41,10 @@ export function TaskCreateInput({ workspaceId, sectionId, onClose }: TaskCreateI
       completed = true;
     }
 
-    createTask.mutate({ title: finalTitle, section_id: sectionId }, {
+    createTask.mutate({ title: finalTitle, section_id: sectionId, due_date: dueDate }, {
       onSuccess: () => {
         setTitle("");
+        setDueDate(null);
         // Keep input open to add more tasks
       }
     });
@@ -71,6 +75,12 @@ export function TaskCreateInput({ workspaceId, sectionId, onClose }: TaskCreateI
         className="flex-1 h-8 text-sm border-0 focus-visible:ring-0 px-1 shadow-none"
         disabled={createTask.isPending}
       />
+      <div className="flex-shrink-0 pr-1">
+        <DeadlinePicker
+          value={dueDate}
+          onChange={setDueDate}
+        />
+      </div>
     </div>
   );
 }

@@ -7,10 +7,13 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, MoreHorizontal, CheckCircle2, Clock, CalendarDays, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal } from "@/components/ui/dropdown-menu";
-import { useToggleTaskCompletion, useDeleteTask, useMarkTaskReviewed, useUpdateTask } from "@/features/task/hooks";
+import { useToggleTaskCompletion, useDeleteTask, useMarkTaskReviewed, useUpdateTask, useSetDeadline } from "@/features/task/hooks";
 import { motion } from "framer-motion";
 import { ConfirmDeleteModal } from "@/components/ui/confirm-delete-modal";
 import { useState } from "react";
+import { TaskDetailModal } from "./TaskDetailModal";
+import { DeadlinePicker } from "@/components/ui/deadline-picker";
+import { format, isSameDay, addDays } from "date-fns";
 
 interface TaskItemProps {
   task: Task;
@@ -24,7 +27,9 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
   const deleteTask = useDeleteTask(workspaceId);
   const updateTask = useUpdateTask(workspaceId);
   const markReviewed = useMarkTaskReviewed(workspaceId);
+  const setDeadline = useSetDeadline(workspaceId);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const {
     attributes,
@@ -83,22 +88,48 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
     urgent: "Urgent"
   };
 
-  // Due date formatting (simplified)
-  const formatDueDate = (dateString: string | null) => {
-    if (!dateString) return null;
-    const date = new Date(dateString);
+  // Due date formatting
+  const formattedDate = task.due_date ? new Date(task.due_date) : null;
+  const isOverdue = formattedDate && formattedDate < new Date() && !task.completed;
+  
+  const getDeadlineBadgeProps = () => {
+    if (!formattedDate) return null;
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    if (date.toDateString() === today.toDateString()) return "Today";
-    if (date.toDateString() === tomorrow.toDateString()) return "Tomorrow";
+    const tomorrow = addDays(today, 1);
     
-    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    if (isOverdue) {
+      return { 
+        text: `${format(formattedDate, "MMM d")} (Overdue)`,
+        className: "bg-red-50 text-red-600 border-red-200",
+        iconClass: "text-red-500",
+        showPulse: true
+      };
+    }
+    
+    if (isSameDay(formattedDate, today)) {
+      return { 
+        text: `Today ${format(formattedDate, "h:mm a")}`,
+        className: "bg-amber-50 text-amber-600 border-amber-200",
+        iconClass: "text-amber-500"
+      };
+    }
+
+    if (isSameDay(formattedDate, tomorrow)) {
+      return { 
+        text: `Tomorrow`,
+        className: "bg-yellow-50 text-yellow-600 border-yellow-200",
+        iconClass: "text-yellow-500"
+      };
+    }
+    
+    return {
+      text: format(formattedDate, "MMM d"),
+      className: "bg-neutral-50 text-neutral-600 border-neutral-200",
+      iconClass: "text-neutral-400"
+    };
   };
 
-  const formattedDate = formatDueDate(task.due_date);
-  const isOverdue = task.due_date && new Date(task.due_date) < new Date(new Date().setHours(0,0,0,0)) && !task.completed;
+  const deadlineProps = getDeadlineBadgeProps();
 
   if (isKanban) {
     return (
@@ -109,6 +140,7 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
         className={`group flex flex-col gap-2 p-3 bg-white border ${task.completed ? 'border-neutral-200/50 bg-neutral-50/50' : 'border-neutral-200/80'} rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-grab active:cursor-grabbing`}
         {...attributes} 
         {...listeners}
+        onClick={() => setIsDetailModalOpen(true)}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -176,10 +208,11 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
             </span>
           )}
 
-          {formattedDate && (
-            <div className={`flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-md border ${isOverdue ? 'bg-red-50 text-red-600 border-red-200' : 'bg-neutral-50 text-neutral-600 border-neutral-200'}`}>
-              <CalendarDays className="w-3 h-3 mr-1" />
-              {formattedDate}
+          {deadlineProps && (
+            <div className={`flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded-md border ${deadlineProps.className}`}>
+              {deadlineProps.showPulse && <span className="relative flex h-1.5 w-1.5 mr-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span></span>}
+              {!deadlineProps.showPulse && <Clock className={`w-3 h-3 mr-1 ${deadlineProps.iconClass}`} />}
+              {deadlineProps.text}
             </div>
           )}
           
@@ -201,6 +234,13 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
         title="Delete Task"
         description="Are you sure you want to delete this task? This action cannot be undone."
       />
+      <TaskDetailModal 
+        task={task} 
+        workspaceId={workspaceId} 
+        userId={userId} 
+        isOpen={isDetailModalOpen} 
+        onClose={() => setIsDetailModalOpen(false)} 
+      />
       </>
     );
   }
@@ -211,9 +251,10 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
     <div 
       ref={setNodeRef} 
       style={style} 
-      className={`group flex items-center gap-3 p-2.5 bg-white border ${task.completed ? 'border-neutral-200/40 bg-neutral-50/30' : 'border-neutral-200/80'} rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all`}
+      className={`group flex items-center gap-3 p-2.5 bg-white border ${task.completed ? 'border-neutral-200/40 bg-neutral-50/30' : 'border-neutral-200/80'} rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer`}
+      onClick={() => setIsDetailModalOpen(true)}
     >
-      <div {...attributes} {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 text-neutral-400 p-1 hover:bg-neutral-100 rounded-md transition-all flex-shrink-0">
+      <div {...attributes} {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 text-neutral-400 p-1 hover:bg-neutral-100 rounded-md transition-all flex-shrink-0" onClick={e => e.stopPropagation()}>
         <GripVertical className="h-4 w-4" />
       </div>
       
@@ -243,10 +284,19 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
           </span>
         )}
 
-        {formattedDate && (
-          <div className={`flex items-center text-xs font-medium px-2 py-0.5 rounded-md border ${isOverdue ? 'bg-red-50 text-red-600 border-red-200' : 'bg-neutral-50 text-neutral-500 border-neutral-200'}`}>
-            <CalendarDays className="w-3.5 h-3.5 mr-1.5" />
-            {formattedDate}
+        {deadlineProps ? (
+          <div className={`flex items-center text-xs font-medium px-2 py-0.5 rounded-md border ${deadlineProps.className}`}>
+            {deadlineProps.showPulse && <span className="relative flex h-1.5 w-1.5 mr-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span></span>}
+            {!deadlineProps.showPulse && <Clock className={`w-3.5 h-3.5 mr-1.5 ${deadlineProps.iconClass}`} />}
+            {deadlineProps.text}
+          </div>
+        ) : (
+          <div onClick={(e) => e.stopPropagation()} className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <DeadlinePicker 
+              value={task.due_date} 
+              onChange={(date) => setDeadline.mutate({ taskId: task.id, due_date: date })} 
+              trigger={<Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-400 hover:text-indigo-600"><CalendarDays className="h-4 w-4" /></Button>}
+            />
           </div>
         )}
 
@@ -261,7 +311,7 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
         )}
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
             <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-neutral-900">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
@@ -304,6 +354,13 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
       }}
       title="Delete Task"
       description="Are you sure you want to delete this task? This action cannot be undone."
+    />
+    <TaskDetailModal 
+      task={task} 
+      workspaceId={workspaceId} 
+      userId={userId} 
+      isOpen={isDetailModalOpen} 
+      onClose={() => setIsDetailModalOpen(false)} 
     />
     </>
   );

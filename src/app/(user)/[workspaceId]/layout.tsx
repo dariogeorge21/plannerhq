@@ -18,7 +18,8 @@ import {
   ChevronsLeft,
   FileText,
   SquareKanban,
-  CalendarDays
+  CalendarDays,
+  FolderOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -96,6 +97,7 @@ export default function WorkspaceLayout({
     { name: "Chat", href: `/${workspaceId}/chat`, icon: MessageSquareIcon, exact: false },
     { name: "Tasks", href: `/${workspaceId}/tasks`, icon: SquareKanban, exact: false },
     { name: "Calendar", href: `/${workspaceId}/calendar`, icon: CalendarDays, exact: false },
+    { name: "Files", href: `/${workspaceId}/files`, icon: FolderOpen, exact: false },
     { name: "Members", href: `/${workspaceId}/members`, icon: Users, exact: false },
     { name: "Settings", href: `/${workspaceId}/settings`, icon: Settings, exact: false },
   ];

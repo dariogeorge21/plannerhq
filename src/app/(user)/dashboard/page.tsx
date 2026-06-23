@@ -38,19 +38,19 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             <ProfileOverviewCard user={user} />
             <RecentWorkspaces />
-            <TaskPriorityBoard />
+            <TaskPriorityBoard user={user} />
           </div>
 
           {/* Right column: 1/3 width */}
           <div className="space-y-6">
-            <MiniCalendar />
-            <UpcomingEvents />
+            <MiniCalendar user={user} />
+            <UpcomingEvents user={user} />
             <WorkspaceInvitations />
           </div>
         </div>
 
         {/* KPI Metrics Row */}
-        <KpiMetrics />
+        <KpiMetrics user={user} />
 
         {/* Subscription & Quota */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -99,7 +99,7 @@ export const pricingPageContent = {
       ribbon: "Most popular",
     },
     {
-      key: "plus",
+      key: "ultra",
       name: "Plus",
       monthlyPrice: "$30",
       yearlyPrice: "$24",
@@ -130,7 +130,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["3"] },
             pro: { kind: "text", lines: ["10"] },
-            plus: { kind: "text", lines: ["100"] },
+            ultra: { kind: "text", lines: ["100"] },
             enterprise: { kind: "text", lines: ["Unlimited"] },
           },
         },
@@ -139,7 +139,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["2"] },
             pro: { kind: "text", lines: ["20"] },
-            plus: { kind: "text", lines: ["300"] },
+            ultra: { kind: "text", lines: ["300"] },
             enterprise: { kind: "text", lines: ["Unlimited"] },
           },
         },
@@ -148,7 +148,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["100 MB"] },
             pro: { kind: "text", lines: ["2 GB"] },
-            plus: { kind: "text", lines: ["10 GB"] },
+            ultra: { kind: "text", lines: ["10 GB"] },
             enterprise: { kind: "text", lines: ["Custom"] },
           },
         },
@@ -157,7 +157,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["200K tokens"] },
             pro: { kind: "text", lines: ["500K/day"] },
-            plus: { kind: "text", lines: ["20M/day"] },
+            ultra: { kind: "text", lines: ["20M/day"] },
             enterprise: { kind: "text", lines: ["Custom"] },
           },
         },
@@ -166,7 +166,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["2"] },
             pro: { kind: "text", lines: ["10"] },
-            plus: { kind: "text", lines: ["100"] },
+            ultra: { kind: "text", lines: ["100"] },
             enterprise: { kind: "text", lines: ["Unlimited"] },
           },
         },
@@ -180,7 +180,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["7 Days"] },
             pro: { kind: "text", lines: ["30 Days"] },
-            plus: { kind: "text", lines: ["180 Days"] },
+            ultra: { kind: "text", lines: ["180 Days"] },
             enterprise: { kind: "text", lines: ["Unlimited"] },
           },
         },
@@ -189,7 +189,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["1 MB"] },
             pro: { kind: "text", lines: ["10 MB"] },
-            plus: { kind: "text", lines: ["100 MB"] },
+            ultra: { kind: "text", lines: ["100 MB"] },
             enterprise: { kind: "text", lines: ["Custom"] },
           },
         },
@@ -198,7 +198,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["Unlimited"] },
             pro: { kind: "text", lines: ["Unlimited"] },
-            plus: { kind: "text", lines: ["Unlimited"] },
+            ultra: { kind: "text", lines: ["Unlimited"] },
             enterprise: { kind: "text", lines: ["Unlimited"] },
           },
         },
@@ -207,7 +207,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "check" },
             pro: { kind: "check" },
-            plus: { kind: "check" },
+            ultra: { kind: "check" },
             enterprise: { kind: "check" },
           },
         },
@@ -216,7 +216,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "check" },
             pro: { kind: "check" },
-            plus: { kind: "check" },
+            ultra: { kind: "check" },
             enterprise: { kind: "check" },
           },
         },
@@ -230,7 +230,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["100"] },
             pro: { kind: "text", lines: ["5,000"] },
-            plus: { kind: "text", lines: ["Unlimited"] },
+            ultra: { kind: "text", lines: ["Unlimited"] },
             enterprise: { kind: "text", lines: ["Unlimited"] },
           },
         },
@@ -239,7 +239,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["10"] },
             pro: { kind: "text", lines: ["50"] },
-            plus: { kind: "text", lines: ["200"] },
+            ultra: { kind: "text", lines: ["200"] },
             enterprise: { kind: "text", lines: ["Unlimited"] },
           },
         },
@@ -248,7 +248,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "blank" },
             pro: { kind: "check" },
-            plus: { kind: "check" },
+            ultra: { kind: "check" },
             enterprise: { kind: "check" },
           },
         },
@@ -257,7 +257,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "blank" },
             pro: { kind: "check" },
-            plus: { kind: "check" },
+            ultra: { kind: "check" },
             enterprise: { kind: "check" },
           },
         },
@@ -266,7 +266,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["16K"] },
             pro: { kind: "text", lines: ["64K"] },
-            plus: { kind: "text", lines: ["256K"] },
+            ultra: { kind: "text", lines: ["256K"] },
             enterprise: { kind: "text", lines: ["Custom"] },
           },
         },
@@ -280,7 +280,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "text", lines: ["0"] },
             pro: { kind: "text", lines: ["2"] },
-            plus: { kind: "text", lines: ["20"] },
+            ultra: { kind: "text", lines: ["20"] },
             enterprise: { kind: "text", lines: ["Unlimited"] },
           },
         },
@@ -289,7 +289,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "blank" },
             pro: { kind: "blank" },
-            plus: { kind: "blank" },
+            ultra: { kind: "blank" },
             enterprise: { kind: "check" },
           },
         },
@@ -298,7 +298,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "blank" },
             pro: { kind: "blank" },
-            plus: { kind: "text", lines: ["90 Days"] },
+            ultra: { kind: "text", lines: ["90 Days"] },
             enterprise: { kind: "text", lines: ["Unlimited"] },
           },
         },
@@ -307,7 +307,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "blank" },
             pro: { kind: "text", lines: ["Email"] },
-            plus: { kind: "text", lines: ["Priority Email"] },
+            ultra: { kind: "text", lines: ["Priority Email"] },
             enterprise: { kind: "text", lines: ["Dedicated Manager"] },
           },
         },
@@ -316,7 +316,7 @@ export const pricingPageContent = {
           values: {
             free: { kind: "blank" },
             pro: { kind: "blank" },
-            plus: { kind: "text", lines: ["99.9%"] },
+            ultra: { kind: "text", lines: ["99.9%"] },
             enterprise: { kind: "text", lines: ["Custom"] },
           },
         },

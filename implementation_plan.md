@@ -180,7 +180,7 @@ PlannerHQ
 │   └── File Type Validation
 │
 ├── Billing & Subscriptions
-│   ├── Plan Selection (Free, Pro, Plus, Enterprise)
+│   ├── Plan Selection (Free, Pro, Ultra, Enterprise)
 │   ├── Razorpay Checkout
 │   ├── Subscription Lifecycle (create, upgrade, downgrade, cancel)
 │   ├── Usage Metering
@@ -193,7 +193,7 @@ PlannerHQ
 │   ├── Notification Settings
 │   └── Privacy & Security Settings
 │
-├── Audit Logs (Plus + Enterprise)
+├── Audit Logs (Ultra + Enterprise)
 │   ├── User Actions Log
 │   ├── Admin Actions Log
 │   └── Log Retention Policies
@@ -250,7 +250,7 @@ PlannerHQ
 | Task calendar view | Cross-feature integration |
 | Message search | Full-text search on messages |
 | Read receipts | Realtime channel tracking |
-| Audit logs (Plus+) | Structured event logging |
+| Audit logs (Ultra+) | Structured event logging |
 
 ### Future Features (Phase 2+)
 
@@ -613,7 +613,7 @@ alter table public.profiles enable row level security;
 ```sql
 create table public.plans (
   id                    uuid primary key default gen_random_uuid(),
-  key                   text not null unique check (key in ('free', 'pro', 'plus', 'enterprise')),
+  key                   text not null unique check (key in ('free', 'pro', 'Ultra', 'enterprise')),
   name                  text not null,
   monthly_price_paise   integer not null default 0, -- Razorpay uses paise (INR) or smallest currency unit
   yearly_price_paise    integer not null default 0,
@@ -1229,7 +1229,7 @@ alter table public.share_links enable row level security;
 
 ### 5.25 audit_logs
 
-**Purpose**: Action audit trail for Plus and Enterprise plans.
+**Purpose**: Action audit trail for Ultra and Enterprise plans.
 
 ```sql
 create table public.audit_logs (
@@ -2774,7 +2774,7 @@ $$ language plpgsql security definer;
 |---|---|---|---|
 | Free | ₹0 | ₹0 | — (no subscription) |
 | Pro | ₹1,249/mo | ₹999/mo (₹11,988/yr) | `plan_pro_monthly`, `plan_pro_yearly` |
-| Plus | ₹2,499/mo | ₹1,999/mo (₹23,988/yr) | `plan_plus_monthly`, `plan_plus_yearly` |
+| Ultra | ₹2,499/mo | ₹1,999/mo (₹23,988/yr) | `plan_Ultra_monthly`, `plan_Ultra_yearly` |
 | Enterprise | Custom | Custom | Custom agreement |
 
 > [!NOTE]
@@ -3089,7 +3089,7 @@ Google API returns Meet link → stored in calendar_events.google_meet_url
 ### Audit Logging
 
 ```sql
--- Trigger-based audit logging for Plus/Enterprise
+-- Trigger-based audit logging for Ultra/Enterprise
 create or replace function public.log_audit_event()
 returns trigger as $$
 declare
@@ -3104,7 +3104,7 @@ begin
     and wm.role = 'owner'
   limit 1;
 
-  if v_plan_key in ('plus', 'enterprise') then
+  if v_plan_key in ('Ultra', 'enterprise') then
     insert into public.audit_logs (workspace_id, actor_id, action, entity_type, entity_id, metadata)
     values (
       coalesce(new.workspace_id, old.workspace_id),
@@ -3341,7 +3341,7 @@ supabase db push --linked  # against production project (after backup)
 **Database Work**:
 - [ ] Enable required Postgres extensions (`pgcrypto`, `pg_trgm`, `pg_cron`)
 - [ ] Create `private` schema for helper functions
-- [ ] Create `plans` table + seed with Free/Pro/Plus/Enterprise data
+- [ ] Create `plans` table + seed with Free/Pro/Ultra/Enterprise data
 - [ ] Create `profiles` table
 - [ ] Create `subscriptions` table
 - [ ] Create `handle_updated_at` trigger function
@@ -4077,4 +4077,4 @@ export async function checkAiQuota(
 > 2. **Email provider**: Which transactional email service to use for notifications? Resend (recommended), SendGrid, or Supabase built-in?
 > 3. **Tiptap license**: Tiptap's collaboration features require `@tiptap/extension-collaboration` which is open-source, but `@tiptap-pro/*` extensions (AI, comments, etc.) require a paid license. Confirm if Pro extensions are needed.
 > 4. **Supabase plan**: Which Supabase plan will be used? Free tier has limits on storage, edge function invocations, and realtime connections. **Pro plan ($25/mo)** is recommended for production.
-> 5. **Google Calendar/Meet availability**: These are marked Enterprise-only in the pricing table but Pro/Plus also show checkmarks in the existing pricing data. Clarify which plans should have Google integrations.
+> 5. **Google Calendar/Meet availability**: These are marked Enterprise-only in the pricing table but Pro/Ultra also show checkmarks in the existing pricing data. Clarify which plans should have Google integrations.

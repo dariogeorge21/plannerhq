@@ -38,7 +38,7 @@ create trigger set_updated_at before update on public.profiles
 -- 3. Create public.plans table
 create table public.plans (
   id                    uuid primary key default gen_random_uuid(),
-  key                   text not null unique check (key in ('free', 'pro', 'plus', 'enterprise')),
+  key                   text not null unique check (key in ('free', 'pro', 'ultra', 'enterprise')),
   name                  text not null,
   monthly_price_paise   integer not null default 0, -- Razorpay uses paise
   yearly_price_paise    integer not null default 0,

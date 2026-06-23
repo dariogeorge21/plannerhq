@@ -46,13 +46,13 @@ SET
   yearly_price_paise = 39900
 WHERE key = 'pro';
 
--- If plus exists, set it. Note: user will manually rename plus to ultra later, 
--- but we update the pricing here on 'plus' so it reflects correctly before/after rename.
+-- If ultra exists, set it. Note: user will manually rename ultra to ultra later, 
+-- but we update the pricing here on 'ultra' so it reflects correctly before/after rename.
 UPDATE public.plans 
 SET 
   monthly_price_paise = 89900, 
   yearly_price_paise = 79900
-WHERE key = 'plus';
+WHERE key = 'ultra';
 
 -- Ensure Enterprise is Custom (0 paise, handles in code)
 UPDATE public.plans 

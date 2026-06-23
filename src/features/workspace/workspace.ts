@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { checkWorkspaceLimit, incrementWorkspaceUsage } from "@/features/billing/usage";
 
 export async function CreateWorkspace(formData: FormData): Promise<{ success: boolean, message: string }> {
     const supabase = await createClient();
@@ -13,6 +14,11 @@ export async function CreateWorkspace(formData: FormData): Promise<{ success: bo
         return { success: false, message: "User not found" };
     }
 
+    const limitCheck = await checkWorkspaceLimit(user.id);
+    if (!limitCheck.allowed) {
+        return { success: false, message: `Workspace limit reached (${limitCheck.current}/${limitCheck.limit}). Please upgrade your plan.` };
+    }
+
     const { data: workspace, error: workspaceError } = await supabase.rpc('create_workspace_with_owner', {
         p_workspace_name: workspaceName,
         p_workspace_slug: slug,
@@ -21,6 +27,9 @@ export async function CreateWorkspace(formData: FormData): Promise<{ success: bo
     if (workspaceError) {
         return { success: false, message: "Failed to create workspace" };
     }
+
+    await incrementWorkspaceUsage(user.id, 1);
+
     revalidatePath('/dashboard');
     return { success: true, message: "Workspace created successfully" };
 }

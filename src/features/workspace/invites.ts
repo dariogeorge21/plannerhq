@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { WorkspaceRole, InviteStatus } from "@/types/workspace";
 import { revalidatePath } from "next/cache";
+import { checkCollaboratorLimit } from "@/features/billing/usage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,6 +92,11 @@ export async function InviteUserToWorkspaceByHqid(formData: FormData): Promise<I
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (!currentUser) return { success: false, message: "Not authenticated" };
 
+    const limitCheck = await checkCollaboratorLimit(workspaceId, currentUser.id);
+    if (!limitCheck.allowed) {
+        return { success: false, message: `Collaborator limit reached (${limitCheck.current}/${limitCheck.limit}). Please upgrade your plan.` };
+    }
+
     // Resolve the target profile
     const inviteeId = await resolveProfileByHqid(supabase, hqid);
     if (!inviteeId) return { success: false, message: "User not found with this HQ ID" };
@@ -140,6 +146,11 @@ export async function InviteUserToWorkspaceByEmail(formData: FormData): Promise<
 
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (!currentUser) return { success: false, message: "Not authenticated" };
+
+    const limitCheck = await checkCollaboratorLimit(workspaceId, currentUser.id);
+    if (!limitCheck.allowed) {
+        return { success: false, message: `Collaborator limit reached (${limitCheck.current}/${limitCheck.limit}). Please upgrade your plan.` };
+    }
 
     // Resolve the target profile
     const inviteeId = await resolveProfileByEmail(supabase, email);

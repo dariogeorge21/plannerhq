@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PlannerHQ
 
-## Getting Started
+PlannerHQ is a production-grade collaborative workspace platform designed to unify your team's workflow. It combines Notion-style rich text documents, ClickUp-style project and task management, integrated calendar planning, real-time collaboration, and AI-powered productivity tools into a single, cohesive application.
 
-First, run the development server:
+## 🌟 Core Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 🏢 Workspace Management
+- **Centralized Workspaces:** Create and manage distinct workspaces for different teams or organizations.
+- **Role-Based Access Control (RBAC):** Granular permission settings with distinct roles (Admin, Member, Guest).
+- **Member Management:** Seamless invitation system and workspace settings configuration.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 📊 Project & Task Tracking
+- **Project Organization:** Group tasks into projects with custom statuses and progress tracking.
+- **Advanced Task Management:** Create tasks, subtasks, set priorities, and assign them to team members.
+- **Deadline Tracking:** Robust deadline management system to ensure timely project delivery.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 📝 Collaborative Documents (Editor)
+- **Rich Text Editing:** Powerful block-based editor powered by Tiptap.
+- **Real-Time Collaboration:** Work together simultaneously with live cursors and updates using Yjs and Supabase Realtime.
+- **Autosave & History:** Never lose your work with robust state management.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 📅 Calendar & Scheduling
+- **Unified Views:** Visualize tasks, project deadlines, and events across various calendar views.
+- **Timeline Rendering:** Interactive timelines for long-term project planning and scheduling.
 
-## Learn More
+### 💬 Communication & Notifications
+- **Real-Time Alerts:** In-app notification center for mentions, assignments, and updates.
+- **Activity Feeds:** Keep track of changes and progress across your workspace.
+- **Integrated Chat:** Contextual communication right where the work happens.
 
-To learn more about Next.js, take a look at the following resources:
+### 📁 File Management
+- **Secure Storage:** Upload, organize, and attach files to tasks and documents.
+- **Asset Management:** Centralized repository for project-related media and resources.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 💳 Billing & Subscriptions
+- **Usage Tracking:** Granular tracking of user and workspace resource consumption.
+- **Subscription Management:** Tiered plans and billing integration for premium features.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Technology Stack
 
-## Deploy on Vercel
+PlannerHQ is built with a modern, scalable, and highly performant tech stack:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Framework:** [Next.js](https://nextjs.org/) (App Router, React 19)
+- **Backend & Database:** [Supabase](https://supabase.com/) (PostgreSQL, Auth, Storage, Edge Functions, Realtime)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/) & Radix UI
+- **State Management & Data Fetching:** React Query (`@tanstack/react-query`)
+- **Rich Text Editor:** Tiptap & Yjs for real-time sync
+- **Authentication:** Supabase Auth (SSR configured)
+- **Icons:** Lucide React & Hugeicons
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v20+ recommended)
+- npm, yarn, pnpm, or bun
+- A Supabase project (for database, auth, and storage)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd plannerhq
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Setup:**
+   Create a `.env.local` file in the root directory and add your Supabase credentials and other required variables:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   # Add other required environment variables...
+   ```
+
+4. **Run the Development Server:**
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 🏗️ Architecture & Development Standards
+
+PlannerHQ follows strict architectural guidelines to ensure scalability and maintainability:
+
+- **Feature-Based Architecture:** Code is organized by feature domains in the `src/features` directory (e.g., `auth`, `workspace`, `task`, `calendar`, `editor`).
+- **Separation of Concerns:** Business logic is strictly separated from UI components, residing in custom hooks and service layers.
+- **Type Safety:** TypeScript is heavily enforced; the use of `any` is strictly prohibited.
+- **Security First:** All database interactions are protected via Supabase Row Level Security (RLS). Authorization and validation are always verified on the server.
+- **Performance Optimized:** Utilization of pagination, optimistic updates, and caching mechanisms to ensure a snappy user experience.
+
+---
+*Developed with a focus on maintainability, scalability, security, and exceptional user experience.*

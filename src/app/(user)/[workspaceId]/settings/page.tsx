@@ -28,6 +28,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Workspace, WorkspaceMember } from "@/types/workspace";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AvatarPicker } from "@/app/(user)/profile/components/ui/avatar-picker";
 
 type WorkspaceInviteItem = {
   id: string;
@@ -54,6 +55,7 @@ export default function WorkspaceSettingsPage({
   // Update state
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isUpdatePending, startUpdateTransition] = useTransition();
 
   // Archive state
@@ -76,6 +78,7 @@ export default function WorkspaceSettingsPage({
           setWorkspace(wsRes.data);
           setName(wsRes.data.name);
           setDescription(wsRes.data.description || "");
+          setAvatarUrl(wsRes.data.avatar_url || null);
         }
 
         if (memRes.success && memRes.data && user) {
@@ -117,6 +120,9 @@ export default function WorkspaceSettingsPage({
       formData.append("workspaceId", workspaceId);
       formData.append("workspaceName", name);
       formData.append("workspaceDescription", description);
+      if (avatarUrl) {
+          formData.append("avatarUrl", avatarUrl);
+      }
 
       const res = await UpdateWorkspace(formData);
       if (res.success) toast.success(res.message);
@@ -186,7 +192,14 @@ export default function WorkspaceSettingsPage({
             <Settings className="w-5 h-5 text-neutral-500" />
             <h2 className="text-lg font-bold text-neutral-900">General Information</h2>
           </div>
-          <form onSubmit={handleUpdate} className="p-6 md:p-8 space-y-6">
+          <form onSubmit={handleUpdate} className="p-6 md:p-8 space-y-8">
+            <div className="mb-4">
+              <AvatarPicker 
+                value={avatarUrl} 
+                onChange={(url) => setAvatarUrl(url)} 
+                displayName={name || workspace?.name || "?"} 
+              />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="ws-name" className="text-sm font-semibold text-neutral-900">Workspace Name</Label>
               <Input

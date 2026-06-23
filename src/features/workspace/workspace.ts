@@ -58,13 +58,20 @@ export async function UpdateWorkspace(formData: FormData): Promise<{ success: bo
     const workspaceName = formData.get('workspaceName') as string;
     const workspaceId = formData.get('workspaceId') as string;
     const workspaceDescription = formData.get('workspaceDescription') as string;
+    const avatarUrl = formData.get('avatarUrl') as string | null;
+
+    const updatePayload: any = {
+        name: workspaceName,
+        description: workspaceDescription
+    };
+
+    if (avatarUrl !== null) {
+        updatePayload.avatar_url = avatarUrl;
+    }
 
     const { error: workspaceError } = await supabase
         .from('workspaces')
-        .update({
-            name: workspaceName,
-            description: workspaceDescription
-        })
+        .update(updatePayload)
         .eq('id', workspaceId);
 
     if (workspaceError) {
@@ -84,6 +91,7 @@ export type WorkspaceListItem = {
     created_by: string;
     role: 'owner' | 'admin' | 'member';
     joined_at: string;
+    avatar_url: string | null;
 };
 
 export type ListWorkspaceResult = {
@@ -105,7 +113,7 @@ export async function ListWorkspace(): Promise<ListWorkspaceResult> {
 
     const { data, error } = await supabase
         .from('workspace_members')
-        .select('role, joined_at, workspaces!inner(id, name, slug, description, created_at, created_by, is_deleted)')
+        .select('role, joined_at, workspaces!inner(id, name, slug, description, created_at, created_by, is_deleted, avatar_url)')
         .eq('user_id', user.id)
         .filter('workspaces.is_deleted', 'eq', false);
 
@@ -124,6 +132,7 @@ export async function ListWorkspace(): Promise<ListWorkspaceResult> {
             created_at: string;
             created_by: string;
             is_deleted: boolean;
+            avatar_url: string | null;
         };
     };
 
@@ -135,7 +144,8 @@ export async function ListWorkspace(): Promise<ListWorkspaceResult> {
         created_at: item.workspaces.created_at,
         created_by: item.workspaces.created_by,
         role: item.role,
-        joined_at: item.joined_at
+        joined_at: item.joined_at,
+        avatar_url: item.workspaces.avatar_url
     }));
 
     const owned = allWorkspaces.filter(ws => ws.role === 'owner' || ws.role === 'admin');

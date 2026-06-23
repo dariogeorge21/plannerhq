@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { WorkspaceAvatar } from '@/components/ui/workspace-avatar';
 
 // Types
 interface UserProps {
@@ -136,9 +137,9 @@ export function ProfileOverviewCard({ user }: UserProps) {
 
 export function RecentWorkspaces() {
     const workspaces = [
-        { id: 1, name: 'Design System', role: 'Admin', color: 'bg-blue-500' },
-        { id: 2, name: 'Marketing Q3', role: 'Editor', color: 'bg-emerald-500' },
-        { id: 3, name: 'Engineering', role: 'Viewer', color: 'bg-purple-500' },
+        { id: 1, name: 'Design System', role: 'Admin', avatar_url: 'preset:indigo' },
+        { id: 2, name: 'Marketing Q3', role: 'Editor', avatar_url: 'preset:emerald' },
+        { id: 3, name: 'Engineering', role: 'Viewer', avatar_url: 'preset:purple' },
     ];
 
     return (
@@ -152,9 +153,7 @@ export function RecentWorkspaces() {
                     {workspaces.map((ws) => (
                         <div key={ws.id} className="group flex items-center justify-between p-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700">
                             <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white ${ws.color} shadow-sm`}>
-                                    <Briefcase className="w-5 h-5" />
-                                </div>
+                                <WorkspaceAvatar workspace={{ name: ws.name, avatar_url: ws.avatar_url }} className="w-10 h-10 rounded-xl" />
                                 <div>
                                     <p className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-indigo-600 transition-colors">{ws.name}</p>
                                     <p className="text-xs text-neutral-500">{ws.role}</p>

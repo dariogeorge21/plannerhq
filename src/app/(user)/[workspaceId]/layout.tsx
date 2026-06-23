@@ -28,6 +28,7 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Workspace } from "@/types/workspace";
+import { WorkspaceAvatar } from "@/components/ui/workspace-avatar";
 import { toast } from "sonner";
 import { TimeTrackerWidget } from "@/features/workspace/components/TimeTrackerWidget";
 
@@ -129,9 +130,7 @@ export default function WorkspaceLayout({
       >
         <div className="h-16 flex items-center px-6 border-b border-border">
           <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold shrink-0 shadow-inner">
-              {workspace.name.charAt(0).toUpperCase()}
-            </div>
+            <WorkspaceAvatar workspace={workspace} className="w-8 h-8 rounded-lg shadow-inner" />
             {!isCollapsed && (
               <span className="font-bold text-sidebar-foreground tracking-tight truncate">
                 {workspace.name}
@@ -221,9 +220,7 @@ export default function WorkspaceLayout({
       {/* MOBILE HEADER */}
       <header className="md:hidden flex items-center justify-between h-16 bg-white/80 backdrop-blur-xl border-b border-neutral-200/60 px-5 fixed top-0 w-full z-40">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold shadow-inner">
-            {workspace.name.charAt(0).toUpperCase()}
-          </div>
+          <WorkspaceAvatar workspace={workspace} className="w-8 h-8 rounded-lg shadow-inner" />
           <span className="font-bold text-neutral-900 tracking-tight truncate max-w-[150px]">
             {workspace.name}
           </span>

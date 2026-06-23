@@ -12,6 +12,7 @@ export interface Workspace {
   created_by: string;
   role?: WorkspaceRole; // Joined role for current user
   joined_at?: string;    // Joined timestamp for current user
+  avatar_url?: string | null;
 }
 
 export interface WorkspaceMember {

@@ -20,7 +20,7 @@ export function TimeTrackerWidget({ workspaceId }: TimeTrackerWidgetProps) {
         <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50/80 border border-indigo-100 rounded-full text-indigo-700 shadow-sm backdrop-blur-sm transition-all hover:bg-indigo-100/80 hover:shadow"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50/80 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-full text-indigo-700 dark:text-indigo-300 shadow-sm backdrop-blur-sm transition-all hover:bg-indigo-100/80 dark:hover:bg-indigo-500/20 hover:shadow"
             title="Time spent active in this workspace"
         >
             <Clock className="w-3.5 h-3.5" />

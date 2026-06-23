@@ -1,3 +1,117 @@
+// ─── BILLING_PLANS: Single source of truth for all pricing ───────────────────
+// Pro:  Monthly ₹399/mo (₹4,788/yr)  |  Yearly ₹299/mo (₹3,588/yr) — save ₹1,200
+// Plus: Monthly ₹899/mo (₹10,788/yr) |  Yearly ₹799/mo (₹9,588/yr) — save ₹1,200
+
+export const BILLING_PLANS = [
+  {
+    key: "free" as const,
+    name: "Free Starter",
+    monthlyPricePaise: 0,
+    yearlyPricePaise: 0,
+    monthlyDisplay: "₹0",
+    yearlyDisplay: "₹0",
+    monthlyTotal: "₹0 / year",
+    yearlyTotal: "₹0 / year",
+    annualSaving: null,
+    savingLabel: null,
+    description: "For individuals getting started with personal projects.",
+    features: [
+      "Up to 3 workspaces",
+      "Up to 2 collaborators",
+      "100 MB storage",
+      "200K AI tokens",
+      "7-day version history",
+    ],
+    cta: "Get Started",
+    href: "/signup",
+    highlighted: false,
+    ribbon: null,
+  },
+  {
+    key: "pro" as const,
+    name: "Pro",
+    monthlyPricePaise: 39900,  // ₹399/mo
+    yearlyPricePaise: 29900,   // ₹299/mo billed yearly
+    monthlyDisplay: "₹399",
+    yearlyDisplay: "₹299",
+    monthlyTotal: "₹4,788 / year",
+    yearlyTotal: "₹3,588 / year",
+    annualSaving: 1200,
+    savingLabel: "Save ₹1,200/yr",
+    description: "Advanced collaboration for growing teams.",
+    features: [
+      "Up to 10 workspaces",
+      "Up to 10 collaborators",
+      "2 GB storage",
+      "20 sections per workspace",
+      "500K AI tokens / day",
+      "30-day version history",
+      "Email support",
+    ],
+    cta: "Start Free Trial",
+    href: "/signup",
+    highlighted: true,
+    ribbon: "Most popular",
+  },
+  {
+    key: "ultra" as const,
+    name: "Ultra",
+    monthlyPricePaise: 89900,  // ₹899/mo
+    yearlyPricePaise: 79900,   // ₹799/mo billed yearly
+    monthlyDisplay: "₹899",
+    yearlyDisplay: "₹799",
+    monthlyTotal: "₹10,788 / year",
+    yearlyTotal: "₹9,588 / year",
+    annualSaving: 1200,
+    savingLabel: "Save ₹1,200/yr",
+    description: "All-in-one solution for large teams.",
+    features: [
+      "Up to 100 workspaces",
+      "Unlimited collaborators",
+      "10 GB storage",
+      "300 sections per workspace",
+      "20M AI tokens / day",
+      "180-day version history",
+      "Priority email support",
+      "99.9% SLA",
+    ],
+    cta: "Start Free Trial",
+    href: "/signup",
+    highlighted: false,
+    ribbon: null,
+  },
+  {
+    key: "enterprise" as const,
+    name: "Enterprise",
+    monthlyPricePaise: null,
+    yearlyPricePaise: null,
+    monthlyDisplay: "Custom",
+    yearlyDisplay: "Custom",
+    monthlyTotal: "Custom pricing",
+    yearlyTotal: "Custom pricing",
+    annualSaving: null,
+    savingLabel: null,
+    description: "For organizations that need scale, security, and custom support.",
+    features: [
+      "Unlimited workspaces",
+      "Unlimited collaborators",
+      "Custom storage",
+      "Custom AI quota",
+      "SSO & SAML",
+      "Custom roles & permissions",
+      "Audit logs",
+      "Dedicated account manager",
+    ],
+    cta: "Contact Sales",
+    href: "/contact",
+    highlighted: false,
+    ribbon: null,
+  },
+] as const;
+
+export type BillingPlanKey = (typeof BILLING_PLANS)[number]["key"];
+
+// ─── Legacy PricingPlans (kept for backwards compat with landing page) ─────────
 export const PricingPlans = [
   {
     name: "Starter",
@@ -16,8 +130,8 @@ export const PricingPlans = [
   },
   {
     name: "Pro",
-    monthlyPrice: "₹299",
-    yearlyPrice: "₹399",
+    monthlyPrice: "₹399",
+    yearlyPrice: "₹299",
     description: "Advanced collaboration for growing teams.",
     features: [
       "Up to 10 workspaces",
@@ -32,7 +146,7 @@ export const PricingPlans = [
     href: "/signup",
   },
   {
-    name: "Ultra",
+    name: "Plus",
     monthlyPrice: "₹899",
     yearlyPrice: "₹799",
     description: "All-in-one solution for large teams and enterprises.",
@@ -77,8 +191,8 @@ export const pricingPageContent = {
     {
       key: "free",
       name: "Free",
-      monthlyPrice: "$0",
-      yearlyPrice: "$0",
+      monthlyPrice: "₹0",
+      yearlyPrice: "₹0",
       monthlySuffix: "",
       yearlySuffix: "",
       description: "For individuals who want to organize their work and notes.",
@@ -88,8 +202,8 @@ export const pricingPageContent = {
     {
       key: "pro",
       name: "Pro",
-      monthlyPrice: "$15",
-      yearlyPrice: "$12",
+      monthlyPrice: "₹399",
+      yearlyPrice: "₹299",
       monthlySuffix: "per month",
       yearlySuffix: "per month billed yearly",
       description: "For smaller teams that need stronger collaboration.",
@@ -100,9 +214,9 @@ export const pricingPageContent = {
     },
     {
       key: "ultra",
-      name: "Plus",
-      monthlyPrice: "$30",
-      yearlyPrice: "$24",
+      name: "Ultra",
+      monthlyPrice: "₹899",
+      yearlyPrice: "₹799",
       monthlySuffix: "per month",
       yearlySuffix: "per month billed yearly",
       description: "For growing teams that need more workspaces and storage.",

@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { BillingCycle, PlanKey } from "@/types/types";
-import { SubscriptionRecord, PaymentRecord, UsageRecord } from "@/types/billing";
+import { SubscriptionRecord, PaymentRecord } from "@/types/billing";
 import { PLAN_CONFIG, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "./config";
 import Razorpay from "razorpay";
 
@@ -25,26 +25,25 @@ export async function getUserSubscription(userId: string) {
     return { subscription: subscription as SubscriptionRecord, plan: planConfig, dbPlan: subscription.plan };
 }
 
+// userId is already validated by the API route caller — no need to re-fetch from auth.admin
 export async function createRazorpaySubscription(userId: string, planKey: PlanKey, billingCycle: BillingCycle) {
     if (planKey === "free" || planKey === "enterprise") {
-        throw new Error("Cannot create razorpay subscription for this plan");
+        throw new Error("Cannot create a Razorpay subscription for the Free or Enterprise plan.");
     }
 
-    const supabase = await createClient();
-    const { data: user } = await supabase.auth.admin.getUserById(userId);
-    if (!user.user) throw new Error("User not found");
-
     const planConfig = PLAN_CONFIG[planKey];
-    if (!planConfig) throw new Error("Invalid plan configuration");
+    if (!planConfig) throw new Error("Invalid plan key: no config found.");
 
     const razorpayPlanId = billingCycle === "monthly"
         ? planConfig.razorpayPlanIdMonthly
         : planConfig.razorpayPlanIdYearly;
 
-    if (!razorpayPlanId) throw new Error("Razorpay Plan ID not configured for this plan/cycle");
+    if (!razorpayPlanId) {
+        throw new Error(`Razorpay Plan ID not configured for ${planKey} / ${billingCycle}. Please set the environment variable.`);
+    }
 
     if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
-        throw new Error("Razorpay credentials not configured");
+        throw new Error("Razorpay credentials are not configured on the server.");
     }
 
     const razorpay = new Razorpay({
@@ -55,7 +54,7 @@ export async function createRazorpaySubscription(userId: string, planKey: PlanKe
     const subscription = await razorpay.subscriptions.create({
         plan_id: razorpayPlanId,
         customer_notify: 1,
-        total_count: billingCycle === "yearly" ? 10 : 120, // max 10 years
+        total_count: billingCycle === "yearly" ? 10 : 120,
         notes: {
             user_id: userId,
             plan_key: planKey,
@@ -63,7 +62,6 @@ export async function createRazorpaySubscription(userId: string, planKey: PlanKe
         }
     });
 
-    console.log(subscription);
     return {
         subscriptionId: subscription.id,
         shortUrl: subscription.short_url,
@@ -75,11 +73,11 @@ export async function cancelSubscription(userId: string) {
     const { subscription } = await getUserSubscription(userId);
 
     if (!subscription || !subscription.razorpay_subscription_id) {
-        throw new Error("No active paid subscription found");
+        throw new Error("No active paid subscription found to cancel.");
     }
 
     if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
-        throw new Error("Razorpay credentials not configured");
+        throw new Error("Razorpay credentials are not configured on the server.");
     }
 
     const razorpay = new Razorpay({
@@ -87,7 +85,7 @@ export async function cancelSubscription(userId: string) {
         key_secret: RAZORPAY_KEY_SECRET,
     });
 
-    await razorpay.subscriptions.cancel(subscription.razorpay_subscription_id, false); // false = cancel at period end
+    await razorpay.subscriptions.cancel(subscription.razorpay_subscription_id, false);
 
     await supabase
         .from("subscriptions")

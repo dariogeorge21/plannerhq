@@ -21,8 +21,8 @@ export const PLAN_CONFIG = {
         razorpayPlanIdMonthly: process.env.NEXT_PUBLIC_RAZORPAY_PRO_MONTHLY_PLAN_ID,
         razorpayPlanIdYearly: process.env.NEXT_PUBLIC_RAZORPAY_PRO_YEARLY_PLAN_ID,
     },
-    plus: { // Keep plus until manually renamed
-        id: "plus",
+    ultra: {
+        id: "ultra",
         maxWorkspaces: 100,
         maxSections: 300,
         maxStorageBytes: 10737418240, // 10GB

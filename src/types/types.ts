@@ -1,5 +1,5 @@
 export type BillingCycle = "monthly" | "yearly";
-export type PlanKey = "free" | "pro" | "plus" | "enterprise";
+export type PlanKey = "free" | "pro" | "ultra" | "enterprise";
 
 export type TextCell = {
     kind: "text";

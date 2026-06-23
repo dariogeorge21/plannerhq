@@ -14,6 +14,7 @@ import { KpiMetrics } from "./components/kpi";
 import { WorkspacesList } from "./components/workspace-list";
 import { InvitationsBanner } from "./components/invitations-banner";
 import { SkeletonLoader } from "@/components/shared/skeleton-loader";
+import { PlanBadge } from "./components/plan-badge";
 
 const ACTIVITY_COOKIE = "plannerhq_last_activity";
 
@@ -107,9 +108,7 @@ export default function DashboardPage() {
         {/* Welcome Header */}
         <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-neutral-200 shadow-sm text-xs font-semibold tracking-wide text-neutral-600 mb-4">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> Free Plan
-            </div>
+            <PlanBadge />
             <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
               Overview
             </h1>

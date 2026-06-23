@@ -1,7 +1,6 @@
-// src/app/(user)/dashboard/_components/kpi-metrics.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MOCK_USER } from "@/data/mock-dashboard";
-import { Layout, Users, Zap } from "lucide-react";
+import { useSubscription } from "@/features/billing/hooks/useSubscription";
+import { Layout, Users, Zap, Loader2 } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 
 const container: Variants = {
@@ -18,29 +17,41 @@ const item: Variants = {
 };
 
 export function KpiMetrics() {
-    const { plan } = MOCK_USER;
+    const { data, loading } = useSubscription();
+
+    if (loading) {
+        return (
+            <div className="flex h-32 items-center justify-center border border-neutral-200/60 rounded-xl bg-white/50 backdrop-blur-xl">
+                <Loader2 className="w-6 h-6 animate-spin text-neutral-300" />
+            </div>
+        );
+    }
+
+    if (!data) return null;
+
+    const { plan, usage, dbPlan, subscription } = data;
 
     const metrics = [
         {
             title: "Total Workspaces",
-            value: `${plan.totalWorkspaces} / ${plan.workspaceLimit}`,
+            value: `${usage?.workspaces_count || 0} / ${plan.maxWorkspaces}`,
             subtitle: "Created under your current plan",
             icon: Layout,
             trend: "Active"
         },
         {
-            title: "Joined Workspaces",
-            value: plan.joinedWorkspaces.toString(),
-            subtitle: "Workspaces you collaborate in",
+            title: "Collaborators",
+            value: `${usage?.collaborators_count || 0} / ${plan.maxCollaborators}`,
+            subtitle: "Total collaborators across workspaces",
             icon: Users,
             trend: "Collaborating"
         },
         {
             title: "Current Plan",
-            value: plan.name,
-            subtitle: `Status: ${plan.status}`,
+            value: dbPlan?.name || "Free Starter",
+            subtitle: `Status: ${subscription?.status || "active"}`,
             icon: Zap,
-            trend: plan.status
+            trend: subscription?.status || "active"
         }
     ];
 

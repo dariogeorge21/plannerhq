@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { checkWorkspaceLimit, incrementWorkspaceUsage } from "@/features/billing/usage";
 
-export async function CreateWorkspace(formData: FormData): Promise<{ success: boolean, message: string }> {
+export async function CreateWorkspace(formData: FormData): Promise<{ success: boolean, message: string, data?: any }> {
     const supabase = await createClient();
     const workspaceName = formData.get('workspaceName') as string;
     const slug = workspaceName.toLocaleLowerCase().replace(/\s+/g, '-') + '-' + Math.random().toString(36).substring(2, 7);
@@ -31,7 +31,7 @@ export async function CreateWorkspace(formData: FormData): Promise<{ success: bo
     await incrementWorkspaceUsage(user.id, 1);
 
     revalidatePath('/dashboard');
-    return { success: true, message: "Workspace created successfully" };
+    return { success: true, message: "Workspace created successfully", data: workspace };
 }
 
 // Workspace Deletion is not allowed, only archive

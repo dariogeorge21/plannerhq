@@ -36,3 +36,19 @@ export interface WorkspaceInvite {
   role: WorkspaceRole;
   invitee_email: string | null;
 }
+
+export interface WorkspaceActivityLog {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  action_type: string;
+  entity_type: string;
+  entity_id: string | null;
+  metadata: any;
+  created_at: string;
+  profiles?: {
+    display_name: string;
+    avatar_url: string | null;
+    email: string;
+  };
+}

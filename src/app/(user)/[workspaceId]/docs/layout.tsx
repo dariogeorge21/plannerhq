@@ -27,7 +27,9 @@ import {
   ArrowDown,
   Trash2,
   Edit2,
-  MoreHorizontal
+  MoreHorizontal,
+  Star,
+  Clock
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -157,21 +159,50 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   };
 
   return (
-    <div className="flex h-[calc(100vh-64px)] md:h-screen w-full overflow-hidden bg-[#FAFAFA]">
+    <div className="flex h-[calc(100vh-64px)] md:h-screen w-full overflow-hidden bg-background">
       {/* Secondary Sidebar for Notes */}
-      <aside className="w-[300px] border-r border-neutral-200/60 bg-white flex flex-col h-full flex-shrink-0 relative z-10 shadow-sm">
-        <div className="p-5 border-b border-neutral-100 flex items-center justify-between bg-white">
-          <h2 className="font-extrabold tracking-tight text-neutral-900 text-lg">Docs</h2>
-          <Button variant="ghost" size="icon" onClick={() => setIsSectionModalOpen(true)} className="h-8 w-8 text-indigo-600 hover:bg-indigo-50 rounded-lg">
+      <aside className="w-[300px] border-r border-border bg-card flex flex-col h-full flex-shrink-0 relative z-10 shadow-sm">
+        <div className="p-5 border-b border-border flex items-center justify-between bg-card">
+          <h2 className="font-extrabold tracking-tight text-foreground text-lg">Docs</h2>
+          <Button variant="ghost" size="icon" onClick={() => setIsSectionModalOpen(true)} className="h-8 w-8 text-primary hover:bg-primary/10 rounded-lg">
             <Plus className="w-5 h-5" />
           </Button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-neutral-200">
-          {sectionsLoading ? (
-            <div className="flex justify-center p-8">
-              <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-border">
+          
+          {/* Static Top Sections */}
+          <div className="space-y-1">
+            <Link 
+              href={`/${workspaceId}/docs`}
+              className={`flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                pathname === `/${workspaceId}/docs` 
+                  ? 'bg-primary/10 text-primary' 
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              <span>All Documents</span>
+            </Link>
+            <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer transition-colors">
+              <Star className="w-4 h-4" />
+              <span>Favorites</span>
             </div>
-          ) : (
+            <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer transition-colors">
+              <Clock className="w-4 h-4" />
+              <span>Recent</span>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Workspace</h3>
+            </div>
+            
+            {sectionsLoading ? (
+              <div className="flex justify-center p-8">
+                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
             sections?.map((section, sIndex) => {
               const isExpanded = expandedSections[section.id];
               const sectionDocs = documents?.filter(d => d.section_id === section.id).sort((a,b) => a.position - b.position) || [];
@@ -179,14 +210,14 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               return (
                 <div key={section.id} className="flex flex-col">
                   <div 
-                    className="flex items-center justify-between group cursor-pointer mb-1"
+                    className="flex items-center justify-between group cursor-pointer mb-1 px-1 rounded-md hover:bg-accent/50"
                     onClick={() => toggleSection(section.id)}
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <Button variant="ghost" size="icon" className="h-5 w-5 p-0 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-md">
+                      <Button variant="ghost" size="icon" className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md">
                         {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                       </Button>
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 truncate group-hover:text-neutral-900 transition-colors">
+                      <h3 className="text-sm font-semibold text-foreground/80 truncate group-hover:text-foreground transition-colors">
                         {section.name}
                       </h3>
                     </div>
@@ -195,7 +226,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 rounded-md hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700" 
+                        className="h-6 w-6 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground" 
                         onClick={(e) => { e.stopPropagation(); moveSection(sIndex, 'up'); }}
                         disabled={sIndex === 0}
                       >
@@ -204,7 +235,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 rounded-md hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700" 
+                        className="h-6 w-6 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground" 
                         onClick={(e) => { e.stopPropagation(); moveSection(sIndex, 'down'); }}
                         disabled={sIndex === sections.length - 1}
                       >
@@ -213,14 +244,14 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 rounded-md hover:bg-indigo-50 hover:text-indigo-600" 
+                        className="h-6 w-6 rounded-md hover:bg-primary/10 hover:text-primary" 
                         onClick={(e) => { e.stopPropagation(); setSelectedSectionId(section.id); setIsDocModalOpen(true); }}
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-neutral-100 text-neutral-400 hover:text-neutral-700" onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground" onClick={(e) => e.stopPropagation()}>
                             <MoreHorizontal className="w-3.5 h-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -243,7 +274,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="flex flex-col gap-0.5 overflow-hidden ml-2 border-l border-neutral-100 pl-2"
+                        className="flex flex-col gap-0.5 overflow-hidden ml-3 border-l border-border pl-2 mt-1"
                       >
                         {sectionDocs.map((doc, dIndex, arr) => {
                           const isActive = pathname.includes(`/docs/${doc.id}`);
@@ -253,18 +284,18 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                                 href={`/${workspaceId}/docs/${doc.id}`}
                                 className={`flex items-center gap-2.5 flex-1 min-w-0 text-sm py-1.5 px-2 rounded-lg transition-colors ${
                                   isActive 
-                                    ? 'bg-indigo-50 text-indigo-700 font-semibold' 
-                                    : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+                                    ? 'bg-primary/10 text-primary font-semibold' 
+                                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                                 }`}
                               >
-                                <FileText className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-indigo-600' : 'text-neutral-400'}`} />
+                                <FileText className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
                                 <span className="truncate">{doc.title}</span>
                               </Link>
                               
                               <div className="flex items-center opacity-0 group-hover:opacity-100 transition-all gap-0.5 pr-1">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-neutral-200 text-neutral-400 hover:text-neutral-700">
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground">
                                       <MoreHorizontal className="w-3.5 h-3.5" />
                                     </Button>
                                   </DropdownMenuTrigger>
@@ -290,7 +321,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className="h-7 px-2 text-xs font-medium text-neutral-400 hover:text-indigo-600 hover:bg-indigo-50 justify-start w-full rounded-md"
+                              className="h-7 px-2 text-xs font-medium text-muted-foreground hover:text-primary hover:bg-primary/10 justify-start w-full rounded-md"
                               onClick={() => { setSelectedSectionId(section.id); setIsDocModalOpen(true); }}
                             >
                               <Plus className="w-3 h-3 mr-1.5" /> Add page
@@ -304,12 +335,13 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               );
             })
           )}
+          </div>
           {sections?.length === 0 && !sectionsLoading && (
-            <div className="text-center p-8 bg-neutral-50/50 rounded-2xl border border-dashed border-neutral-200 mt-4">
-              <Folder className="w-8 h-8 text-neutral-300 mx-auto mb-3" />
-              <p className="text-sm font-medium text-neutral-900 mb-1">No sections yet</p>
-              <p className="text-xs text-neutral-500 mb-4">Create a section to organize your docs</p>
-              <Button variant="default" size="sm" onClick={() => setIsSectionModalOpen(true)} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">
+            <div className="text-center p-8 bg-muted/50 rounded-2xl border border-dashed border-border mt-4">
+              <Folder className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm font-medium text-foreground mb-1">No sections yet</p>
+              <p className="text-xs text-muted-foreground mb-4">Create a section to organize your docs</p>
+              <Button variant="default" size="sm" onClick={() => setIsSectionModalOpen(true)} className="rounded-xl shadow-md">
                 Create Section
               </Button>
             </div>
@@ -317,15 +349,15 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         </div>
       </aside>
       
-      <main className="flex-1 overflow-y-auto bg-white z-20">
+      <main className="flex-1 overflow-y-auto bg-background z-20">
         {children}
       </main>
 
       {/* Modals */}
       <Dialog open={isSectionModalOpen} onOpenChange={setIsSectionModalOpen}>
-        <DialogContent className="rounded-2xl border-neutral-200/60 shadow-xl">
+        <DialogContent className="rounded-2xl border-border shadow-xl bg-card">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold tracking-tight">Create New Section</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight text-foreground">Create New Section</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input 
@@ -334,20 +366,20 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               onChange={(e) => setSectionName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateSectionSubmit()}
               autoFocus
-              className="rounded-xl border-neutral-200/60 focus-visible:ring-indigo-500"
+              className="rounded-xl border-border focus-visible:ring-primary"
             />
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsSectionModalOpen(false)} className="rounded-xl">Cancel</Button>
-            <Button onClick={handleCreateSectionSubmit} disabled={!sectionName.trim()} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">Create Section</Button>
+            <Button onClick={handleCreateSectionSubmit} disabled={!sectionName.trim()} className="rounded-xl shadow-md">Create Section</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
       
       <Dialog open={isEditSectionModalOpen} onOpenChange={setIsEditSectionModalOpen}>
-        <DialogContent className="rounded-2xl border-neutral-200/60 shadow-xl">
+        <DialogContent className="rounded-2xl border-border shadow-xl bg-card">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold tracking-tight">Rename Section</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight text-foreground">Rename Section</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input 
@@ -356,20 +388,20 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               onChange={(e) => setEditSectionName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleEditSectionSubmit()}
               autoFocus
-              className="rounded-xl border-neutral-200/60 focus-visible:ring-indigo-500"
+              className="rounded-xl border-border focus-visible:ring-primary"
             />
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsEditSectionModalOpen(false)} className="rounded-xl">Cancel</Button>
-            <Button onClick={handleEditSectionSubmit} disabled={!editSectionName.trim()} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">Save Changes</Button>
+            <Button onClick={handleEditSectionSubmit} disabled={!editSectionName.trim()} className="rounded-xl shadow-md">Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isDocModalOpen} onOpenChange={setIsDocModalOpen}>
-        <DialogContent className="rounded-2xl border-neutral-200/60 shadow-xl">
+        <DialogContent className="rounded-2xl border-border shadow-xl bg-card">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold tracking-tight">Create New Document</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight text-foreground">Create New Document</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input 
@@ -378,12 +410,12 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               onChange={(e) => setDocTitle(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateDocSubmit()}
               autoFocus
-              className="rounded-xl border-neutral-200/60 focus-visible:ring-indigo-500"
+              className="rounded-xl border-border focus-visible:ring-primary"
             />
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setIsDocModalOpen(false)} className="rounded-xl">Cancel</Button>
-            <Button onClick={handleCreateDocSubmit} disabled={!docTitle.trim()} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">Create Document</Button>
+            <Button onClick={handleCreateDocSubmit} disabled={!docTitle.trim()} className="rounded-xl shadow-md">Create Document</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

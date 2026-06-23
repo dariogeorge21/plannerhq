@@ -11,7 +11,7 @@ import { useCollaborationProvider } from "@/features/collaboration/provider";
 import OfflineBanner from "./OfflineBanner";
 import PresenceAvatars from "./PresenceAvatars";
 import VersionHistoryPanel from "./VersionHistoryPanel";
-import EditorToolbar from "./EditorToolbar";
+import FloatingBubbleMenu from "./FloatingBubbleMenu";
 import { getEditorExtensions } from "@/lib/editor/extensions";
 import { useUploadFile } from "@/features/file/hooks";
 import { getSignedUrlAction } from "@/features/file/actions";
@@ -62,7 +62,7 @@ export default function DocumentEditor({
     editorProps: {
       attributes: {
         class: [
-          "prose prose-neutral max-w-none focus:outline-none",
+          "prose prose-neutral max-w-none focus:outline-none dark:prose-invert",
           "min-h-[500px]",
           // Headings
           "prose-headings:font-bold prose-headings:tracking-tight",
@@ -70,18 +70,18 @@ export default function DocumentEditor({
           "prose-h2:text-2xl prose-h2:mb-3 prose-h2:mt-6",
           "prose-h3:text-xl prose-h3:mb-2 prose-h3:mt-5",
           // Paragraphs
-          "prose-p:leading-[1.8] prose-p:text-neutral-700",
+          "prose-p:leading-[1.8] text-foreground",
           // Code
-          "prose-pre:bg-neutral-900 prose-pre:text-neutral-50 prose-pre:rounded-xl prose-pre:shadow-lg",
-          "prose-code:bg-neutral-100 prose-code:text-violet-700 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:text-[0.875em] prose-code:font-mono",
+          "prose-pre:bg-neutral-900 prose-pre:text-neutral-50 prose-pre:rounded-xl prose-pre:shadow-lg dark:prose-pre:bg-neutral-950",
+          "prose-code:bg-muted prose-code:text-primary prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:text-[0.875em] prose-code:font-mono",
           // Links
-          "prose-a:text-violet-600 hover:prose-a:text-violet-800 prose-a:underline",
+          "prose-a:text-primary hover:prose-a:text-primary/80 prose-a:underline",
           // Blockquote
-          "prose-blockquote:border-l-violet-400 prose-blockquote:text-neutral-600 prose-blockquote:not-italic",
+          "prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-blockquote:not-italic",
           // Lists
-          "prose-ul:marker:text-neutral-400 prose-ol:marker:text-neutral-400",
+          "prose-ul:marker:text-muted-foreground prose-ol:marker:text-muted-foreground",
           // HR
-          "prose-hr:border-neutral-200",
+          "prose-hr:border-border",
         ].join(" "),
       },
     },
@@ -137,8 +137,8 @@ export default function DocumentEditor({
     return (
       <div className="flex h-full items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-7 h-7 animate-spin text-violet-400" />
-          <p className="text-sm text-neutral-400 font-medium">Loading document…</p>
+          <Loader2 className="w-7 h-7 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground font-medium">Loading document…</p>
         </div>
       </div>
     );
@@ -148,10 +148,10 @@ export default function DocumentEditor({
   if (!doc) {
     return (
       <div className="flex h-full items-center justify-center flex-col gap-3">
-        <div className="w-12 h-12 rounded-2xl bg-neutral-100 flex items-center justify-center">
-          <FileText className="w-6 h-6 text-neutral-400" />
+        <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
+          <FileText className="w-6 h-6 text-muted-foreground" />
         </div>
-        <p className="text-neutral-500 font-medium">Document not found</p>
+        <p className="text-muted-foreground font-medium">Document not found</p>
       </div>
     );
   }
@@ -185,21 +185,35 @@ export default function DocumentEditor({
       </div>
 
       {/* ── Scrollable document area ─────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto relative scrollbar-thin scrollbar-thumb-border">
+        {doc?.cover && (
+          <div className="w-full h-48 sm:h-64 object-cover">
+            <img src={doc.cover} alt="Cover" className="w-full h-full object-cover" />
+          </div>
+        )}
+
         {/* Document inner container */}
         <div className="max-w-[800px] mx-auto px-6 sm:px-10 md:px-14 lg:px-16 pb-32">
+          
           {/* Document title */}
-          <div className="pt-16 pb-6">
+          <div className={`pt-16 pb-6 ${doc?.cover ? '-mt-16 relative z-10' : ''}`}>
+            
+            {doc?.icon && (
+              <div className="text-6xl sm:text-7xl mb-4 leading-none">
+                {doc.icon}
+              </div>
+            )}
+            
             <textarea
               value={title}
               onChange={handleTitleChange}
-              placeholder="Untitled"
+              placeholder="Untitled Document"
               rows={1}
               disabled={isOffline}
               className="
                 w-full bg-transparent border-none outline-none resize-none overflow-hidden
                 text-[2.6rem] sm:text-[3rem] font-black tracking-tight leading-tight
-                text-neutral-900 placeholder-neutral-300
+                text-foreground placeholder-muted-foreground/50
                 transition-colors duration-200
                 disabled:opacity-50
               "
@@ -208,7 +222,7 @@ export default function DocumentEditor({
           </div>
 
           {/* Formatting toolbar */}
-          <EditorToolbar editor={editor} />
+          <FloatingBubbleMenu editor={editor} />
 
           {/* Editor content */}
           <div

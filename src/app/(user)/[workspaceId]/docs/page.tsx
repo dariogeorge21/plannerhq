@@ -1,37 +1,117 @@
 "use client";
 
 import React from "react";
-import { FileText, Sparkles, PencilLine } from "lucide-react";
+import { FileText, Sparkles, PencilLine, Clock, Zap, Plus, Search } from "lucide-react";
 import { motion } from "framer-motion";
+import { useParams } from "next/navigation";
+import { useDocuments } from "@/features/document/hooks";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
-export default function DocsEmptyState() {
+const templates = [
+  { id: 'blank', name: 'Blank Document', icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
+  { id: 'meeting', name: 'Meeting Notes', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+  { id: 'prd', name: 'Product Spec', icon: Zap, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+];
+
+export default function DocsDashboard() {
+  const params = useParams();
+  const workspaceId = params?.workspaceId as string;
+  const { data: documents, isLoading } = useDocuments(workspaceId);
+
+  // We sort by an assumed updated_at or id, for now just slice
+  const recentDocs = documents ? [...documents].reverse().slice(0, 4) : [];
+
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-8 bg-white relative overflow-hidden">
+    <div className="h-full w-full bg-background relative overflow-y-auto p-8 lg:p-12">
       {/* Decorative background blur */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-50/50 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
       
-      <motion.div 
-        initial={{ opacity: 0, y: 15 }} 
-        animate={{ opacity: 1, y: 0 }} 
-        transition={{ duration: 0.5 }}
-        className="max-w-md w-full flex flex-col items-center text-center relative z-10"
-      >
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold tracking-wide uppercase border border-indigo-100/50 mb-8">
-          <Sparkles className="w-3.5 h-3.5" /> Workspace Docs
-        </div>
+      <div className="max-w-5xl mx-auto space-y-12 relative z-10">
         
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-indigo-100 blur-xl rounded-full opacity-50" />
-          <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-[2rem] flex items-center justify-center shadow-lg shadow-indigo-500/20 relative z-10">
-            <PencilLine className="w-10 h-10" />
+        <header className="space-y-3">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wide uppercase border border-primary/20">
+            <Sparkles className="w-3.5 h-3.5" /> Workspace Notes
+          </motion.div>
+          <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-4xl font-extrabold tracking-tight text-foreground">
+            Good afternoon.
+          </motion.h1>
+          <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-muted-foreground text-lg max-w-xl">
+            Pick up where you left off or start something new.
+          </motion.p>
+        </header>
+
+        {/* Quick Search */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <input 
+            type="text" 
+            placeholder="Search notes, ideas, and decisions..." 
+            className="w-full h-14 pl-12 pr-4 bg-card border border-border rounded-2xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
+          />
+        </motion.div>
+
+        {/* Continue Editing */}
+        <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+              <Clock className="w-5 h-5 text-muted-foreground" />
+              Continue Editing
+            </h2>
           </div>
-        </div>
-        
-        <h1 className="text-3xl font-extrabold text-neutral-900 mb-3 tracking-tight">Select or Create a Note</h1>
-        <p className="text-neutral-500 font-medium leading-relaxed">
-          Select an existing page from the sidebar or create a new section and page to start writing.
-        </p>
-      </motion.div>
+          
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="h-32 bg-accent/50 animate-pulse rounded-2xl border border-border" />
+              ))}
+            </div>
+          ) : recentDocs.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {recentDocs.map((doc) => (
+                <Link key={doc.id} href={`/${workspaceId}/docs/${doc.id}`} className="group relative bg-card hover:bg-accent/50 border border-border rounded-2xl p-5 transition-all hover:shadow-md flex flex-col justify-between h-32">
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <PencilLine className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-foreground truncate">{doc.title || "Untitled"}</h3>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center bg-card border border-border rounded-2xl">
+              <p className="text-muted-foreground text-sm">No recent documents found.</p>
+            </div>
+          )}
+        </motion.section>
+
+        {/* Templates */}
+        <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2 mb-6">
+            <Zap className="w-5 h-5 text-muted-foreground" />
+            Quick Start
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {templates.map((template) => (
+              <button key={template.id} className="group relative bg-card hover:bg-accent/50 border border-border rounded-2xl p-5 transition-all hover:shadow-md flex items-center gap-4 text-left">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${template.bg} ${template.color}`}>
+                  <template.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">{template.name}</h3>
+                  <p className="text-sm text-muted-foreground mt-0.5">Start with a template</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </motion.section>
+      </div>
     </div>
   );
 }

@@ -14,7 +14,7 @@ export default function PresenceAvatars({ users }: { users: AwarenessState[] }) 
             <TooltipTrigger asChild>
               <div className="relative inline-block transition-transform duration-200 hover:-translate-y-1 hover:z-20 hover:scale-110" style={{ zIndex: 10 - index }}>
                 <Avatar
-                  className="w-9 h-9 border-[3px] border-white shadow-sm ring-2 ring-transparent transition-all"
+                  className="w-9 h-9 border-[3px] border-background shadow-sm ring-2 ring-transparent transition-all"
                   style={{ '--tw-ring-color': u.user.color } as any}
                 >
                   <AvatarImage src={u.user.avatar} />
@@ -22,16 +22,18 @@ export default function PresenceAvatars({ users }: { users: AwarenessState[] }) 
                     {u.user.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+                {/* Typing indicator mock */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background shadow-sm animate-pulse" />
               </div>
             </TooltipTrigger>
-            <TooltipContent className="bg-neutral-900 text-white font-medium text-xs rounded-md shadow-xl border-none">
+            <TooltipContent className="bg-popover text-popover-foreground font-medium text-xs rounded-md shadow-xl border border-border">
               <p>{u.user.name}</p>
             </TooltipContent>
           </Tooltip>
         ))}
       </TooltipProvider>
       {users.length > 5 && (
-        <div className="w-9 h-9 rounded-full border-[3px] border-white bg-neutral-100 flex items-center justify-center text-xs font-medium text-neutral-600 shadow-sm z-0">
+        <div className="w-9 h-9 rounded-full border-[3px] border-background bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground shadow-sm z-0 relative ml-[-10px]">
           +{users.length - 5}
         </div>
       )}

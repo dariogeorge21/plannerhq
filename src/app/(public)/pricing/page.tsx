@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Check, Sparkles, Building2, HelpCircle } from "lucide-react";
+import { CheckCircle2, ArrowRight, Check, Sparkles, Building2, HelpCircle } from "lucide-react";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import { BillingCycle, Plan, Cell } from "@/types/types";
-import { pricingPageContent } from "@/data/data";
+import { BillingCycle, Cell } from "@/types/types";
+import { pricingPageContent, BILLING_PLANS } from "@/data/data";
 
-function formatPlanPrice(plan: Plan, cycle: BillingCycle) {
-  const value = cycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
-  const suffix = cycle === "monthly" ? plan.monthlySuffix : plan.yearlySuffix;
+function formatPlanPrice(plan: typeof BILLING_PLANS[number], cycle: BillingCycle) {
+  const value = cycle === "monthly" ? plan.monthlyDisplay : plan.yearlyDisplay;
+  const suffix = cycle === "monthly" ? "per month" : "per month billed yearly";
   return { value, suffix };
 }
 
@@ -52,6 +54,7 @@ function CellContent({ cell }: { cell: Cell }) {
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>("yearly");
+  const { user } = useSession();
 
   return (
     <div className="min-h-screen flex flex-col bg-white selection:bg-indigo-500/30 font-sans">
@@ -145,8 +148,8 @@ export default function PricingPage() {
         {/* Pricing Cards Grid */}
         <div className="relative z-10 mx-auto mt-20 max-w-7xl px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 items-stretch">
-            {pricingPageContent.plans.map((plan, idx) => {
-              const isDark = plan.featured;
+            {BILLING_PLANS.map((plan, idx) => {
+              const isDark = plan.highlighted;
               const { value, suffix } = formatPlanPrice(plan, billingCycle);
 
               return (
@@ -229,14 +232,14 @@ export default function PricingPage() {
                   </div>
 
                   <Link
-                    href={plan.href}
+                    href={user ? "/billing" : plan.href}
                     className={`group relative flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-sm font-bold transition-all duration-300 active:scale-95 ${
                       isDark
                         ? "bg-neutral-950 text-white hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)]"
                         : "bg-neutral-950 text-white hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)]"
                     }`}
                   >
-                    {plan.ctaLabel}
+                    {user ? (plan.key === "enterprise" ? "Contact us" : "Manage plan") : plan.cta}
                     {plan.key === "enterprise" ? (
                       <Building2 className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" />
                     ) : (
@@ -296,7 +299,7 @@ export default function PricingPage() {
                 <div className="text-lg font-extrabold tracking-tight text-neutral-900">
                   Features Overview
                 </div>
-                {pricingPageContent.plans.map((plan) => (
+                {BILLING_PLANS.map((plan) => (
                   <div key={plan.key} className="pr-6">
                     <h4 className="text-base font-bold text-neutral-900">
                       {plan.name}
@@ -326,11 +329,14 @@ export default function PricingPage() {
                           <HelpCircle className="w-3.5 h-3.5 text-neutral-300 cursor-help" />
                         </div>
 
-                        {pricingPageContent.plans.map((plan) => (
-                          <div key={plan.key} className="pr-6">
-                            <CellContent cell={row.values[plan.key]} />
-                          </div>
-                        ))}
+                        {BILLING_PLANS.map((plan) => {
+                          const rowKey = plan.key;
+                          return (
+                            <div key={plan.key} className="pr-6">
+                              <CellContent cell={row.values[rowKey]} />
+                            </div>
+                          );
+                        })}
                       </div>
                     ))}
                   </div>

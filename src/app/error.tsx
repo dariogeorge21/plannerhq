@@ -46,7 +46,7 @@ export default function Error({ error, reset }: ErrorProps) {
                     <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
                         <Button
                             onClick={() => reset()}
-                            variant="primary"
+                            variant="default"
                             className="gap-2"
                         >
                             <RefreshCw className="w-4 h-4" />

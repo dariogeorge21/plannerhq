@@ -28,7 +28,7 @@ export default function NotFound() {
           <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
             <Button
               onClick={() => router.push("/")}
-              variant="primary"
+              variant="default"
               className="gap-2"
             >
               <Home className="w-4 h-4" />

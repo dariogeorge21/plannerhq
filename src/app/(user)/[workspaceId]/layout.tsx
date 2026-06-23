@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Workspace } from "@/types/workspace";
 import { toast } from "sonner";
+import { TimeTrackerWidget } from "@/features/workspace/components/TimeTrackerWidget";
 
 export default function WorkspaceLayout({
   children,
@@ -194,12 +195,15 @@ export default function WorkspaceLayout({
             {workspace.name}
           </span>
         </Link>
-        <button
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-neutral-100 text-neutral-600 transition-colors"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+            <TimeTrackerWidget workspaceId={workspaceId} />
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-neutral-100 text-neutral-600 transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+        </div>
       </header>
 
       {/* MOBILE SIDEBAR MODAL */}
@@ -264,6 +268,9 @@ export default function WorkspaceLayout({
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 overflow-y-auto pt-16 md:pt-0 relative bg-[#FAFAFA]">
+        <div className="absolute top-4 right-6 z-30 hidden md:block">
+            <TimeTrackerWidget workspaceId={workspaceId} />
+        </div>
         {children}
       </main>
     </div>

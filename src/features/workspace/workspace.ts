@@ -229,3 +229,44 @@ export async function LeaveWorkspace(formData: FormData): Promise<{ success: boo
     revalidatePath('/dashboard');
     return { success: true, message: "Left workspace successfully" };
 }
+
+export async function GetWorkspaceTime(workspaceId: string): Promise<{ success: boolean, message: string, data?: number }> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { success: false, message: "User not found" };
+    }
+
+    const { data, error } = await supabase
+        .from('workspace_members')
+        .select('time_spent_seconds')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+
+    if (error) {
+        return { success: false, message: "Failed to fetch workspace time" };
+    }
+
+    return { success: true, message: "Time fetched", data: data.time_spent_seconds || 0 };
+}
+
+export async function TrackWorkspaceTime(workspaceId: string, seconds: number): Promise<{ success: boolean, message: string, data?: number }> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { success: false, message: "User not found" };
+    }
+
+    const { data, error } = await supabase.rpc('increment_workspace_time_spent', {
+        p_workspace_id: workspaceId,
+        p_user_id: user.id,
+        p_seconds: seconds
+    });
+
+    if (error) {
+        return { success: false, message: "Failed to update workspace time" };
+    }
+
+    return { success: true, message: "Time updated", data: data as number };
+}

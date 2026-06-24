@@ -9,7 +9,7 @@ interface PersonalCalendarClientProps {
 
 export function PersonalCalendarClient({ userId }: PersonalCalendarClientProps) {
   return (
-    <div className="flex flex-col h-full bg-[#FAFAFA] text-foreground">
+    <div className="flex flex-col h-full bg-[#FAFAFA] dark:bg-[#0A0A0A] text-foreground dark:text-white">
       <main className="flex-1 overflow-hidden w-full">
         <PersonalCalendarView userId={userId} />
       </main>

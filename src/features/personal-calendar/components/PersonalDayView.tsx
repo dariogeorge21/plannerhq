@@ -44,22 +44,22 @@ export function PersonalDayView({ currentDate, items, onItemClick, onDayClick }:
   const dayItems = items.filter((item) => isSameDay(getItemStart(item), currentDate));
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-b-xl overflow-hidden">
+    <div className="flex flex-col h-full bg-white dark:bg-neutral-900 rounded-b-xl overflow-hidden">
       {/* Header */}
-      <div className="flex border-b border-neutral-100 bg-neutral-50/50 px-6 py-4 items-center gap-3">
+      <div className="flex border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 px-6 py-4 items-center gap-3">
         <span className={cn(
           'text-3xl font-bold w-12 h-12 flex items-center justify-center rounded-xl',
-          isToday ? 'bg-indigo-600 text-white shadow-sm' : 'text-neutral-800'
+          isToday ? 'bg-indigo-600 text-white shadow-sm' : 'text-neutral-800 dark:text-neutral-200'
         )}>
           {format(currentDate, 'd')}
         </span>
         <div>
-          <p className={cn('text-sm font-bold uppercase tracking-wider', isToday ? 'text-indigo-600' : 'text-neutral-500')}>
+          <p className={cn('text-sm font-bold uppercase tracking-wider', isToday ? 'text-indigo-600 dark:text-indigo-400' : 'text-neutral-500 dark:text-neutral-400')}>
             {format(currentDate, 'EEEE')}
           </p>
-          <p className="text-xs text-neutral-400">{format(currentDate, 'MMMM yyyy')}</p>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500">{format(currentDate, 'MMMM yyyy')}</p>
         </div>
-        <div className="ml-auto text-sm font-medium text-neutral-500">
+        <div className="ml-auto text-sm font-medium text-neutral-500 dark:text-neutral-400">
           {dayItems.length > 0 ? `${dayItems.length} item${dayItems.length > 1 ? 's' : ''}` : 'No events'}
         </div>
       </div>
@@ -68,11 +68,11 @@ export function PersonalDayView({ currentDate, items, onItemClick, onDayClick }:
       <div className="flex-1 overflow-y-auto">
         <div className="flex relative" style={{ height: `${24 * 60}px` }}>
           {/* Time column */}
-          <div className="w-16 shrink-0 border-r border-neutral-100 bg-white z-10">
+          <div className="w-16 shrink-0 border-r border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 z-10">
             {hours.map((hour, i) => (
               <div key={i} className="h-[60px] relative">
                 {i > 0 && (
-                  <span className="absolute -top-2.5 right-2 text-[10px] font-medium text-neutral-400">
+                  <span className="absolute -top-2.5 right-2 text-[10px] font-medium text-neutral-400 dark:text-neutral-500">
                     {format(hour, 'ha')}
                   </span>
                 )}
@@ -82,7 +82,7 @@ export function PersonalDayView({ currentDate, items, onItemClick, onDayClick }:
 
           {/* Content */}
           <div
-            className="flex-1 relative bg-neutral-50/20"
+            className="flex-1 relative bg-neutral-50/20 dark:bg-neutral-900/20"
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               const y = e.clientY - rect.top;
@@ -93,7 +93,7 @@ export function PersonalDayView({ currentDate, items, onItemClick, onDayClick }:
             {/* Hour lines */}
             <div className="absolute inset-0 pointer-events-none">
               {hours.map((_, i) => (
-                <div key={i} className="h-[60px] border-t border-neutral-100 w-full" />
+                <div key={i} className="h-[60px] border-t border-neutral-100 dark:border-neutral-800 w-full" />
               ))}
             </div>
 

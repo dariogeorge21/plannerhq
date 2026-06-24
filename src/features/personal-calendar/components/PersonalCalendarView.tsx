@@ -130,7 +130,7 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
   const wsTaskCount = items.filter((i) => i.type === 'workspace_task').length;
 
   return (
-    <div className="flex flex-col h-full bg-neutral-50 p-4 md:p-6 lg:p-8">
+    <div className="flex flex-col h-full bg-neutral-50 dark:bg-[#0A0A0A] p-4 md:p-6 lg:p-8">
       {/* Page Header */}
       <div className="mb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -140,8 +140,8 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
                 <CalendarDays className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">Personal Calendar</h1>
-                <p className="text-sm text-neutral-500 mt-0.5">
+                <h1 className="text-2xl font-bold text-neutral-900 dark:text-white tracking-tight">Personal Calendar</h1>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-0.5">
                   {wsLoading ? 'Loading workspaces…' : (
                     <>Your events &amp; {workspaces.length} workspace{workspaces.length !== 1 ? 's' : ''} merged</>
                   )}
@@ -173,26 +173,26 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
       </div>
 
       {/* Main Calendar Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-neutral-200/60 flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-sm border border-neutral-200/60 dark:border-neutral-800 flex flex-col flex-1 min-h-0 overflow-hidden">
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-b border-neutral-100 px-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-b border-neutral-100 dark:border-neutral-800 px-6">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold text-neutral-900 tracking-tight min-w-[150px]">{getLabel()}</h2>
-            <div className="flex items-center bg-neutral-100/80 rounded-lg p-0.5 border border-neutral-200/50 shadow-sm">
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-600 hover:bg-white rounded-md" onClick={handlePrev}>
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight min-w-[150px]">{getLabel()}</h2>
+            <div className="flex items-center bg-neutral-100/80 dark:bg-neutral-800 rounded-lg p-0.5 border border-neutral-200/50 dark:border-neutral-700 shadow-sm">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-md" onClick={handlePrev}>
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" className="h-8 px-3 text-xs font-semibold text-neutral-600 hover:bg-white rounded-md" onClick={() => setCurrentDate(new Date())}>
+              <Button variant="ghost" className="h-8 px-3 text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-md" onClick={() => setCurrentDate(new Date())}>
                 Today
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-600 hover:bg-white rounded-md" onClick={handleNext}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-neutral-600 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 rounded-md" onClick={handleNext}>
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-neutral-400 hover:text-neutral-700"
+              className="h-8 w-8 text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-200"
               onClick={() => refetch()}
               title="Refresh"
             >
@@ -202,15 +202,15 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
             {/* View switcher */}
-            <div className="flex p-1 bg-neutral-100/80 border border-neutral-200/50 rounded-xl shadow-sm w-full sm:w-auto">
+            <div className="flex p-1 bg-neutral-100/80 dark:bg-neutral-800 border border-neutral-200/50 dark:border-neutral-700 rounded-xl shadow-sm w-full sm:w-auto">
               {(['month', 'week', 'day'] as const).map((view) => (
                 <button
                   key={view}
                   onClick={() => setActiveView(view)}
                   className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-semibold rounded-lg transition-all capitalize ${
                     activeView === view
-                      ? 'bg-white text-indigo-700 shadow-sm ring-1 ring-black/5'
-                      : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-200/50'
+                      ? 'bg-white dark:bg-neutral-700 text-indigo-700 dark:text-indigo-400 shadow-sm ring-1 ring-black/5 dark:ring-white/10'
+                      : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
                   }`}
                 >
                   {view}
@@ -237,8 +237,8 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
         {/* Calendar Grid */}
         <div className="flex-1 min-h-0 relative">
           {itemsLoading && (
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-30 flex items-center justify-center rounded-b-2xl">
-              <div className="flex items-center gap-2 text-sm font-medium text-neutral-500">
+            <div className="absolute inset-0 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-sm z-30 flex items-center justify-center rounded-b-2xl">
+              <div className="flex items-center gap-2 text-sm font-medium text-neutral-500 dark:text-neutral-400">
                 <RefreshCw className="w-4 h-4 animate-spin text-indigo-500" />
                 Loading calendar…
               </div>
@@ -272,17 +272,17 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
         </div>
 
         {/* Legend strip */}
-        <div className="flex items-center gap-6 px-6 py-3 border-t border-neutral-100 bg-neutral-50/50 rounded-b-2xl">
-          <div className="flex items-center gap-2 text-xs font-medium text-neutral-500">
+        <div className="flex items-center gap-6 px-6 py-3 border-t border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/50 rounded-b-2xl">
+          <div className="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
             <div className="w-3 h-3 rounded-full bg-indigo-500 shadow-sm" />
             <span>Personal Events ({personalCount})</span>
           </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-neutral-500">
-            <Building2 className="w-3 h-3 text-neutral-400" />
+          <div className="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+            <Building2 className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
             <span>Workspace Events ({wsEventCount})</span>
           </div>
-          <div className="flex items-center gap-2 text-xs font-medium text-neutral-500">
-            <CheckSquare className="w-3 h-3 text-neutral-400" />
+          <div className="flex items-center gap-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
+            <CheckSquare className="w-3 h-3 text-neutral-400 dark:text-neutral-500" />
             <span>Tasks ({wsTaskCount})</span>
           </div>
         </div>

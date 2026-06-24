@@ -4,7 +4,7 @@
 import React, { useEffect, useState, use } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { GetWorkspace } from "@/features/workspace/workspace";
+import { GetWorkspace, UpdateWorkspaceLastActive } from "@/features/workspace/workspace";
 import { useSession } from "@/features/auth/providers/SessionProvider";
 import {
   LayoutDashboard,
@@ -59,6 +59,7 @@ export default function WorkspaceLayout({
       const res = await GetWorkspace(workspaceId);
       if (res.success && res.data) {
         setWorkspace(res.data);
+        UpdateWorkspaceLastActive(workspaceId);
       } else {
         toast.error("Workspace not found or access denied");
       }

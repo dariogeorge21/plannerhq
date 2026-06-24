@@ -19,7 +19,7 @@ export async function CreateWorkspace(formData: FormData): Promise<{ success: bo
         return { success: false, message: `Workspace limit reached (${limitCheck.current}/${limitCheck.limit}). Please upgrade your plan.` };
     }
 
-    const { data: workspace, error: workspaceError } = await supabase.rpc('create_workspace_with_owner', {
+    const { data: workspaceId, error: workspaceError } = await supabase.rpc('create_workspace_with_owner', {
         p_workspace_name: workspaceName,
         p_workspace_slug: slug,
         p_owner_id: user.id
@@ -28,13 +28,22 @@ export async function CreateWorkspace(formData: FormData): Promise<{ success: bo
         return { success: false, message: "Failed to create workspace" };
     }
 
+    // Fetch the full workspace row to ensure avatar_url and all fields are returned
+    const { data: workspace, error: fetchError } = await supabase
+        .from('workspaces')
+        .select('*')
+        .eq('id', workspaceId)
+        .single();
+    if (fetchError) {
+        // Workspace created but couldn't fetch full details – return basic info
+        return { success: true, message: "Workspace created successfully", data: { id: workspaceId, name: workspaceName, slug } };
+    }
+
     await incrementWorkspaceUsage(user.id, 1);
 
     revalidatePath('/dashboard');
     return { success: true, message: "Workspace created successfully", data: workspace };
 }
-
-// Workspace Deletion is not allowed, only archive
 
 export async function ArchieveWorkspace(formData: FormData): Promise<{ success: boolean, message: string }> {
     const supabase = await createClient();
@@ -301,4 +310,24 @@ export async function TrackWorkspaceTime(workspaceId: string, seconds: number): 
     }
 
     return { success: true, message: "Time updated", data: data as number };
+}
+
+export async function UpdateWorkspaceLastActive(workspaceId: string): Promise<{ success: boolean, message: string }> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { success: false, message: "User not found" };
+    }
+
+    const { error } = await supabase
+        .from('workspace_members')
+        .update({ last_active: new Date().toISOString() })
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id);
+
+    if (error) {
+        return { success: false, message: "Failed to update last active" };
+    }
+    
+    return { success: true, message: "Last active updated successfully" };
 }

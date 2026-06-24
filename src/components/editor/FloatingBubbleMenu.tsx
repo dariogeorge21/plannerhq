@@ -42,10 +42,9 @@ function ToolbarBtn({
         relative flex items-center justify-center w-8 h-8 rounded-lg text-sm
         transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary/60
         disabled:opacity-40 disabled:cursor-not-allowed
-        ${
-          isActive
-            ? "bg-primary/10 text-primary"
-            : "text-muted-foreground hover:text-foreground hover:bg-accent"
+        ${isActive
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:text-foreground hover:bg-accent"
         }
       `}
     >
@@ -64,7 +63,6 @@ export default function FloatingBubbleMenu({ editor }: FloatingBubbleMenuProps) 
   return (
     <BubbleMenu
       editor={editor}
-      tippyOptions={{ duration: 150, animation: "shift-away" }}
       className="
         flex items-center gap-1 p-1.5
         rounded-2xl border border-border

@@ -38,7 +38,7 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             <ProfileOverviewCard user={user} />
             <RecentWorkspaces />
-            <TaskPriorityBoard user={user} />
+            {/* <TaskPriorityBoard user={user} /> */}
           </div>
 
           {/* Right column: 1/3 width */}

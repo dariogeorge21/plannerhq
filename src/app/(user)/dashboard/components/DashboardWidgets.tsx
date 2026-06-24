@@ -43,6 +43,7 @@ import { useToggleTaskCompletion } from '@/features/task/hooks';
 import { AcceptInvitation, DeclineInvitation } from '@/features/workspace/invites';
 import { TrackWorkspaceTime, CreateWorkspace } from '@/features/workspace/workspace';
 import { Input } from '@/components/ui/input';
+import { useWorkspaceTimeSpent } from '@/features/time-tracking/hooks';
 
 interface WelcomeHeroProps {
     user: any;
@@ -1015,107 +1016,84 @@ export function QuotaUsage() {
 }
 
 export function TimeTracking() {
-    const { data: workspaces } = useUserWorkspaces();
-    const [isActive, setIsActive] = useState(false);
-    const [time, setTime] = useState(0);
-    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const { data: workspaceTimes, isLoading } = useWorkspaceTimeSpent();
 
-    // Load active timer from local storage to persist across reloads
-    useEffect(() => {
-        const stored = localStorage.getItem('plannerhq_timer_state');
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            setTime(parsed.time || 0);
-            setIsActive(parsed.isActive || false);
-            if (parsed.isActive && parsed.lastTick) {
-                // Add elapsed time since last unmount
-                const elapsed = Math.floor((Date.now() - parsed.lastTick) / 1000);
-                setTime(t => t + elapsed);
-            }
-        }
-    }, []);
-
-    // Save timer state periodically and on unmount
-    useEffect(() => {
-        const saveState = () => {
-            localStorage.setItem('plannerhq_timer_state', JSON.stringify({
-                time,
-                isActive,
-                lastTick: Date.now()
-            }));
-        };
-
-        saveState();
-        return () => saveState();
-    }, [time, isActive]);
-
-    useEffect(() => {
-        if (isActive) {
-            intervalRef.current = setInterval(() => {
-                setTime((prev) => prev + 1);
-            }, 1000);
-        } else {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        }
-        return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        };
-    }, [isActive]);
-
-    const toggleTimer = () => {
-        setIsActive(!isActive);
-    };
-
-    const stopTimer = async () => {
-        setIsActive(false);
-        if (time > 0 && workspaces && workspaces.length > 0) {
-            // Log to the first available workspace (usually the most recent)
-            const wsId = workspaces[0].id;
-            try {
-                await TrackWorkspaceTime(wsId, time);
-                toast.success("Time logged to workspace");
-            } catch (e) {
-                toast.error("Failed to log time");
-            }
-        }
-        setTime(0);
-        localStorage.removeItem('plannerhq_timer_state');
-    };
-
-    const formatTime = (seconds: number) => {
+    const formatTimeSpent = (seconds: number) => {
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);
-        const s = seconds % 60;
-        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        return `${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m`;
     };
 
     return (
-        <Card className="border-neutral-200/60 dark:border-neutral-800/60 shadow-glass bg-gradient-to-r from-neutral-900 to-neutral-800 text-white border-0">
-            <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                    <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-md">
-                        <Clock className="w-6 h-6 text-white" />
-                        {isActive && <span className="absolute top-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-neutral-900 rounded-full animate-pulse"></span>}
+        <Card className="border-neutral-200/60 dark:border-neutral-800/60 shadow-glass overflow-hidden">
+            <CardHeader className="bg-neutral-50/50 dark:bg-neutral-900/50 border-b border-neutral-100 dark:border-neutral-800 pb-4">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl shadow-sm border border-indigo-200/50 dark:border-indigo-500/20">
+                        <Timer className="w-5 h-5" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-neutral-300">Currently Tracking</p>
-                        <h3 className="text-xl font-bold font-mono tracking-wider mt-1">{formatTime(time)}</h3>
+                        <CardTitle className="text-lg font-bold tracking-tight text-neutral-900 dark:text-white">Time per Workspace</CardTitle>
+                        <CardDescription className="text-sm text-neutral-500 mt-0.5">Total time spent across all your joined and owned workspaces</CardDescription>
                     </div>
                 </div>
-                <div className="flex-1 max-w-sm w-full bg-black/20 p-3 rounded-xl border border-white/10">
-                    <p className="text-xs text-neutral-400 mb-1">Active Context</p>
-                    <p className="text-sm font-medium truncate">
-                        {workspaces && workspaces.length > 0 ? workspaces[0].name : "No active workspace"}
-                    </p>
-                </div>
-                <div className="flex gap-2 w-full md:w-auto">
-                    <Button onClick={toggleTimer} variant="outline" className="flex-1 md:flex-none border-white/20 bg-transparent text-white hover:bg-white/10 rounded-full">
-                        {isActive ? "Pause" : "Resume"}
-                    </Button>
-                    <Button onClick={stopTimer} disabled={time === 0} className="flex-1 md:flex-none bg-emerald-500 hover:bg-emerald-600 text-white rounded-full border-0 disabled:opacity-50 disabled:bg-emerald-500">
-                        Stop & Log
-                    </Button>
-                </div>
+            </CardHeader>
+            <CardContent className="p-0">
+                {isLoading ? (
+                    <div className="p-6 space-y-4">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <Skeleton className="w-6 h-6 rounded" />
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-4 w-32" />
+                                        <Skeleton className="h-3 w-20" />
+                                    </div>
+                                </div>
+                                <Skeleton className="h-8 w-20 rounded-full" />
+                            </div>
+                        ))}
+                    </div>
+                ) : !workspaceTimes || workspaceTimes.length === 0 ? (
+                    <div className="p-10 text-center flex flex-col items-center justify-center bg-neutral-50/30 dark:bg-neutral-900/20">
+                        <div className="w-14 h-14 rounded-full bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 flex items-center justify-center mb-4 shadow-sm">
+                            <Clock className="w-7 h-7 text-neutral-400" />
+                        </div>
+                        <h4 className="text-neutral-900 dark:text-white font-medium text-base">No Time Tracked</h4>
+                        <p className="text-sm text-neutral-500 mt-1 max-w-[250px] mx-auto">You haven't spent any time in your workspaces yet.</p>
+                    </div>
+                ) : (
+                    <ul className="divide-y divide-neutral-100 dark:divide-neutral-800/60 bg-white dark:bg-transparent">
+                        {workspaceTimes.map((wt, index) => (
+                            <li key={wt.workspaceId} className="group flex items-center justify-between p-4 sm:px-6 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-all duration-200 ease-in-out">
+                                <div className="flex items-center gap-4 sm:gap-5">
+                                    <span className="text-sm font-mono text-neutral-400 dark:text-neutral-500 font-semibold min-w-[24px]">
+                                        {(index + 1).toString().padStart(2, '0')}.
+                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        <WorkspaceAvatar 
+                                            workspace={{ name: wt.workspaceName, avatar_url: wt.avatarUrl }} 
+                                            className="w-8 h-8 rounded-lg shadow-sm border border-neutral-200/60 dark:border-neutral-700/60" 
+                                        />
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                {wt.workspaceName}
+                                            </span>
+                                            <span className="text-xs text-neutral-500 flex items-center gap-1 mt-0.5">
+                                                <Briefcase className="w-3 h-3 text-neutral-400" />
+                                                /{wt.workspaceSlug}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-right pl-4">
+                                    <Badge variant="secondary" className="px-2.5 py-1 font-mono text-sm tracking-wide bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700">
+                                        {formatTimeSpent(wt.timeSpentSeconds)}
+                                    </Badge>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </CardContent>
         </Card>
     );

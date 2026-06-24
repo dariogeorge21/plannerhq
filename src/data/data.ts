@@ -10,7 +10,7 @@ export const BILLING_PLANS = [
     yearlyPricePaise: 0,
     monthlyDisplay: "₹0",
     yearlyDisplay: "₹0",
-    monthlyTotal: "₹0 / year",
+    monthlyTotal: "₹0 per month",
     yearlyTotal: "₹0 / year",
     annualSaving: null,
     savingLabel: null,
@@ -34,7 +34,7 @@ export const BILLING_PLANS = [
     yearlyPricePaise: 29900,   // ₹299/mo billed yearly
     monthlyDisplay: "₹399",
     yearlyDisplay: "₹299",
-    monthlyTotal: "₹4,788 / year",
+    monthlyTotal: "₹399 per month",
     yearlyTotal: "₹3,588 / year",
     annualSaving: 1200,
     savingLabel: "Save ₹1,200/yr",
@@ -60,7 +60,7 @@ export const BILLING_PLANS = [
     yearlyPricePaise: 79900,   // ₹799/mo billed yearly
     monthlyDisplay: "₹899",
     yearlyDisplay: "₹799",
-    monthlyTotal: "₹10,788 / year",
+    monthlyTotal: "₹899 per month",
     yearlyTotal: "₹9,588 / year",
     annualSaving: 1200,
     savingLabel: "Save ₹1,200/yr",

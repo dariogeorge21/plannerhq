@@ -249,6 +249,85 @@ export function CheckoutClient({
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Stub Razorpay lumberjack telemetry requests to prevent CORS errors in browser console
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // 1. Intercept XMLHttpRequest
+    const originalOpen = XMLHttpRequest.prototype.open;
+    type OpenSignature = (
+      this: XMLHttpRequest,
+      method: string,
+      url: string | URL,
+      async?: boolean,
+      username?: string | null,
+      password?: string | null
+    ) => void;
+
+    XMLHttpRequest.prototype.open = function (
+      this: XMLHttpRequest & { isLumberjack?: boolean },
+      method: string,
+      url: string | URL,
+      async?: boolean,
+      username?: string | null,
+      password?: string | null
+    ) {
+      if (typeof url === "string" && url.includes("lumberjack.razorpay.com")) {
+        this.isLumberjack = true;
+      }
+      return (originalOpen as OpenSignature).call(this, method, url, async, username, password);
+    } as typeof originalOpen;
+
+    const originalSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (
+      this: XMLHttpRequest & { isLumberjack?: boolean },
+      body?: Document | XMLHttpRequestBodyInit | null
+    ) {
+      if (this.isLumberjack) {
+        Object.defineProperty(this, "readyState", { writable: true, value: 4 });
+        Object.defineProperty(this, "status", { writable: true, value: 200 });
+        Object.defineProperty(this, "responseText", { writable: true, value: '{"success":true}' });
+        if (this.onreadystatechange) {
+          this.onreadystatechange(new Event("readystatechange"));
+        }
+        if (this.onload) {
+          this.onload(new ProgressEvent("load"));
+        }
+        return;
+      }
+      return originalSend.call(this, body);
+    } as typeof originalSend;
+
+    // 2. Intercept window.fetch
+    const originalFetch = window.fetch;
+    window.fetch = async function (input, init) {
+      const url =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+          ? input.toString()
+          : input?.url;
+      if (url && url.includes("lumberjack.razorpay.com")) {
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return originalFetch.call(this, input, init);
+    };
+
+    // 3. Intercept navigator.sendBeacon
+    if (navigator && navigator.sendBeacon) {
+      const originalSendBeacon = navigator.sendBeacon;
+      navigator.sendBeacon = function (url, data) {
+        if (typeof url === "string" && url.includes("lumberjack.razorpay.com")) {
+          return true;
+        }
+        return originalSendBeacon.call(this, url, data);
+      };
+    }
+  }, []);
+
   const plan = BILLING_PLANS.find((p) => p.key === planKey)!;
   const monthlyRate = cycle === "monthly" ? plan.monthlyDisplay : plan.yearlyDisplay;
   const billedAs = cycle === "monthly" ? plan.monthlyTotal : plan.yearlyTotal;

@@ -6,7 +6,7 @@ import {
   Loader2, AlertTriangle, RefreshCw, Zap, Sparkles, Shield,
   Calendar, Clock, CreditCard, TrendingUp, BarChart3, ChevronRight,
   Check, Receipt, ArrowRight, CheckCircle2, XCircle, Info,
-  Building2, Users, HardDrive, Bot,
+  Building2, Users, HardDrive, Bot, CheckCircle,
 } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -172,6 +172,7 @@ export function BillingClient() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [cycle, setCycle] = useState<"monthly" | "yearly">("yearly"); // for plan cards
 
   const loadData = useCallback(async () => {
     setError(null);
@@ -185,7 +186,6 @@ export function BillingClient() {
       if (!subJson.success) throw new Error("Failed to load billing details.");
       setData(subJson.data);
 
-      // Payment history — graceful failure
       if (payRes.ok) {
         const payJson = await payRes.json();
         if (payJson.success) setPayments(payJson.data ?? []);
@@ -248,8 +248,9 @@ export function BillingClient() {
   const endDate = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
   const planKey = (dbPlan?.key as string) || "free";
 
-  const nextUpgradePlan = planKey === "free" ? "pro" : planKey === "pro" ? "ultra" : null;
-  const defaultCycle: "yearly" = "yearly";
+  // Determine upgrade path
+  const availablePlans = BILLING_PLANS.filter(p => p.key !== planKey && p.key !== "free" && p.key !== "enterprise");
+  const canUpgrade = availablePlans.length > 0;
 
   return (
     <>
@@ -268,7 +269,6 @@ export function BillingClient() {
           transition={{ duration: 0.35 }}
           className="relative bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm"
         >
-          {/* Top accent */}
           <div className={`h-1 w-full ${isPaid
             ? "bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-600"
             : "bg-neutral-200"}`}
@@ -276,7 +276,6 @@ export function BillingClient() {
 
           <div className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
-              {/* Plan info */}
               <div className="flex items-start gap-4">
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
                   isPaid ? "bg-indigo-100" : "bg-neutral-100"
@@ -308,11 +307,10 @@ export function BillingClient() {
                 </div>
               </div>
 
-              {/* Action buttons */}
               <div className="flex items-center gap-2 shrink-0">
-                {nextUpgradePlan && (
+                {canUpgrade && (
                   <button
-                    onClick={() => router.push(`/billing/checkout?plan=${nextUpgradePlan}&cycle=${defaultCycle}`)}
+                    onClick={() => router.push(`/billing/checkout?plan=${availablePlans[0].key}&cycle=${cycle}`)}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${
                       !isPaid
                         ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/25"
@@ -335,7 +333,6 @@ export function BillingClient() {
               </div>
             </div>
 
-            {/* Billing metadata grid */}
             {isPaid && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
                 {[
@@ -386,7 +383,6 @@ export function BillingClient() {
               </div>
             )}
 
-            {/* Cancellation warning */}
             {isCancelling && endDate && (
               <div className="mt-4 flex items-start gap-2.5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
                 <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
@@ -397,7 +393,6 @@ export function BillingClient() {
               </div>
             )}
 
-            {/* Free plan upgrade teaser */}
             {!isPaid && (
               <div className="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
@@ -417,11 +412,114 @@ export function BillingClient() {
           </div>
         </motion.div>
 
-        {/* ── Usage Overview ─────────────────────────────────────────────── */}
+        {/* ── Plans & Pricing Section ──────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.07 }}
+          className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-lg font-bold text-neutral-900">Plans & Pricing</h2>
+              <p className="text-sm text-neutral-500">Choose the plan that fits your needs</p>
+            </div>
+            <div className="flex bg-neutral-100 rounded-xl p-1">
+              {(["monthly", "yearly"] as const).map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setCycle(c)}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                    cycle === c
+                      ? "bg-white shadow-sm text-neutral-900"
+                      : "text-neutral-500 hover:text-neutral-700"
+                  }`}
+                >
+                  {c.charAt(0).toUpperCase() + c.slice(1)}
+                  {c === "yearly" && <span className="ml-1 text-[10px] text-emerald-600 font-black">(Save 25%)</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            {BILLING_PLANS.filter(p => p.key !== "free" && p.key !== "enterprise").map((plan) => {
+              const isCurrent = plan.key === planKey;
+              const isUpgrade = !isCurrent && canUpgrade;
+              const priceDisplay = cycle === "monthly" ? plan.monthlyDisplay : plan.yearlyDisplay;
+              const totalDisplay = cycle === "monthly" ? plan.monthlyTotal : plan.yearlyTotal;
+              const saving = cycle === "yearly" ? plan.savingLabel : null;
+
+              return (
+                <div
+                  key={plan.key}
+                  className={`relative rounded-2xl border p-6 transition-all ${
+                    isCurrent
+                      ? "border-indigo-300 bg-indigo-50/50 ring-2 ring-indigo-400"
+                      : "border-neutral-200 hover:border-indigo-200 hover:shadow-md"
+                  }`}
+                >
+                  {plan.ribbon && !isCurrent && (
+                    <span className="absolute -top-2 right-4 px-3 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white text-[10px] font-black uppercase tracking-widest shadow">
+                      {plan.ribbon}
+                    </span>
+                  )}
+                  {isCurrent && (
+                    <span className="absolute -top-2 right-4 px-3 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest shadow">
+                      Current
+                    </span>
+                  )}
+
+                  <h3 className="text-xl font-extrabold text-neutral-900">{plan.name}</h3>
+                  <p className="text-sm text-neutral-500 mt-1">{plan.description}</p>
+
+                  <div className="mt-4 flex items-baseline gap-1">
+                    <span className="text-3xl font-extrabold text-neutral-900">{priceDisplay}</span>
+                    <span className="text-sm text-neutral-500">/mo</span>
+                  </div>
+                  {cycle === "yearly" && (
+                    <p className="text-xs text-emerald-600 font-bold mt-1">
+                      Billed {totalDisplay} yearly · {saving}
+                    </p>
+                  )}
+
+                  <ul className="mt-5 space-y-2.5 text-sm">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-neutral-600">
+                        <Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-6">
+                    {isCurrent ? (
+                      <button
+                        disabled
+                        className="w-full py-2.5 rounded-xl bg-neutral-100 text-neutral-400 text-sm font-bold cursor-not-allowed"
+                      >
+                        <CheckCircle className="w-4 h-4 inline mr-1.5" /> Active
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => router.push(`/billing/checkout?plan=${plan.key}&cycle=${cycle}`)}
+                        className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md shadow-indigo-500/25 transition-all active:scale-95"
+                      >
+                        {isUpgrade ? "Upgrade" : "Switch to"} {plan.name}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* ── Usage Overview ─────────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.14 }}
           className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm"
         >
           <div className="flex items-center justify-between mb-6">
@@ -480,7 +578,7 @@ export function BillingClient() {
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.14 }}
+          transition={{ duration: 0.35, delay: 0.21 }}
           className="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden"
         >
           <div className="px-6 sm:px-8 py-5 border-b border-neutral-100 flex items-center gap-3">
@@ -503,7 +601,6 @@ export function BillingClient() {
             </div>
           ) : (
             <div className="divide-y divide-neutral-50">
-              {/* Table header */}
               <div className="hidden sm:grid grid-cols-4 gap-4 px-6 sm:px-8 py-3 bg-neutral-50/60">
                 <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Date</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Payment ID</span>
@@ -560,7 +657,7 @@ export function BillingClient() {
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.21 }}
+          transition={{ duration: 0.35, delay: 0.28 }}
           className="flex items-start gap-3 p-5 bg-neutral-50 border border-neutral-200 rounded-xl"
         >
           <Shield className="w-5 h-5 text-neutral-400 mt-0.5 shrink-0" />

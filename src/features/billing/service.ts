@@ -7,7 +7,6 @@ import Razorpay from "razorpay";
 export async function getUserSubscription(userId: string) {
     const supabase = await createClient();
 
-    // Get subscription
     const { data: subscription, error: subError } = await supabase
         .from("subscriptions")
         .select("*, plan:plans(*)")
@@ -25,7 +24,6 @@ export async function getUserSubscription(userId: string) {
     return { subscription: subscription as SubscriptionRecord, plan: planConfig, dbPlan: subscription.plan };
 }
 
-// userId is already validated by the API route caller — no need to re-fetch from auth.admin
 export async function createRazorpaySubscription(userId: string, planKey: PlanKey, billingCycle: BillingCycle) {
     if (planKey === "free" || planKey === "enterprise") {
         throw new Error("Cannot create a Razorpay subscription for the Free or Enterprise plan.");
@@ -39,7 +37,7 @@ export async function createRazorpaySubscription(userId: string, planKey: PlanKe
         : planConfig.razorpayPlanIdYearly;
 
     if (!razorpayPlanId) {
-        throw new Error(`Razorpay Plan ID not configured for ${planKey} / ${billingCycle}. Please set the environment variable.`);
+        throw new Error(`Razorpay Plan ID not configured for ${planKey} / ${billingCycle}.`);
     }
 
     if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {

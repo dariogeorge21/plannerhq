@@ -3,7 +3,6 @@ import crypto from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { RAZORPAY_WEBHOOK_SECRET } from "@/features/billing/config";
 
-// We need a service role client to update subscriptions from the webhook safely
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!

@@ -32,13 +32,11 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-[#F7F7F8] font-sans">
       <main className="max-w-4xl w-full mx-auto px-5 py-10">
-        {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-neutral-400 mb-8">
           <a href="/billing" className="hover:text-neutral-600 transition-colors font-semibold">Billing</a>
           <span>/</span>
           <span className="text-neutral-600 font-semibold">Confirm Subscription</span>
         </nav>
-
         <CheckoutClient planKey={planKey} defaultCycle={billingCycle} />
       </main>
     </div>

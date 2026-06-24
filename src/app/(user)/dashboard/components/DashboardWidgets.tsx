@@ -41,7 +41,8 @@ import {
 } from '@/features/dashboard/hooks/UseDashboardData';
 import { useToggleTaskCompletion } from '@/features/task/hooks';
 import { AcceptInvitation, DeclineInvitation } from '@/features/workspace/invites';
-import { TrackWorkspaceTime } from '@/features/workspace/workspace';
+import { TrackWorkspaceTime, CreateWorkspace } from '@/features/workspace/workspace';
+import { Input } from '@/components/ui/input';
 
 interface WelcomeHeroProps {
     user: any;
@@ -290,10 +291,10 @@ export function ProfileOverviewCard({ user }: UserProps) {
     const planConfig: Record<string, { label: string; color: string }> = {
         free: { label: 'Free', color: 'bg-slate-100 text-slate-600 border-slate-200/60 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700/40' },
         pro: { label: 'Pro', color: 'bg-indigo-50 text-indigo-700 border-indigo-200/60 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/30' },
+        ultra: { label: 'Ultra', color: 'bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30' },
         enterprise: { label: 'Enterprise', color: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30' },
     };
 
-    const role = overview?.primaryRole || 'member';
     const planStyle = planConfig[planName.toLowerCase()]?.color ?? planConfig.free.color;
     const planLabel = planConfig[planName.toLowerCase()]?.label ?? planName;
 
@@ -477,26 +478,64 @@ export function ProfileOverviewCard({ user }: UserProps) {
     );
 }
 
-
-
 export function RecentWorkspaces() {
     const router = useRouter();
     const { data: workspaces, isLoading } = useUserWorkspaces();
+    const [isCreating, setIsCreating] = useState(false);
+    const [newWorkspaceName, setNewWorkspaceName] = useState('');
+    const [launchingId, setLaunchingId] = useState<string | null>(null);
+
+    const handleCreateWorkspace = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newWorkspaceName.trim()) return;
+
+        setIsCreating(true);
+        const formData = new FormData();
+        formData.append('workspaceName', newWorkspaceName.trim());
+
+        try {
+            const res = await CreateWorkspace(formData);
+            if (res.success && res.data) {
+                toast.success(res.message);
+                setLaunchingId(res.data.id);
+                // Fake a progress bar delay
+                setTimeout(() => {
+                    router.push(`/${res.data.slug || res.data.id}`);
+                }, 1000);
+            } else {
+                toast.error(res.message);
+                setIsCreating(false);
+            }
+        } catch (error) {
+            toast.error("An unexpected error occurred");
+            setIsCreating(false);
+        }
+    };
+
+    const handleLaunch = (ws: any) => {
+        setLaunchingId(ws.id);
+        setTimeout(() => {
+            router.push(`/${ws.id}`);
+        }, 800);
+    };
 
     return (
-        <Card className="border-neutral-200/60 dark:border-neutral-800/60 shadow-glass">
+        <Card className="border-neutral-200/60 dark:border-neutral-800/60 shadow-glass overflow-hidden flex flex-col relative">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-base font-semibold">Recent Workspaces</CardTitle>
+                <CardTitle className="text-base font-semibold flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-indigo-500" />
+                    Recent Workspaces
+                </CardTitle>
             </CardHeader>
-            <CardContent>
-                <div className="space-y-3">
+            <CardContent className="flex-1 flex flex-col">
+                <div className="space-y-3 flex-1">
                     {isLoading ? (
                         Array.from({ length: 3 }).map((_, i) => (
                             <div key={i} className="flex items-center gap-3 p-3">
                                 <Skeleton className="w-10 h-10 rounded-xl" />
-                                <div className="space-y-2">
-                                    <Skeleton className="w-24 h-4" />
-                                    <Skeleton className="w-16 h-3" />
+                                <div className="space-y-2 flex-1">
+                                    <Skeleton className="w-1/2 h-4" />
+                                    <Skeleton className="w-1/4 h-3" />
                                 </div>
                             </div>
                         ))
@@ -504,24 +543,111 @@ export function RecentWorkspaces() {
                         workspaces.slice(0, 3).map((ws) => (
                             <div
                                 key={ws.id}
-                                onClick={() => router.push(`/${ws.slug || ws.id}`)}
-                                className="group flex items-center justify-between p-3 rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700"
+                                className="relative group overflow-hidden rounded-2xl border border-neutral-100 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 hover:border-indigo-200 dark:hover:border-indigo-900/50 transition-all shadow-sm hover:shadow-md"
                             >
-                                <div className="flex items-center gap-3">
-                                    <WorkspaceAvatar workspace={{ name: ws.name, avatar_url: ws.avatar_url }} className="w-10 h-10 rounded-xl" />
-                                    <div>
-                                        <p className="text-sm font-medium text-neutral-900 dark:text-white group-hover:text-indigo-600 transition-colors">{ws.name}</p>
-                                        <p className="text-xs text-neutral-500 capitalize">{ws.role}</p>
+                                {/* Launch progress overlay */}
+                                {launchingId === ws.id && (
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: '100%' }}
+                                        transition={{ duration: 0.8, ease: "easeInOut" }}
+                                        className="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/30 z-0"
+                                    />
+                                )}
+
+                                <div
+                                    onClick={() => handleLaunch(ws)}
+                                    className="relative z-10 flex items-center justify-between p-3 cursor-pointer hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative">
+                                            <WorkspaceAvatar workspace={{ name: ws.name, avatar_url: ws.avatar_url }} className="w-10 h-10 rounded-xl shadow-sm border border-neutral-200/50 dark:border-neutral-700/50" />
+                                            {launchingId === ws.id && (
+                                                <div className="absolute -inset-1 rounded-xl border-2 border-indigo-500 animate-pulse" />
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-neutral-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{ws.name}</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400">
+                                                    {ws.slug}
+                                                </Badge>
+                                                <span className="text-xs text-neutral-500 flex items-center gap-1">
+                                                    <Users className="w-3 h-3" />
+                                                    {ws.memberCount} {ws.memberCount === 1 ? 'member' : 'members'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {launchingId === ws.id ? (
+                                            <Loader2 className="w-4 h-4 text-indigo-600 animate-spin" />
+                                        ) : (
+                                            <Button size="icon" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-all h-8 w-8 rounded-full bg-neutral-100 dark:bg-neutral-800 group-hover:bg-indigo-100 group-hover:text-indigo-600 dark:group-hover:bg-indigo-900/40 dark:group-hover:text-indigo-400 transform translate-x-2 group-hover:translate-x-0">
+                                                <ChevronRight className="w-4 h-4" />
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
-                                <ChevronRight className="w-4 h-4 text-neutral-400 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" />
                             </div>
                         ))
                     ) : (
-                        <p className="text-sm text-neutral-500 p-3">No workspaces found.</p>
+                        <div className="flex flex-col items-center justify-center py-6 text-center h-full border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/50">
+                            <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mb-3">
+                                <Building2 className="w-6 h-6 text-indigo-500" />
+                            </div>
+                            <p className="text-sm font-semibold text-neutral-900 dark:text-white mb-1">No workspaces found</p>
+                            <p className="text-xs text-neutral-500 mb-4 max-w-[220px]">Create a new workspace to start collaborating with your team.</p>
+
+                            <form onSubmit={handleCreateWorkspace} className="w-full max-w-[240px] space-y-2 relative z-10">
+                                <Input
+                                    placeholder="e.g. Acme Corp"
+                                    value={newWorkspaceName}
+                                    onChange={(e) => setNewWorkspaceName(e.target.value)}
+                                    disabled={isCreating || !!launchingId}
+                                    className="h-9 text-sm rounded-lg bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700"
+                                />
+                                <Button
+                                    type="submit"
+                                    disabled={!newWorkspaceName.trim() || isCreating || !!launchingId}
+                                    className="w-full h-9 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white"
+                                >
+                                    {isCreating || launchingId ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            {launchingId ? 'Launching...' : 'Creating...'}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            Create & Launch
+                                        </>
+                                    )}
+                                </Button>
+                            </form>
+                        </div>
                     )}
                 </div>
             </CardContent>
+
+            {/* Absolute progress indicator along bottom of card if something is launching */}
+            <AnimatePresence>
+                {launchingId && (
+                    <motion.div
+                        initial={{ opacity: 0, scaleY: 0 }}
+                        animate={{ opacity: 1, scaleY: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-neutral-100 dark:bg-neutral-800"
+                    >
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: '100%' }}
+                            transition={{ duration: 1.2, ease: "easeInOut" }}
+                            className="h-full bg-indigo-600"
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </Card>
     );
 }

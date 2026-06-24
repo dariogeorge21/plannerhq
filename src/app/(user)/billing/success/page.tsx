@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle2, ArrowRight, Printer, Home } from "lucide-react";
@@ -8,7 +8,7 @@ import { format } from "date-fns";
 
 const AUTO_REDIRECT_SECONDS = 12;
 
-export default function BillingSuccessPage() {
+function BillingSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -130,5 +130,22 @@ export default function BillingSuccessPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function BillingSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#F7F7F8] flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-neutral-500 text-sm">Loading receipt details...</p>
+          </div>
+        </div>
+      }
+    >
+      <BillingSuccessContent />
+    </Suspense>
   );
 }

@@ -41,180 +41,220 @@ import { AcceptInvitation, DeclineInvitation } from '@/features/workspace/invite
 import { TrackWorkspaceTime } from '@/features/workspace/workspace';
 
 interface WelcomeHeroProps {
-  user: any;
+    user: any;
 }
 
 interface UserProps {
-  user: any;
+    user: any;
 }
 
 export function WelcomeHero({ user }: WelcomeHeroProps) {
-  const router = useRouter();
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    const router = useRouter();
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
-  const { data: subData, loading: subLoading } = useSubscription();
-  const { data: workspaces, isLoading: wsLoading } = useUserWorkspaces();
+    const { data: subData, loading: subLoading } = useSubscription();
+    const { data: workspaces, isLoading: wsLoading } = useUserWorkspaces();
 
-  const [isAllModalOpen, setIsAllModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [navigatingId, setNavigatingId] = useState<string | null>(null);
+    const [isAllModalOpen, setIsAllModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [navigatingId, setNavigatingId] = useState<string | null>(null);
+    const [isNavigating, setIsNavigating] = useState(false);
 
-  const handleNavigate = (id: string) => {
-    setNavigatingId(id);
-    router.push(`/${id}`);
-  };
+    const handleNavigate = (id: string) => {
+        setNavigatingId(id);
+        setIsNavigating(true);
+        router.push(`/${id}`);
+    };
 
-  const firstWorkspace = workspaces?.[0];
+    const handleViewSchedule = () => {
+        setIsNavigating(true);
+        router.push(`/calendar`);
+    };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-[2rem] bg-white dark:bg-[#0A0A0A] p-8 sm:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl border border-neutral-200 dark:border-white/10"
-    >
-      {/* Loading progress bar */}
-      <AnimatePresence>
-        {navigatingId && (
-          <motion.div
-            initial={{ width: 0, opacity: 1 }}
-            animate={{ width: '100%', opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: 'easeInOut' }}
-            className="absolute top-0 left-0 h-1.5 bg-gradient-to-r from-emerald-400 via-indigo-500 to-purple-500 z-50"
-          />
-        )}
-      </AnimatePresence>
+    const firstWorkspace = workspaces?.[0];
 
-      {/* Ambient glow */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-400/10 dark:bg-indigo-500/20 blur-[100px] mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute top-[20%] -right-[10%] w-[40%] h-[60%] rounded-full bg-purple-400/10 dark:bg-purple-500/20 blur-[100px] mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute -bottom-[20%] left-[20%] w-[60%] h-[50%] rounded-full bg-blue-400/5 dark:bg-blue-500/10 blur-[100px] mix-blend-multiply dark:mix-blend-screen" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_10%)]" />
-      </div>
-
-      <div className="relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-        <div className="max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100/80 dark:bg-white/5 border border-neutral-200/50 dark:border-white/10 mb-6 backdrop-blur-md"
-          >
-            {subLoading ? (
-              <Skeleton className="w-16 h-4 rounded-full" />
-            ) : (
-              <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300 capitalize">
-                {subData?.plan?.id || 'Free'} Plan
-              </span>
-            )}
-          </motion.div>
-
-          <motion.h1
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-neutral-900 dark:text-white mb-4 leading-[1.1]"
-          >
-            {greeting}, <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-neutral-900 to-purple-600 dark:from-indigo-300 dark:via-white dark:to-purple-300">
-              {user?.displayName?.split(' ')[0] || 'User'}
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="text-neutral-600 dark:text-neutral-400 text-lg max-w-xl font-light"
-          >
-            Let's make it a productive and focused day.
-          </motion.p>
-        </div>
-
+    return (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-3xl sm:rounded-[2rem] bg-white dark:bg-[#0A0A0A] p-6 sm:p-10 lg:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-2xl border border-neutral-200 dark:border-white/10"
         >
-          {(!workspaces || workspaces.length === 0) ? (
-            <Button
-              onClick={() => setIsCreateModalOpen(true)}
-              disabled={wsLoading}
-              className="h-12 px-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-            >
-              <Plus className="w-4 h-4 mr-2" /> Create Workspace
-            </Button>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  disabled={wsLoading}
-                  className="h-12 px-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-                >
-                  Dive to Workspace <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border-neutral-200/60 dark:border-neutral-800/60 shadow-glass">
-                <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                  Recent Workspaces
-                </div>
-                {workspaces.slice(0, 3).map((ws) => (
-                  <DropdownMenuItem
-                    key={ws.id}
-                    onClick={() => handleNavigate(ws.id)}
-                    className="flex items-center gap-3 p-2 rounded-xl cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                  >
-                    <WorkspaceAvatar
-                      workspace={{ name: ws.name, avatar_url: ws.avatar_url }}
-                      className="w-8 h-8 rounded-lg"
+            {/* Loading progress bar */}
+            <AnimatePresence>
+                {isNavigating && (
+                    <motion.div
+                        initial={{ width: 0, opacity: 1 }}
+                        animate={{ width: '100%', opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 2, ease: 'easeInOut' }}
+                        className="absolute top-0 left-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 z-50"
                     />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
-                        {ws.name}
-                      </p>
-                      <p className="text-xs text-neutral-500 capitalize">{ws.role}</p>
-                    </div>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator className="my-1 border-neutral-100 dark:border-neutral-800" />
-                <DropdownMenuItem
-                  onClick={() => setIsAllModalOpen(true)}
-                  className="p-2 justify-center rounded-xl cursor-pointer text-indigo-600 dark:text-indigo-400 font-medium hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                )}
+            </AnimatePresence>
+
+            {/* Ambient glow */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-indigo-400/10 dark:bg-indigo-500/20 blur-[100px] mix-blend-multiply dark:mix-blend-screen" />
+                <div className="absolute top-[20%] -right-[10%] w-[40%] h-[60%] rounded-full bg-purple-400/10 dark:bg-purple-500/20 blur-[100px] mix-blend-multiply dark:mix-blend-screen" />
+                <div className="absolute -bottom-[20%] left-[20%] w-[60%] h-[50%] rounded-full bg-blue-400/5 dark:bg-blue-500/10 blur-[100px] mix-blend-multiply dark:mix-blend-screen" />
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.02)_1px,transparent_1px)] dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_10%)]" />
+            </div>
+
+            <div className={`relative z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8 transition-opacity duration-300 ${isNavigating ? 'opacity-80 pointer-events-none' : 'opacity-100'}`}>
+                <div className="max-w-2xl">
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1, duration: 0.5 }}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-100/80 dark:bg-white/5 border border-neutral-200/50 dark:border-white/10 mb-6 backdrop-blur-md"
+                    >
+                        {subLoading ? (
+                            <Skeleton className="w-16 h-4 rounded-full" />
+                        ) : (
+                            <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300 capitalize">
+                                {subData?.plan?.id || 'Free'} Plan
+                            </span>
+                        )}
+                    </motion.div>
+
+                    <motion.h1
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-neutral-900 dark:text-white mb-4 leading-[1.1]"
+                    >
+                        {greeting}, <br className="hidden sm:block" />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-neutral-900 to-purple-600 dark:from-indigo-300 dark:via-white dark:to-purple-300">
+                            {user?.displayName?.split(' ')[0] || 'User'}
+                        </span>
+                    </motion.h1>
+
+                    <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.5 }}
+                        className="text-neutral-600 dark:text-neutral-400 text-lg max-w-xl font-light"
+                    >
+                        Let's make it a productive and focused day.
+                    </motion.p>
+                </div>
+
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.4, duration: 0.5 }}
+                    className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto"
                 >
-                  Show all workspaces
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+                    {wsLoading ? (
+                        <>
+                            <Skeleton className="h-12 w-full sm:w-44 rounded-full bg-neutral-200/60 dark:bg-neutral-800/60" />
+                            <Skeleton className="h-12 w-full sm:w-36 rounded-full bg-neutral-200/60 dark:bg-neutral-800/60" />
+                        </>
+                    ) : (
+                        <>
+                            {(!workspaces || workspaces.length === 0) ? (
+                                <Button
+                                    onClick={() => setIsCreateModalOpen(true)}
+                                    disabled={wsLoading || isNavigating}
+                                    className="h-12 px-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[0_0_20px_rgba(255,255,255,0.15)] w-full sm:w-auto justify-center"
+                                >
+                                    <Plus className="w-4 h-4 mr-2" /> Create Workspace
+                                </Button>
+                            ) : (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            disabled={wsLoading || isNavigating}
+                                            className="h-12 px-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[0_0_20px_rgba(255,255,255,0.15)] w-full sm:w-auto justify-center"
+                                        >
+                                            {navigatingId ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                    Entering...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Dive to Workspace <ChevronRight className="w-4 h-4 ml-2" />
+                                                </>
+                                            )}
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border-neutral-200/60 dark:border-neutral-800/60 shadow-glass">
+                                        <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                                            Recent Workspaces
+                                        </div>
+                                        {workspaces.slice(0, 3).map((ws) => (
+                                            <DropdownMenuItem
+                                                key={ws.id}
+                                                onClick={() => handleNavigate(ws.id)}
+                                                disabled={isNavigating}
+                                                className="flex items-center gap-3 p-2 rounded-xl cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                                            >
+                                                {navigatingId === ws.id ? (
+                                                    <Loader2 className="w-8 h-8 p-2 animate-spin text-neutral-500" />
+                                                ) : (
+                                                    <WorkspaceAvatar
+                                                        workspace={{ name: ws.name, avatar_url: ws.avatar_url }}
+                                                        className="w-8 h-8 rounded-lg"
+                                                    />
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                                                        {ws.name}
+                                                    </p>
+                                                    <p className="text-xs text-neutral-500 capitalize">{ws.role}</p>
+                                                </div>
+                                            </DropdownMenuItem>
+                                        ))}
+                                        <DropdownMenuSeparator className="my-1 border-neutral-100 dark:border-neutral-800" />
+                                        <DropdownMenuItem
+                                            onClick={() => setIsAllModalOpen(true)}
+                                            disabled={isNavigating}
+                                            className="p-2 justify-center rounded-xl cursor-pointer text-indigo-600 dark:text-indigo-400 font-medium hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                                        >
+                                            Show all workspaces
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
 
-          <Button
-            onClick={() => firstWorkspace && router.push(`/${firstWorkspace.id}/calendar`)}
-            variant="outline"
-            disabled={!firstWorkspace}
-            className="h-12 px-6 rounded-full bg-white/50 dark:bg-white/5 border-neutral-200 dark:border-white/10 text-neutral-700 dark:text-white hover:bg-neutral-100 dark:hover:bg-white/10 hover:text-neutral-900 dark:hover:text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95"
-          >
-            <CalendarIcon className="w-4 h-4 mr-2 text-neutral-500 dark:text-neutral-400" />
-            View Schedule
-          </Button>
+                            <Button
+                                onClick={handleViewSchedule}
+                                variant="outline"
+                                disabled={!firstWorkspace || isNavigating}
+                                className="h-12 px-6 rounded-full bg-white/50 dark:bg-white/5 border-neutral-200 dark:border-white/10 text-neutral-700 dark:text-white hover:bg-neutral-100 dark:hover:bg-white/10 hover:text-neutral-900 dark:hover:text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95 w-full sm:w-auto justify-center"
+                            >
+                                {isNavigating && !navigatingId ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin text-neutral-500 dark:text-neutral-400" />
+                                        Loading...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CalendarIcon className="w-4 h-4 mr-2 text-neutral-500 dark:text-neutral-400" />
+                                        View Schedule
+                                    </>
+                                )}
+                            </Button>
+                        </>
+                    )}
+                </motion.div>
+            </div>
+
+            {/* Modals */}
+            <AllWorkspacesModal
+                isOpen={isAllModalOpen}
+                onClose={() => setIsAllModalOpen(false)}
+                workspaces={workspaces || []}
+                onCreateWorkspace={() => setIsCreateModalOpen(true)}
+            />
+            <CreateWorkspaceModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+            />
         </motion.div>
-      </div>
-
-      {/* Modals */}
-      <AllWorkspacesModal
-        isOpen={isAllModalOpen}
-        onClose={() => setIsAllModalOpen(false)}
-        workspaces={workspaces || []}
-        onCreateWorkspace={() => setIsCreateModalOpen(true)}
-      />
-      <CreateWorkspaceModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
-    </motion.div>
-  );
+    );
 }
 
 export function ProfileOverviewCard({ user }: UserProps) {

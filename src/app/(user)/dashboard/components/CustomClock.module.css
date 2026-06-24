@@ -1,0 +1,86 @@
+.appContainer {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.app {
+  --clock-size: clamp(6px, 1vw, 10px);
+  --gap: calc(var(--clock-size) * 0.05);
+  --clock-segment-w: calc(var(--clock-size) * 4 + var(--gap) * 5);
+  --clock-segment-h: calc(var(--clock-size) * 6 + var(--gap) * 5);
+  display: flex;
+  gap: var(--gap);
+  align-items: center;
+  justify-content: center;
+}
+
+.digit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+  width: var(--clock-segment-w);
+  height: var(--clock-segment-h);
+}
+
+.digit:nth-of-type(even) {
+  margin-right: var(--clock-size);
+}
+.digit:last-child {
+  margin-right: 0;
+}
+
+.clock {
+  --w: 47%;
+  --h: 1.5px;
+  --dur: 0.4s;
+  position: relative;
+  width: var(--clock-size);
+  height: var(--clock-size);
+  border-radius: 50%;
+  flex-shrink: 0;
+  
+  border: 1px solid #e5e5e5;
+  background: linear-gradient(225deg, #f5f5f5 10%, #ffffff);
+  box-shadow: -1px 1px 3px rgba(0,0,0,0.1), 1px -1px 3px rgba(255,255,255,0.8);
+}
+
+:global(.dark) :local(.clock) {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(225deg, rgba(255, 255, 255, 0.05) 10%, rgba(0, 0, 0, 0.5));
+  box-shadow: -1px 1px 3px rgba(0,0,0,0.8), 1px -1px 3px rgba(255,255,255,0.05);
+}
+
+.clock::before,
+.clock::after {
+  position: absolute;
+  content: '';
+  top: calc(50% - var(--h) * 0.5);
+  left: 50%;
+  transform-origin: 0% 50%;
+  width: var(--w);
+  height: var(--h);
+  background: #171717;
+  border-radius: 9999px;
+  transition: calc(var(--dur) * 1s) ease-in-out;
+  transform: rotate(calc(var(--angle) * 1deg));
+}
+
+:global(.dark) :local(.clock)::before,
+:global(.dark) :local(.clock)::after {
+  background: #e5e5e5;
+}
+
+.clock::before {
+  --angle: var(--hour-angle);
+}
+
+.clock::after {
+  --angle: var(--minute-angle);
+}
+
+@media (max-width: 700px) {
+  .clock {
+    --h: 1px;
+  }
+}

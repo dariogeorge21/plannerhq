@@ -27,6 +27,7 @@ import {
 
 import { AllWorkspacesModal } from '@/features/workspace/components/AllWorkspacesModal';
 import { CreateWorkspaceModal } from '@/features/workspace/components/CreateWorkspaceModal';
+import { CustomClock } from './CustomClock';
 
 import { useSubscription } from '@/features/billing/hooks/useSubscription';
 import {
@@ -140,12 +141,22 @@ export function WelcomeHero({ user }: WelcomeHeroProps) {
                     </motion.p>
                 </div>
 
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4, duration: 0.5 }}
-                    className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto"
-                >
+                <div className="flex flex-col lg:items-end gap-5 shrink-0 w-full lg:w-auto mt-6 lg:mt-0">
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.35, duration: 0.5 }}
+                        className="w-full flex justify-start sm:justify-start lg:justify-end"
+                    >
+                        <CustomClock />
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                        className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"
+                    >
                     {wsLoading ? (
                         <>
                             <Skeleton className="h-12 w-full sm:w-44 rounded-full bg-neutral-200/60 dark:bg-neutral-800/60" />
@@ -239,7 +250,8 @@ export function WelcomeHero({ user }: WelcomeHeroProps) {
                             </Button>
                         </>
                     )}
-                </motion.div>
+                    </motion.div>
+                </div>
             </div>
 
             {/* Modals */}

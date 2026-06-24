@@ -46,6 +46,8 @@ export default function DashboardPage() {
             <MiniCalendar user={user} />
             <UpcomingEvents user={user} />
             <WorkspaceInvitations />
+            <QuotaUsage />
+
           </div>
         </div>
 
@@ -53,9 +55,8 @@ export default function DashboardPage() {
         <KpiMetrics user={user} />
 
         {/* Subscription & Quota */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
           <SubscriptionStatus />
-          <QuotaUsage />
         </div>
 
         {/* Time Tracking (optional) */}

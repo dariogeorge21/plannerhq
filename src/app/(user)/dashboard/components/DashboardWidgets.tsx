@@ -7,7 +7,8 @@ import {
     TrendingUp, Users, FolderKanban, BellRing,
     Briefcase, Calendar as CalendarIcon, Link as LinkIcon,
     ArrowUpNarrowWide, Loader2, Plus, Search,
-    Shield, Star, Hash, Timer, Building2, UserCheck
+    Shield, Star, Hash, Timer, Building2, UserCheck,
+    Zap, Sparkles, CreditCard, ArrowRight
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ import { CreateWorkspaceModal } from '@/features/workspace/components/CreateWork
 import { CustomClock } from './CustomClock';
 
 import { useSubscription } from '@/features/billing/hooks/useSubscription';
+import { BillingPlan, DbPlanRecord } from '@/types/billing';
 import {
     useUserWorkspaces,
     useUserPendingInvitations,
@@ -296,8 +298,8 @@ export function ProfileOverviewCard({ user }: UserProps) {
         enterprise: { label: 'Enterprise', color: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30' },
     };
 
-    const planStyle = planConfig[planName.toLowerCase()]?.color ?? planConfig.free.color;
-    const planLabel = planConfig[planName.toLowerCase()]?.label ?? planName;
+    const planStyle = planConfig[planName.toLowerCase() as keyof typeof planConfig]?.color ?? planConfig.free.color;
+    const planLabel = planConfig[planName.toLowerCase() as keyof typeof planConfig]?.label ?? planName;
 
     const statTiles = [
         {
@@ -950,34 +952,164 @@ export function SubscriptionStatus() {
     const { data: subData, loading } = useSubscription();
     const router = useRouter();
 
-    if (loading) return <Skeleton className="h-40 w-full rounded-2xl" />;
+    if (loading) {
+        return (
+            <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 bg-white dark:bg-neutral-900/50 p-5 space-y-4 animate-pulse">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-800" />
+                    <div className="space-y-1.5 flex-1">
+                        <div className="h-3 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
+                        <div className="h-4 w-36 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
+                    </div>
+                    <div className="h-7 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full" />
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="h-14 bg-neutral-100 dark:bg-neutral-800/60 rounded-xl" />
+                    ))}
+                </div>
+                <div className="h-2 w-full bg-neutral-100 dark:bg-neutral-800 rounded-full" />
+            </div>
+        );
+    }
 
-    const planName = subData?.plan?.id || 'Free';
-    const renewalDate = subData?.subscription?.current_period_end
-        ? new Date(subData.subscription.current_period_end).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-        : 'Never';
+    const dbPlan = subData?.dbPlan;
+    const subscription = subData?.subscription;
+    const plan = subData?.plan;
+    const usage = subData?.usage;
+    const lastPaymentDate = subData?.lastPaymentDate;
+
+    const isPaid = dbPlan && dbPlan.key !== 'free';
+    const isCancelling = subscription?.cancel_at_period_end;
+    const planDisplayName = dbPlan?.name || 'Free Starter';
+
+    const renewalDate = subscription?.current_period_end
+        ? new Date(subscription.current_period_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : null;
+    const lastPaidDisplay = lastPaymentDate
+        ? new Date(lastPaymentDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : null;
+    const billingCycle = (subscription?.billing_cycle as string) || null;
+
+    // Usage bar — workspaces
+    const wsUsed = usage?.workspaces_count ?? 0;
+    const wsLimit = (plan?.maxWorkspaces as number) ?? 3;
+    const wsIsUnlimited = wsLimit > 999_999;
+    const wsPct = wsIsUnlimited ? 5 : Math.min(100, (wsUsed / wsLimit) * 100);
+    const wsBarColor = wsPct >= 90 ? 'bg-red-500' : wsPct >= 70 ? 'bg-amber-500' : 'bg-indigo-500';
 
     return (
-        <Card className="border-neutral-200/60 dark:border-neutral-800/60 shadow-glass relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-            <CardHeader>
-                <CardTitle className="text-base font-semibold">Current Plan</CardTitle>
-                <CardDescription>You are on the <span className="capitalize">{planName}</span> tier.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-center justify-between p-4 border border-indigo-100 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-500/5 rounded-2xl">
-                    <div>
-                        <p className="text-sm font-medium text-indigo-900 dark:text-indigo-200 capitalize">{planName} Plan</p>
-                        {planName !== 'free' && (
-                            <p className="text-xs text-indigo-600/80 dark:text-indigo-400/80 mt-1">Renews on {renewalDate}</p>
-                        )}
+        <div className="rounded-2xl border border-neutral-200/60 dark:border-neutral-800/60 bg-white dark:bg-neutral-900/50 overflow-hidden shadow-sm">
+            {/* Gradient top stripe */}
+            <div className={`h-0.5 w-full ${isPaid ? 'bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500' : 'bg-neutral-200 dark:bg-neutral-700'}`} />
+
+            <div className="p-5">
+                {/* Header row */}
+                <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                            isPaid ? 'bg-indigo-100 dark:bg-indigo-500/20' : 'bg-neutral-100 dark:bg-neutral-800'
+                        }`}>
+                            {isPaid
+                                ? <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                : <Sparkles className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />}
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-0.5">Current Plan</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-base font-extrabold text-neutral-900 dark:text-white leading-tight">{planDisplayName}</span>
+                                {isPaid && (
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                        isCancelling
+                                            ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                                            : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                                    }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${
+                                            isCancelling ? 'bg-amber-500' : 'bg-emerald-500'
+                                        }`} />
+                                        {isCancelling ? 'Cancels soon' : 'Active'}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                    <Button onClick={() => router.push('/settings/billing')} variant="outline" size="sm" className="rounded-full border-indigo-200 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-900">
-                        Manage
-                    </Button>
+
+                    {/* CTA */}
+                    {!isPaid ? (
+                        <button
+                            onClick={() => router.push('/billing')}
+                            className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-500/25 transition-all active:scale-95"
+                        >
+                            <Zap className="w-3.5 h-3.5" /> Upgrade
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => router.push('/billing')}
+                            className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 text-xs font-semibold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                        >
+                            <CreditCard className="w-3.5 h-3.5" /> Manage
+                        </button>
+                    )}
                 </div>
-            </CardContent>
-        </Card>
+
+                {/* Billing details grid */}
+                {isPaid ? (
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                        <div className="bg-neutral-50 dark:bg-neutral-800/60 rounded-xl p-3">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Cycle</p>
+                            <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200 capitalize">{billingCycle || '—'}</p>
+                        </div>
+                        <div className={`rounded-xl p-3 ${
+                            isCancelling ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-neutral-50 dark:bg-neutral-800/60'
+                        }`}>
+                            <p className={`text-[9px] font-black uppercase tracking-wider mb-1 ${
+                                isCancelling ? 'text-amber-500' : 'text-neutral-400 dark:text-neutral-500'
+                            }`}>{isCancelling ? 'Ends' : 'Renews'}</p>
+                            <p className={`text-xs font-bold ${
+                                isCancelling ? 'text-amber-800 dark:text-amber-400' : 'text-neutral-800 dark:text-neutral-200'
+                            }`}>{renewalDate || '—'}</p>
+                        </div>
+                        <div className="bg-neutral-50 dark:bg-neutral-800/60 rounded-xl p-3">
+                            <p className="text-[9px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Last Paid</p>
+                            <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200">{lastPaidDisplay || '—'}</p>
+                        </div>
+                    </div>
+                ) : (
+                    /* Free plan: show pricing teaser */
+                    <div className="mb-4 p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20">
+                        <p className="text-[11px] text-indigo-700 dark:text-indigo-300 font-semibold">
+                            ✦ Pro from <span className="font-extrabold">₹299/mo</span> — save ₹1,200/yr on the yearly plan
+                        </p>
+                    </div>
+                )}
+
+                {/* Workspace usage bar */}
+                <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Workspaces</span>
+                        <span className="text-[10px] font-bold text-neutral-600 dark:text-neutral-400">
+                            {wsIsUnlimited ? `${wsUsed} used` : `${wsUsed} / ${wsLimit}`}
+                        </span>
+                    </div>
+                    <div className="h-1.5 w-full bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${wsPct}%` }}
+                            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                            className={`h-full rounded-full ${wsBarColor}`}
+                        />
+                    </div>
+                </div>
+
+                {/* Footer link */}
+                <button
+                    onClick={() => router.push('/billing')}
+                    className="mt-4 w-full flex items-center justify-center gap-1.5 text-[11px] font-semibold text-neutral-400 dark:text-neutral-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                >
+                    View full billing details <ArrowRight className="w-3 h-3" />
+                </button>
+            </div>
+        </div>
     );
 }
 

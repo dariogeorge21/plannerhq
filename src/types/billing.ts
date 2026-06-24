@@ -44,3 +44,24 @@ export interface UsageRecord {
     created_at: string;
     updated_at: string;
 }
+
+export interface BillingPlan {
+    id: string;
+    maxWorkspaces: number;
+    maxSections: number;
+    maxStorageBytes: number;
+    maxAiTokens: number;
+    maxCollaborators: number;
+    razorpayPlanIdMonthly: string | null;
+    razorpayPlanIdYearly: string | null;
+}
+
+export interface DbPlanRecord {
+    id: string;
+    key: string;
+    name: string;
+    description?: string | null;
+    created_at?: string;
+    updated_at?: string;
+}
+

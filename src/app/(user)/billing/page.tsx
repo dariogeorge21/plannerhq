@@ -2,24 +2,22 @@ import React from "react";
 import { BillingClient } from "./components/billing-client";
 
 export const metadata = {
-  title: "Billing & Subscription - PlannerHQ",
-  description: "Manage your PlannerHQ subscription and billing details.",
+  title: "Billing & Subscription — PlannerHQ",
+  description: "Manage your PlannerHQ subscription, view usage, and access payment history.",
 };
 
 export default function BillingPage() {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-neutral-900 font-sans selection:bg-indigo-500/20">
-      <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-12 flex flex-col gap-10">
-        <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
-              Billing & Usage
-            </h1>
-            <p className="text-neutral-500 mt-1 text-base">
-              Manage your subscription, view your usage, and download invoices.
-            </p>
-          </div>
-        </section>
+    <div className="min-h-screen bg-[#F7F7F8] text-neutral-900 font-sans">
+      <main className="max-w-4xl w-full mx-auto px-5 py-10 flex flex-col gap-8">
+        {/* Header */}
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-1">Account</p>
+          <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900">Billing & Subscription</h1>
+          <p className="text-sm text-neutral-500 mt-1">
+            Manage your plan, review usage, and access payment history.
+          </p>
+        </div>
 
         <BillingClient />
       </main>

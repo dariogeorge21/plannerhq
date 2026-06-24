@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { SubscriptionRecord, UsageRecord } from "@/types/billing";
-import { Plan } from "@/types/types";
+import { SubscriptionRecord, UsageRecord, BillingPlan, DbPlanRecord } from "@/types/billing";
 
 export function useSubscription() {
     const [data, setData] = useState<{
         subscription: SubscriptionRecord | null;
-        plan: any;
-        dbPlan: any;
+        plan: BillingPlan | null;
+        dbPlan: DbPlanRecord | null;
         usage: UsageRecord | null;
+        lastPaymentDate: string | null;
+        lastPaymentAmount: number | null;
     } | null>(null);
     const [loading, setLoading] = useState(true);
 

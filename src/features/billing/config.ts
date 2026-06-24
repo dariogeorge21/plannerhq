@@ -1,4 +1,5 @@
 import { PlanKey } from "@/types/types";
+import { BillingPlan } from "@/types/billing";
 
 export const PLAN_CONFIG = {
     free: {
@@ -41,7 +42,7 @@ export const PLAN_CONFIG = {
         razorpayPlanIdMonthly: null,
         razorpayPlanIdYearly: null,
     }
-} as Record<PlanKey, any>;
+} as Record<PlanKey, BillingPlan>;
 
 export const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 export const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;

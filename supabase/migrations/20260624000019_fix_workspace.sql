@@ -1,0 +1,1 @@
+ALTER TABLE workspace_members ADD column last_active TIMESTAMPTZ;

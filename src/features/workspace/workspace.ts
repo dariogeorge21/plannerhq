@@ -92,6 +92,8 @@ export type WorkspaceListItem = {
     role: 'owner' | 'admin' | 'member';
     joined_at: string;
     avatar_url: string | null;
+    memberCount: number;
+    lastActive?: string | null;
 };
 
 export type ListWorkspaceResult = {
@@ -113,7 +115,7 @@ export async function ListWorkspace(): Promise<ListWorkspaceResult> {
 
     const { data, error } = await supabase
         .from('workspace_members')
-        .select('role, joined_at, workspaces!inner(id, name, slug, description, created_at, created_by, is_deleted, avatar_url)')
+        .select('role, joined_at, last_active, workspaces!inner(id, name, slug, description, created_at, created_by, is_deleted, avatar_url)')
         .eq('user_id', user.id)
         .filter('workspaces.is_deleted', 'eq', false);
 
@@ -124,6 +126,7 @@ export async function ListWorkspace(): Promise<ListWorkspaceResult> {
     type RawMemberRow = {
         role: 'owner' | 'admin' | 'member';
         joined_at: string;
+        last_active: string | null;
         workspaces: {
             id: string;
             name: string;
@@ -136,7 +139,24 @@ export async function ListWorkspace(): Promise<ListWorkspaceResult> {
         };
     };
 
-    const allWorkspaces: WorkspaceListItem[] = (data as unknown as RawMemberRow[]).map((item) => ({
+    const rawRows = data as unknown as RawMemberRow[];
+    const workspaceIds = rawRows.map((item) => item.workspaces.id);
+    const countsMap: Record<string, number> = {};
+
+    if (workspaceIds.length > 0) {
+        const { data: memberCounts, error: countError } = await supabase
+            .from('workspace_members')
+            .select('workspace_id')
+            .in('workspace_id', workspaceIds);
+
+        if (!countError && memberCounts) {
+            memberCounts.forEach((m: any) => {
+                countsMap[m.workspace_id] = (countsMap[m.workspace_id] || 0) + 1;
+            });
+        }
+    }
+
+    const allWorkspaces: WorkspaceListItem[] = rawRows.map((item) => ({
         id: item.workspaces.id,
         name: item.workspaces.name,
         slug: item.workspaces.slug,
@@ -145,11 +165,13 @@ export async function ListWorkspace(): Promise<ListWorkspaceResult> {
         created_by: item.workspaces.created_by,
         role: item.role,
         joined_at: item.joined_at,
-        avatar_url: item.workspaces.avatar_url
+        avatar_url: item.workspaces.avatar_url,
+        memberCount: countsMap[item.workspaces.id] || 1,
+        lastActive: item.last_active
     }));
 
-    const owned = allWorkspaces.filter(ws => ws.role === 'owner' || ws.role === 'admin');
-    const joined = allWorkspaces.filter(ws => ws.role === 'member');
+    const owned = allWorkspaces.filter(ws => ws.role === 'owner');
+    const joined = allWorkspaces.filter(ws => ws.role === 'member' || ws.role === 'admin');
 
     return { success: true, message: "Workspace listed successfully", data: { owned, joined } };
 }

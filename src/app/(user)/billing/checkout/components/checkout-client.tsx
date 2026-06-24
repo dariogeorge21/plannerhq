@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2, Check, ArrowLeft, ArrowRight, Shield, Zap, Info,
-  CheckCircle2, XCircle, RefreshCw, CreditCard, Clock, TrendingUp,
-  Sparkles, Lock, AlertTriangle,
+  CheckCircle2, XCircle, RefreshCw, CreditCard, TrendingUp,
+  Lock, AlertTriangle,
 } from "lucide-react";
 import { BILLING_PLANS } from "@/data/data";
 
@@ -305,8 +305,8 @@ export function CheckoutClient({
         typeof input === "string"
           ? input
           : input instanceof URL
-          ? input.toString()
-          : input?.url;
+            ? input.toString()
+            : input?.url;
       if (url && url.includes("lumberjack.razorpay.com")) {
         return new Response(JSON.stringify({ success: true }), {
           status: 200,
@@ -545,11 +545,10 @@ export function CheckoutClient({
                 <button
                   key={c}
                   onClick={() => setCycle(c)}
-                  className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-bold capitalize transition-all ${
-                    cycle === c
-                      ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                      : "border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50"
-                  }`}
+                  className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-bold capitalize transition-all ${cycle === c
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                    : "border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50"
+                    }`}
                 >
                   {c}
                   {c === "yearly" && plan.savingLabel && (

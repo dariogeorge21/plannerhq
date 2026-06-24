@@ -2,6 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { ListWorkspace } from '@/features/workspace/workspace';
 import { ListInvitationsForUser } from '@/features/workspace/invites';
+import { GetUserProfileOverview, type ProfileOverviewData } from '@/features/dashboard/services';
+
+export type { ProfileOverviewData };
 
 export function useUserWorkspaces() {
     return useQuery({
@@ -111,6 +114,28 @@ export function useDashboardCalendarEvents(userId: string | undefined) {
     });
 }
 
+/**
+ * Full profile overview hook — fetches identity + workspace stats in one call.
+ * Use this for ProfileOverviewCard.
+ */
+export function useUserProfileOverview() {
+    return useQuery({
+        queryKey: ['dashboard_profile_overview'],
+        queryFn: async () => {
+            const res = await GetUserProfileOverview();
+            if (res.success && res.data) {
+                return res.data;
+            }
+            return null;
+        },
+        staleTime: 1000 * 60 * 2, // 2 minutes
+    });
+}
+
+/**
+ * Lightweight stats hook kept for backward compatibility with KpiMetrics.
+ * Prefer useUserProfileOverview for the ProfileOverviewCard.
+ */
 export function useUserProfileStats(userId: string | undefined) {
     return useQuery({
         queryKey: ['dashboard_profile_stats', userId],
@@ -130,10 +155,7 @@ export function useUserProfileStats(userId: string | undefined) {
             const workspaceCount = data.length;
             const timeTrackedSeconds = data.reduce((acc, curr) => acc + (curr.time_spent_seconds || 0), 0);
 
-            return {
-                workspaceCount,
-                timeTrackedSeconds
-            };
+            return { workspaceCount, timeTrackedSeconds };
         },
         enabled: !!userId,
     });

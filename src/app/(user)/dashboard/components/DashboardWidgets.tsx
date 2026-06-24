@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Clock, CheckCircle2, ChevronRight,
     TrendingUp, Users, FolderKanban, BellRing,
     Briefcase, Calendar as CalendarIcon, Link as LinkIcon,
-    ArrowUpNarrowWide, Loader2, Plus, Search
+    ArrowUpNarrowWide, Loader2, Plus, Search,
+    Shield, Star, Hash, Timer, Building2, UserCheck
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,8 @@ import {
     useUserPendingInvitations,
     useUserTasks,
     useDashboardCalendarEvents,
-    useUserProfileStats
+    useUserProfileStats,
+    useUserProfileOverview
 } from '@/features/dashboard/hooks/UseDashboardData';
 import { useToggleTaskCompletion } from '@/features/task/hooks';
 import { AcceptInvitation, DeclineInvitation } from '@/features/workspace/invites';
@@ -157,99 +159,99 @@ export function WelcomeHero({ user }: WelcomeHeroProps) {
                         transition={{ delay: 0.4, duration: 0.5 }}
                         className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto"
                     >
-                    {wsLoading ? (
-                        <>
-                            <Skeleton className="h-12 w-full sm:w-44 rounded-full bg-neutral-200/60 dark:bg-neutral-800/60" />
-                            <Skeleton className="h-12 w-full sm:w-36 rounded-full bg-neutral-200/60 dark:bg-neutral-800/60" />
-                        </>
-                    ) : (
-                        <>
-                            {(!workspaces || workspaces.length === 0) ? (
-                                <Button
-                                    onClick={() => setIsCreateModalOpen(true)}
-                                    disabled={wsLoading || isNavigating}
-                                    className="h-12 px-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[0_0_20px_rgba(255,255,255,0.15)] w-full sm:w-auto justify-center"
-                                >
-                                    <Plus className="w-4 h-4 mr-2" /> Create Workspace
-                                </Button>
-                            ) : (
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            disabled={wsLoading || isNavigating}
-                                            className="h-12 px-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[0_0_20px_rgba(255,255,255,0.15)] w-full sm:w-auto justify-center"
-                                        >
-                                            {navigatingId ? (
-                                                <>
-                                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                    Entering...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    Dive to Workspace <ChevronRight className="w-4 h-4 ml-2" />
-                                                </>
-                                            )}
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border-neutral-200/60 dark:border-neutral-800/60 shadow-glass">
-                                        <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-                                            Recent Workspaces
-                                        </div>
-                                        {workspaces.slice(0, 3).map((ws) => (
-                                            <DropdownMenuItem
-                                                key={ws.id}
-                                                onClick={() => handleNavigate(ws.id)}
-                                                disabled={isNavigating}
-                                                className="flex items-center gap-3 p-2 rounded-xl cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                                            >
-                                                {navigatingId === ws.id ? (
-                                                    <Loader2 className="w-8 h-8 p-2 animate-spin text-neutral-500" />
-                                                ) : (
-                                                    <WorkspaceAvatar
-                                                        workspace={{ name: ws.name, avatar_url: ws.avatar_url }}
-                                                        className="w-8 h-8 rounded-lg"
-                                                    />
-                                                )}
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
-                                                        {ws.name}
-                                                    </p>
-                                                    <p className="text-xs text-neutral-500 capitalize">{ws.role}</p>
-                                                </div>
-                                            </DropdownMenuItem>
-                                        ))}
-                                        <DropdownMenuSeparator className="my-1 border-neutral-100 dark:border-neutral-800" />
-                                        <DropdownMenuItem
-                                            onClick={() => setIsAllModalOpen(true)}
-                                            disabled={isNavigating}
-                                            className="p-2 justify-center rounded-xl cursor-pointer text-indigo-600 dark:text-indigo-400 font-medium hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
-                                        >
-                                            Show all workspaces
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            )}
-
-                            <Button
-                                onClick={handleViewSchedule}
-                                variant="outline"
-                                disabled={!firstWorkspace || isNavigating}
-                                className="h-12 px-6 rounded-full bg-white/50 dark:bg-white/5 border-neutral-200 dark:border-white/10 text-neutral-700 dark:text-white hover:bg-neutral-100 dark:hover:bg-white/10 hover:text-neutral-900 dark:hover:text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95 w-full sm:w-auto justify-center"
-                            >
-                                {isNavigating && !navigatingId ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin text-neutral-500 dark:text-neutral-400" />
-                                        Loading...
-                                    </>
+                        {wsLoading ? (
+                            <>
+                                <Skeleton className="h-12 w-full sm:w-44 rounded-full bg-neutral-200/60 dark:bg-neutral-800/60" />
+                                <Skeleton className="h-12 w-full sm:w-36 rounded-full bg-neutral-200/60 dark:bg-neutral-800/60" />
+                            </>
+                        ) : (
+                            <>
+                                {(!workspaces || workspaces.length === 0) ? (
+                                    <Button
+                                        onClick={() => setIsCreateModalOpen(true)}
+                                        disabled={wsLoading || isNavigating}
+                                        className="h-12 px-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[0_0_20px_rgba(255,255,255,0.15)] w-full sm:w-auto justify-center"
+                                    >
+                                        <Plus className="w-4 h-4 mr-2" /> Create Workspace
+                                    </Button>
                                 ) : (
-                                    <>
-                                        <CalendarIcon className="w-4 h-4 mr-2 text-neutral-500 dark:text-neutral-400" />
-                                        View Schedule
-                                    </>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                disabled={wsLoading || isNavigating}
+                                                className="h-12 px-6 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-black hover:bg-neutral-800 dark:hover:bg-neutral-200 font-medium transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,0,0,0.05)] dark:shadow-[0_0_20px_rgba(255,255,255,0.15)] w-full sm:w-auto justify-center"
+                                            >
+                                                {navigatingId ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        Entering...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Dive to Workspace <ChevronRight className="w-4 h-4 ml-2" />
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl border-neutral-200/60 dark:border-neutral-800/60 shadow-glass">
+                                            <div className="px-2 py-1.5 text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+                                                Recent Workspaces
+                                            </div>
+                                            {workspaces.slice(0, 3).map((ws) => (
+                                                <DropdownMenuItem
+                                                    key={ws.id}
+                                                    onClick={() => handleNavigate(ws.id)}
+                                                    disabled={isNavigating}
+                                                    className="flex items-center gap-3 p-2 rounded-xl cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                                                >
+                                                    {navigatingId === ws.id ? (
+                                                        <Loader2 className="w-8 h-8 p-2 animate-spin text-neutral-500" />
+                                                    ) : (
+                                                        <WorkspaceAvatar
+                                                            workspace={{ name: ws.name, avatar_url: ws.avatar_url }}
+                                                            className="w-8 h-8 rounded-lg"
+                                                        />
+                                                    )}
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                                                            {ws.name}
+                                                        </p>
+                                                        <p className="text-xs text-neutral-500 capitalize">{ws.role}</p>
+                                                    </div>
+                                                </DropdownMenuItem>
+                                            ))}
+                                            <DropdownMenuSeparator className="my-1 border-neutral-100 dark:border-neutral-800" />
+                                            <DropdownMenuItem
+                                                onClick={() => setIsAllModalOpen(true)}
+                                                disabled={isNavigating}
+                                                className="p-2 justify-center rounded-xl cursor-pointer text-indigo-600 dark:text-indigo-400 font-medium hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-colors"
+                                            >
+                                                Show all workspaces
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 )}
-                            </Button>
-                        </>
-                    )}
+
+                                <Button
+                                    onClick={handleViewSchedule}
+                                    variant="outline"
+                                    disabled={!firstWorkspace || isNavigating}
+                                    className="h-12 px-6 rounded-full bg-white/50 dark:bg-white/5 border-neutral-200 dark:border-white/10 text-neutral-700 dark:text-white hover:bg-neutral-100 dark:hover:bg-white/10 hover:text-neutral-900 dark:hover:text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95 w-full sm:w-auto justify-center"
+                                >
+                                    {isNavigating && !navigatingId ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin text-neutral-500 dark:text-neutral-400" />
+                                            Loading...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CalendarIcon className="w-4 h-4 mr-2 text-neutral-500 dark:text-neutral-400" />
+                                            View Schedule
+                                        </>
+                                    )}
+                                </Button>
+                            </>
+                        )}
                     </motion.div>
                 </div>
             </div>
@@ -271,45 +273,211 @@ export function WelcomeHero({ user }: WelcomeHeroProps) {
 
 export function ProfileOverviewCard({ user }: UserProps) {
     const router = useRouter();
-    const { data: stats, isLoading } = useUserProfileStats(user?.id);
+    const { data: overview, isLoading } = useUserProfileOverview();
+    const { data: subData } = useSubscription();
+
+    const planName = subData?.plan?.id || 'free';
+
+    // ── helpers ──────────────────────────────────────────────────────────────
+    const formatTime = (seconds: number) => {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        if (h === 0 && m === 0) return '0m';
+        if (h === 0) return `${m}m`;
+        return m > 0 ? `${h}h ${m}m` : `${h}h`;
+    };
+
+    const planConfig: Record<string, { label: string; color: string }> = {
+        free: { label: 'Free', color: 'bg-slate-100 text-slate-600 border-slate-200/60 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700/40' },
+        pro: { label: 'Pro', color: 'bg-indigo-50 text-indigo-700 border-indigo-200/60 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/30' },
+        enterprise: { label: 'Enterprise', color: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30' },
+    };
+
+    const role = overview?.primaryRole || 'member';
+    const planStyle = planConfig[planName.toLowerCase()]?.color ?? planConfig.free.color;
+    const planLabel = planConfig[planName.toLowerCase()]?.label ?? planName;
+
+    const statTiles = [
+        {
+            icon: Building2,
+            value: overview?.ownedCount ?? 0,
+            label: 'Owned',
+            sublabel: 'Workspaces',
+            iconBg: 'bg-violet-50 dark:bg-violet-500/10',
+            iconColor: 'text-violet-600 dark:text-violet-400',
+            valueColor: 'text-violet-700 dark:text-violet-300',
+        },
+        {
+            icon: FolderKanban,
+            value: overview?.joinedCount ?? 0,
+            label: 'Joined',
+            sublabel: 'Workspaces',
+            iconBg: 'bg-sky-50 dark:bg-sky-500/10',
+            iconColor: 'text-sky-600 dark:text-sky-400',
+            valueColor: 'text-sky-700 dark:text-sky-300',
+        },
+        {
+            icon: Users,
+            value: overview?.connectedMembersCount ?? 0,
+            label: 'Connected',
+            sublabel: 'Members',
+            iconBg: 'bg-emerald-50 dark:bg-emerald-500/10',
+            iconColor: 'text-emerald-600 dark:text-emerald-400',
+            valueColor: 'text-emerald-700 dark:text-emerald-300',
+        },
+        {
+            icon: Timer,
+            value: formatTime(overview?.totalTimeSeconds ?? 0),
+            label: 'Time',
+            sublabel: 'Worked',
+            iconBg: 'bg-rose-50 dark:bg-rose-500/10',
+            iconColor: 'text-rose-600 dark:text-rose-400',
+            valueColor: 'text-rose-700 dark:text-rose-300',
+        },
+    ];
 
     return (
-        <Card className="border-neutral-200/60 dark:border-neutral-800/60 shadow-glass bg-white/70 dark:bg-neutral-900/70 backdrop-blur-xl">
-            <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                    <Avatar className="h-16 w-16 border-2 border-indigo-100 dark:border-indigo-900">
-                        <AvatarImage src={user?.avatarUrl} />
-                        <AvatarFallback className="text-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                            {user?.displayName?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                        <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
-                            {user?.displayName || 'User Profile'}
-                        </h2>
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400 capitalize">
-                            {user?.role || 'User'}
-                        </p>
+        <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+        >
+            <Card className="relative overflow-hidden border-neutral-200/60 dark:border-neutral-800/60 shadow-glass bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl">
+                {/* Ambient top gradient */}
+                <div className="absolute top-0 inset-x-0 h-36 pointer-events-none bg-gradient-to-b from-indigo-50/60 via-white/0 to-transparent dark:from-indigo-950/30 dark:via-neutral-900/0" />
+
+                <CardContent className="relative p-6 sm:p-8 space-y-6">
+
+                    {/* ── Identity Row ─────────────────────────────────────── */}
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-5">
+                        {/* Avatar */}
+                        <div className="relative shrink-0 self-start">
+                            {isLoading ? (
+                                <Skeleton className="h-20 w-20 rounded-2xl" />
+                            ) : (
+                                <div className="relative">
+                                    <Avatar className="h-20 w-20 rounded-2xl border-[3px] border-white dark:border-neutral-800 shadow-lg">
+                                        <AvatarImage
+                                            src={overview?.avatarUrl || user?.avatarUrl}
+                                            className="rounded-2xl object-cover"
+                                        />
+                                        <AvatarFallback className="rounded-2xl text-2xl font-semibold bg-gradient-to-br from-indigo-400 to-purple-500 text-white">
+                                            {(overview?.displayName || user?.displayName)?.charAt(0)?.toUpperCase() || 'U'}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    {/* Online dot */}
+                                    <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-neutral-900 shadow" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Name + meta */}
+                        <div className="flex-1 min-w-0 space-y-2.5">
+                            {isLoading ? (
+                                <div className="space-y-2">
+                                    <Skeleton className="h-7 w-40" />
+                                    <Skeleton className="h-5 w-28" />
+                                    <Skeleton className="h-5 w-32" />
+                                </div>
+                            ) : (
+                                <>
+                                    <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-white tracking-tight leading-tight truncate">
+                                        {overview?.displayName || user?.displayName || 'User'}
+                                    </h2>
+
+                                    {/* HQID */}
+                                    {(overview?.hqid || user?.hqid) && (
+                                        <div className="inline-flex items-center gap-1.5 text-sm font-mono text-neutral-500 dark:text-neutral-400">
+                                            <Hash className="w-3.5 h-3.5 shrink-0" />
+                                            <span className="truncate">{overview?.hqid || user?.hqid}</span>
+                                        </div>
+                                    )}
+
+                                    {/* Badges row */}
+                                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                                        {/* Plan badge */}
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${planStyle}`}>
+                                            <Star className="w-3 h-3" />
+                                            {planLabel} Plan
+                                        </span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Edit button */}
+                        <Button
+                            onClick={() => router.push('/settings/profile')}
+                            variant="outline"
+                            size="sm"
+                            className="hidden sm:flex shrink-0 rounded-full border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300 transition-all"
+                        >
+                            Edit Profile
+                        </Button>
                     </div>
 
-                    <Button onClick={() => router.push('/settings/profile')} variant="outline" size="sm" className="hidden sm:flex rounded-full">
+                    {/* ── Stats Grid ───────────────────────────────────────── */}
+                    <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {statTiles.map((tile, idx) => {
+                                const Icon = tile.icon;
+                                return (
+                                    <motion.div
+                                        key={idx}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.08 * idx, duration: 0.35 }}
+                                        className="group relative flex flex-col gap-3 p-4 rounded-2xl bg-neutral-50/80 dark:bg-neutral-800/50 border border-neutral-100 dark:border-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 transition-all duration-200 hover:shadow-sm overflow-hidden"
+                                    >
+                                        {/* Icon */}
+                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tile.iconBg} transition-transform duration-200 group-hover:scale-110`}>
+                                            <Icon className={`w-4 h-4 ${tile.iconColor}`} />
+                                        </div>
+
+                                        {/* Value */}
+                                        <div>
+                                            {isLoading ? (
+                                                <>
+                                                    <Skeleton className="h-7 w-10 mb-1.5" />
+                                                    <Skeleton className="h-3.5 w-16" />
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p className={`text-2xl font-bold leading-none tracking-tight ${tile.valueColor}`}>
+                                                        {tile.value}
+                                                    </p>
+                                                    <p className="text-[11px] font-medium text-neutral-500 dark:text-neutral-500 mt-1.5 leading-tight">
+                                                        {tile.label}{' '}
+                                                        <span className="text-neutral-400 dark:text-neutral-600">{tile.sublabel}</span>
+                                                    </p>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {/* Subtle corner accent */}
+                                        <div className={`absolute -bottom-3 -right-3 w-10 h-10 rounded-full opacity-20 blur-lg ${tile.iconBg}`} />
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Mobile edit button */}
+                    <Button
+                        onClick={() => router.push('/settings/profile')}
+                        variant="outline"
+                        size="sm"
+                        className="sm:hidden w-full rounded-full border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300"
+                    >
                         Edit Profile
                     </Button>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-neutral-100 dark:border-neutral-800">
-                    <div className="text-center">
-                        {isLoading ? <Skeleton className="w-12 h-8 mx-auto" /> : <p className="text-2xl font-bold text-neutral-900 dark:text-white">{stats?.workspaceCount || 0}</p>}
-                        <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mt-1">Workspaces</p>
-                    </div>
-                    <div className="text-center border-l border-neutral-100 dark:border-neutral-800">
-                        {isLoading ? <Skeleton className="w-12 h-8 mx-auto" /> : <p className="text-2xl font-bold text-neutral-900 dark:text-white">{Math.floor((stats?.timeTrackedSeconds || 0) / 3600)}h</p>}
-                        <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider mt-1">Tracked</p>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 }
+
+
 
 export function RecentWorkspaces() {
     const router = useRouter();

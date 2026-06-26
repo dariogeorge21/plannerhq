@@ -29,6 +29,8 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
   const planData = BILLING_PLANS.find((p) => p.key === planKey);
   if (!planData) redirect("/billing");
 
+  const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
   return (
     <div className="min-h-screen bg-[#F7F7F8] font-sans">
       <main className="max-w-4xl w-full mx-auto px-5 py-10">
@@ -37,7 +39,7 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
           <span>/</span>
           <span className="text-neutral-600 font-semibold">Confirm Subscription</span>
         </nav>
-        <CheckoutClient planKey={planKey} defaultCycle={billingCycle} />
+        <CheckoutClient planKey={planKey} defaultCycle={billingCycle} razorpayKeyId={razorpayKeyId} />
       </main>
     </div>
   );

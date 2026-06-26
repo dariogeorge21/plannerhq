@@ -238,9 +238,11 @@ function ErrorOverlay({
 export function CheckoutClient({
   planKey,
   defaultCycle,
+  razorpayKeyId,
 }: {
   planKey: PlanKey;
   defaultCycle: BillingCycle;
+  razorpayKeyId?: string;
 }) {
   const router = useRouter();
   const [cycle, setCycle] = useState<BillingCycle>(defaultCycle);
@@ -360,6 +362,12 @@ export function CheckoutClient({
     setStep("creating");
     setErrorMessage("");
 
+    if (!razorpayKeyId) {
+      setErrorMessage("Razorpay configuration is missing. Please contact support.");
+      setStep("error");
+      return;
+    }
+
     try {
       // 1. Create Razorpay subscription on the server
       const res = await fetch("/api/billing/checkout", {
@@ -375,7 +383,7 @@ export function CheckoutClient({
 
       // 2. Open Razorpay gateway
       const rzpOptions = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: razorpayKeyId,
         subscription_id: subscriptionId,
         name: "PlannerHQ",
         description: `${plan.name} — ${cycle}`,

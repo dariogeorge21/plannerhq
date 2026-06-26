@@ -85,23 +85,23 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
   };
 
   const priorityColors: Record<string, string> = {
-    none: "text-neutral-500",
-    low: "text-blue-500",
-    medium: "text-amber-500",
-    high: "text-orange-500",
-    urgent: "text-red-500"
+    none: "text-muted-foreground",
+    low: "text-blue-500 dark:text-blue-400",
+    medium: "text-amber-500 dark:text-amber-400",
+    high: "text-orange-500 dark:text-orange-400",
+    urgent: "text-red-500 dark:text-red-400"
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-full sm:w-[450px] sm:max-w-md p-0 gap-0 overflow-y-auto bg-white/95 backdrop-blur-xl border-l border-neutral-200/60 shadow-2xl">
+      <SheetContent side="right" className="w-full sm:w-[450px] sm:max-w-md p-0 gap-0 overflow-y-auto bg-background/95 backdrop-blur-xl border-l border-border shadow-2xl">
         <div className="flex flex-col h-full">
-          <SheetHeader className="px-6 py-4 border-b border-neutral-100 bg-white/50 sticky top-0 z-10 backdrop-blur-md">
+          <SheetHeader className="px-6 py-4 border-b border-border bg-muted/30 sticky top-0 z-10 backdrop-blur-md">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="icon"
-                className={`h-8 w-8 rounded-full border ${task.completed ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-neutral-300 text-neutral-400 hover:text-indigo-500 hover:border-indigo-500'}`}
+                className={`h-8 w-8 rounded-full border ${task.completed ? 'bg-primary border-primary text-primary-foreground' : 'border-border text-muted-foreground hover:text-primary hover:border-primary'}`}
                 onClick={() => updateTask.mutate({ id: task.id, completed: !task.completed, status: !task.completed ? 'done' : 'todo' })}
               >
                 {task.completed ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
@@ -110,7 +110,7 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onBlur={handleTitleBlur}
-                className="text-lg font-bold border-0 bg-transparent px-0 focus-visible:ring-0 shadow-none"
+                className="text-lg font-bold border-0 bg-transparent text-foreground px-0 focus-visible:ring-0 shadow-none"
               />
             </div>
           </SheetHeader>
@@ -118,13 +118,13 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
           <div className="p-6 flex flex-col gap-8 flex-1">
             {/* Properties Grid */}
             <div className="grid grid-cols-[100px_1fr] gap-4 items-center text-sm">
-              <div className="text-neutral-500 font-medium">Status</div>
+              <div className="text-muted-foreground font-medium">Status</div>
               <div>
                 <Select value={task.status} onValueChange={(val) => updateTask.mutate({ id: task.id, status: val as any })}>
-                  <SelectTrigger className="h-8 w-fit bg-neutral-50 border-neutral-200">
+                  <SelectTrigger className="h-8 w-fit bg-card border-border text-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border">
                     <SelectItem value="todo">To Do</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="done">Done</SelectItem>
@@ -134,16 +134,16 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                 </Select>
               </div>
 
-              <div className="text-neutral-500 font-medium">Priority</div>
+              <div className="text-muted-foreground font-medium">Priority</div>
               <div>
                 <Select value={task.priority} onValueChange={(val) => updateTask.mutate({ id: task.id, priority: val as any })}>
-                  <SelectTrigger className="h-8 w-fit bg-neutral-50 border-neutral-200 capitalize">
+                  <SelectTrigger className="h-8 w-fit bg-card border-border text-foreground capitalize">
                     <div className="flex items-center gap-2">
                       <Flag className={`w-3.5 h-3.5 ${priorityColors[task.priority]}`} />
                       <SelectValue />
                     </div>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-card border-border">
                     <SelectItem value="none">None</SelectItem>
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>
@@ -153,7 +153,7 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                 </Select>
               </div>
 
-              <div className="text-neutral-500 font-medium">Deadline</div>
+              <div className="text-muted-foreground font-medium">Deadline</div>
               <div>
                 <DeadlinePicker
                   value={task.due_date}
@@ -161,19 +161,19 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                 />
               </div>
 
-              <div className="text-neutral-500 font-medium self-start mt-1.5">Assignees</div>
+              <div className="text-muted-foreground font-medium self-start mt-1.5">Assignees</div>
               <div className="flex flex-wrap items-center gap-2">
                 {assignees.map(a => {
                   const member = members.find((m: any) => m.user_id === a.user_id);
                   if (!member) return null;
                   return (
-                    <Badge key={a.user_id} variant="secondary" className="pl-1 pr-2 py-1 gap-1.5 bg-neutral-100 hover:bg-neutral-200">
+                    <Badge key={a.user_id} variant="secondary" className="pl-1 pr-2 py-1 gap-1.5 bg-muted text-foreground hover:bg-accent border border-border">
                       <Avatar className="w-5 h-5">
                         <AvatarImage src={member.avatar_url || ''} />
                         <AvatarFallback className="text-[10px]">{member.display_name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <span className="text-xs font-medium">{member.display_name}</span>
-                      <Button variant="ghost" size="icon" className="w-4 h-4 ml-1 rounded-full text-neutral-400 hover:text-red-500" onClick={() => handleUnassign(a.user_id)}>
+                      <Button variant="ghost" size="icon" className="w-4 h-4 ml-1 rounded-full text-muted-foreground hover:text-destructive" onClick={() => handleUnassign(a.user_id)}>
                         <X className="w-3 h-3" />
                       </Button>
                     </Badge>
@@ -182,12 +182,12 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-8 w-8 rounded-full border-dashed p-0 text-neutral-500">
+                    <Button variant="outline" size="sm" className="h-8 w-8 rounded-full border-dashed border-border bg-background p-0 text-muted-foreground hover:bg-accent">
                       <UserPlus className="w-4 h-4" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-64 p-2 rounded-xl" align="start">
-                    <div className="text-xs font-semibold text-neutral-500 mb-2 px-2">Assign members</div>
+                  <PopoverContent className="w-64 p-2 rounded-xl bg-card border-border" align="start">
+                    <div className="text-xs font-semibold text-muted-foreground mb-2 px-2">Assign members</div>
                     <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
                       {members.map((member: any) => {
                         const isAssigned = assigneeUserIds.includes(member.user_id);
@@ -195,7 +195,7 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                           <Button
                             key={member.user_id}
                             variant="ghost"
-                            className="justify-start px-2 py-1.5 h-auto font-normal"
+                            className="justify-start px-2 py-1.5 h-auto font-normal text-foreground hover:bg-accent hover:text-accent-foreground"
                             onClick={() => isAssigned ? handleUnassign(member.user_id) : handleAssign(member.user_id)}
                           >
                             <div className="flex items-center gap-2 w-full">
@@ -205,9 +205,9 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                               </Avatar>
                               <div className="flex flex-col items-start min-w-0 flex-1">
                                 <span className="text-sm truncate w-full text-left">{member.display_name}</span>
-                                <span className="text-[10px] text-neutral-400 truncate w-full text-left">{member.email}</span>
+                                <span className="text-[10px] text-muted-foreground truncate w-full text-left">{member.email}</span>
                               </div>
-                              {isAssigned && <CheckCircle2 className="w-4 h-4 text-indigo-500 ml-auto flex-shrink-0" />}
+                              {isAssigned && <CheckCircle2 className="w-4 h-4 text-primary ml-auto flex-shrink-0" />}
                             </div>
                           </Button>
                         );
@@ -220,8 +220,8 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
 
             {/* Description */}
             <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2 text-neutral-900 font-semibold">
-                <AlignLeft className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-foreground font-semibold">
+                <AlignLeft className="w-4 h-4 text-muted-foreground" />
                 Description
               </div>
               <Textarea
@@ -229,14 +229,14 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={handleDescBlur}
                 placeholder="Add a more detailed description..."
-                className="min-h-[150px] resize-y border-neutral-200 bg-neutral-50/50 focus-visible:bg-white rounded-xl"
+                className="min-h-[150px] resize-y border-border bg-muted/50 focus-visible:bg-background text-foreground rounded-xl placeholder:text-muted-foreground"
               />
             </div>
 
             {/* Attachments */}
             <TaskAttachment taskId={task.id} workspaceId={workspaceId} />
 
-            <div className="mt-auto pt-6 text-xs text-neutral-400 flex flex-col gap-1">
+            <div className="mt-auto pt-6 text-xs text-muted-foreground flex flex-col gap-1">
               <div>Created on {format(new Date(task.created_at), "MMM d, yyyy 'at' h:mm a")}</div>
               <div>Last updated {format(new Date(task.updated_at), "MMM d, yyyy 'at' h:mm a")}</div>
             </div>

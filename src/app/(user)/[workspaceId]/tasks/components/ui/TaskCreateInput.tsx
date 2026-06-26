@@ -59,8 +59,8 @@ export function TaskCreateInput({ workspaceId, sectionId, onClose }: TaskCreateI
   };
 
   return (
-    <div className="flex items-center gap-2 bg-white rounded-xl border-2 border-indigo-500 shadow-[0_0_0_4px_rgba(99,102,241,0.1)] p-1 transition-all">
-      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-indigo-500 pl-1">
+    <div className="flex items-center gap-2 bg-card rounded-xl border-2 border-primary shadow-[0_0_0_4px_hsl(var(--primary)/0.1)] p-1 transition-all">
+      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center text-primary pl-1">
         {createTask.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
       </div>
       <Input
@@ -72,7 +72,7 @@ export function TaskCreateInput({ workspaceId, sectionId, onClose }: TaskCreateI
           if (!title) onClose();
         }}
         placeholder="Type a task title... (Press Enter to save, Esc to cancel)"
-        className="flex-1 h-8 text-sm border-0 focus-visible:ring-0 px-1 shadow-none"
+        className="flex-1 h-8 text-sm bg-transparent text-foreground placeholder:text-muted-foreground border-0 focus-visible:ring-0 px-1 shadow-none"
         disabled={createTask.isPending}
       />
       <div className="flex-shrink-0 pr-1">

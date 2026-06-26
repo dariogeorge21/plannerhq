@@ -64,20 +64,20 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
 
   // Status mapping
   const statusColors = {
-    todo: "bg-neutral-200",
-    in_progress: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]",
-    done: "bg-emerald-500",
-    blocked: "bg-red-500",
-    cancelled: "bg-neutral-300"
+    todo: "bg-neutral-200 dark:bg-neutral-600",
+    in_progress: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)] dark:bg-blue-400",
+    done: "bg-emerald-500 dark:bg-emerald-400",
+    blocked: "bg-red-500 dark:bg-red-400",
+    cancelled: "bg-neutral-300 dark:bg-neutral-600"
   };
 
   // Priority mapping
   const priorityStyles = {
     none: "",
-    low: "bg-blue-50 text-blue-700 border-blue-200",
-    medium: "bg-amber-50 text-amber-700 border-amber-200",
-    high: "bg-orange-50 text-orange-700 border-orange-200",
-    urgent: "bg-red-500 text-white border-red-600"
+    low: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/30",
+    medium: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30",
+    high: "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-300 dark:border-orange-500/30",
+    urgent: "bg-red-500 text-white border-red-600 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/30"
   };
 
   const priorityLabels = {
@@ -100,8 +100,8 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
     if (isOverdue) {
       return { 
         text: `${format(formattedDate, "MMM d")} (Overdue)`,
-        className: "bg-red-50 text-red-600 border-red-200",
-        iconClass: "text-red-500",
+        className: "bg-red-50 text-red-600 border-red-200 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30",
+        iconClass: "text-red-500 dark:text-red-400",
         showPulse: true
       };
     }
@@ -109,23 +109,23 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
     if (isSameDay(formattedDate, today)) {
       return { 
         text: `Today ${format(formattedDate, "h:mm a")}`,
-        className: "bg-amber-50 text-amber-600 border-amber-200",
-        iconClass: "text-amber-500"
+        className: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30",
+        iconClass: "text-amber-500 dark:text-amber-400"
       };
     }
 
     if (isSameDay(formattedDate, tomorrow)) {
       return { 
         text: `Tomorrow`,
-        className: "bg-yellow-50 text-yellow-600 border-yellow-200",
-        iconClass: "text-yellow-500"
+        className: "bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-400 dark:border-yellow-500/30",
+        iconClass: "text-yellow-500 dark:text-yellow-400"
       };
     }
     
     return {
       text: format(formattedDate, "MMM d"),
-      className: "bg-neutral-50 text-neutral-600 border-neutral-200",
-      iconClass: "text-neutral-400"
+      className: "bg-muted text-muted-foreground border-border",
+      iconClass: "text-muted-foreground"
     };
   };
 
@@ -137,7 +137,7 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
       <div 
         ref={setNodeRef} 
         style={style} 
-        className={`group flex flex-col gap-2 p-3 bg-white border ${task.completed ? 'border-neutral-200/50 bg-neutral-50/50' : 'border-neutral-200/80'} rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-grab active:cursor-grabbing`}
+        className={`group flex flex-col gap-2 p-3 bg-card border ${task.completed ? 'border-border/50 bg-muted/20 opacity-75' : 'border-border'} rounded-xl shadow-sm hover:shadow-md hover:border-primary transition-all cursor-grab active:cursor-grabbing`}
         {...attributes} 
         {...listeners}
         onClick={() => setIsDetailModalOpen(true)}
@@ -148,25 +148,25 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
               onClick={handleToggle}
               className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
                 task.completed 
-                  ? 'bg-indigo-500 border-indigo-500 text-white' 
-                  : 'border-neutral-300 hover:border-indigo-400 text-transparent hover:text-indigo-200 bg-white'
+                  ? 'bg-primary border-primary text-primary-foreground' 
+                  : 'border-border hover:border-primary text-transparent hover:text-primary/30 bg-background'
               }`}
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
             </button>
             <div className="flex flex-col min-w-0">
-              <span className={`text-sm font-semibold truncate ${task.completed ? 'text-neutral-400 line-through' : 'text-neutral-900'}`}>
+              <span className={`text-sm font-semibold truncate ${task.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                 {task.title}
               </span>
               {task.description && (
-                <span className="text-xs text-neutral-500 line-clamp-2 mt-0.5">{task.description}</span>
+                <span className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{task.description}</span>
               )}
             </div>
           </div>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 flex-shrink-0 text-neutral-400 hover:text-neutral-900">
+              <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 flex-shrink-0 text-muted-foreground hover:text-foreground">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -251,10 +251,10 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
     <div 
       ref={setNodeRef} 
       style={style} 
-      className={`group flex items-center gap-3 p-2.5 bg-white border ${task.completed ? 'border-neutral-200/40 bg-neutral-50/30' : 'border-neutral-200/80'} rounded-xl shadow-sm hover:shadow-md hover:border-indigo-300 transition-all cursor-pointer`}
+      className={`group flex items-center gap-3 p-2.5 bg-card border ${task.completed ? 'border-border/50 bg-muted/20 opacity-75' : 'border-border'} rounded-xl shadow-sm hover:shadow-md hover:border-primary transition-all cursor-pointer`}
       onClick={() => setIsDetailModalOpen(true)}
     >
-      <div {...attributes} {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 text-neutral-400 p-1 hover:bg-neutral-100 rounded-md transition-all flex-shrink-0" onClick={e => e.stopPropagation()}>
+      <div {...attributes} {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 text-muted-foreground p-1 hover:bg-accent hover:text-accent-foreground rounded-md transition-all flex-shrink-0" onClick={e => e.stopPropagation()}>
         <GripVertical className="h-4 w-4" />
       </div>
       
@@ -262,8 +262,8 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
         onClick={handleToggle}
         className={`flex-shrink-0 w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
           task.completed 
-            ? 'bg-indigo-500 border-indigo-500 text-white' 
-            : 'border-neutral-300 hover:border-indigo-400 text-transparent hover:text-indigo-200'
+            ? 'bg-primary border-primary text-primary-foreground' 
+            : 'border-border hover:border-primary text-transparent hover:text-primary/30'
         }`}
       >
         <CheckCircle2 className="w-3.5 h-3.5" />
@@ -272,7 +272,7 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
       <div className={`w-2 h-2 rounded-full flex-shrink-0 ${statusColors[task.status]}`} title={task.status.replace('_', ' ')} />
 
       <div className={`flex-1 min-w-0 flex items-center gap-2 ${task.completed ? 'opacity-60' : ''}`}>
-        <span className={`text-sm font-semibold truncate ${task.completed ? 'line-through text-neutral-500' : 'text-neutral-900'}`}>
+        <span className={`text-sm font-semibold truncate ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
           {task.title}
         </span>
       </div>
@@ -295,24 +295,24 @@ export function TaskItem({ task, workspaceId, userId, isKanban = false }: TaskIt
             <DeadlinePicker 
               value={task.due_date} 
               onChange={(date) => setDeadline.mutate({ taskId: task.id, due_date: date })} 
-              trigger={<Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-400 hover:text-indigo-600"><CalendarDays className="h-4 w-4" /></Button>}
+              trigger={<Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary"><CalendarDays className="h-4 w-4" /></Button>}
             />
           </div>
         )}
 
         {hasReviewed ? (
-          <div className="flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100" title="You reviewed this">
+          <div className="flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/20 dark:text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-500/30" title="You reviewed this">
             <Eye className="w-3 h-3 mr-1" /> Reviewed
           </div>
         ) : (
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 text-neutral-500 hover:text-indigo-600" onClick={handleReview}>
+          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-primary" onClick={handleReview}>
             Review
           </Button>
         )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 text-neutral-400 hover:text-neutral-900">
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground">
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

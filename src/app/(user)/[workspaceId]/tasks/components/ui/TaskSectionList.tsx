@@ -13,7 +13,6 @@ interface TaskSectionListProps {
 }
 
 export function TaskSectionList({ sections, tasks, workspaceId, userId }: TaskSectionListProps) {
-  // Sort sections by sort_order
   const sortedSections = [...sections].sort((a, b) => a.sort_order - b.sort_order);
 
   const containerVariants = {
@@ -30,17 +29,17 @@ export function TaskSectionList({ sections, tasks, workspaceId, userId }: TaskSe
   };
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="flex flex-col gap-5 w-full"
+      className="flex flex-col gap-6 w-full"
     >
       {sortedSections.map((section) => (
         <motion.div key={section.id} variants={itemVariants} layout="position">
-          <TaskSectionItem 
-            section={section} 
-            tasks={tasks.filter(t => t.section_id === section.id || (section.id === "uncategorized" && !t.section_id))} 
+          <TaskSectionItem
+            section={section}
+            tasks={tasks.filter(t => t.section_id === section.id || (section.id === "uncategorized" && !t.section_id))}
             workspaceId={workspaceId}
             userId={userId}
           />

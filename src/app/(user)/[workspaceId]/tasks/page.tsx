@@ -22,7 +22,7 @@ export default async function TasksPage(props: { params: Promise<{ workspaceId: 
   ]);
 
   return (
-    <div className="flex flex-col h-full bg-[#FAFAFA] text-foreground">
+    <div className="flex flex-col h-full bg-background text-foreground selection:bg-primary/20">
       <main className="flex-1 overflow-auto w-full">
         <TasksClient
           workspaceId={params.workspaceId}

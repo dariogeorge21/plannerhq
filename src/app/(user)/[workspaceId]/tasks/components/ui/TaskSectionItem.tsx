@@ -70,23 +70,23 @@ export function TaskSectionItem({ section, tasks, workspaceId, userId }: TaskSec
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex flex-col bg-white border border-neutral-200/60 rounded-2xl shadow-sm transition-shadow hover:shadow-md">
-      <div className="flex items-center justify-between p-2 pl-1 pr-4 border-b border-neutral-100 group">
+    <div ref={setNodeRef} style={style} className="flex flex-col bg-card border border-border rounded-2xl shadow-sm transition-shadow hover:shadow-md">
+      <div className="flex items-center justify-between p-2 pl-1 pr-4 border-b border-border group">
         <div className="flex items-center gap-1 flex-1">
           {!isUncategorized ? (
-            <div {...attributes} {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 text-neutral-400 p-1.5 hover:bg-neutral-100 rounded-md transition-all">
+            <div {...attributes} {...listeners} className="cursor-grab opacity-0 group-hover:opacity-100 text-muted-foreground p-1.5 hover:bg-accent hover:text-accent-foreground rounded-md transition-all">
               <GripVertical className="h-4 w-4" />
             </div>
           ) : (
             <div className="w-7" /> // Spacer to align
           )}
           
-          <Button variant="ghost" size="icon" className="h-6 w-6 p-0 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-md" onClick={() => setIsExpanded(!isExpanded)}>
+          <Button variant="ghost" size="icon" className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md" onClick={() => setIsExpanded(!isExpanded)}>
             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
           
-          {!isUncategorized && <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 ml-1 mr-2" />}
-          {isUncategorized && <div className="w-2.5 h-2.5 rounded-full bg-neutral-300 ml-1 mr-2" />}
+          {!isUncategorized && <div className="w-2.5 h-2.5 rounded-full bg-primary ml-1 mr-2" />}
+          {isUncategorized && <div className="w-2.5 h-2.5 rounded-full bg-muted ml-1 mr-2" />}
 
           {isEditingName ? (
             <div className="flex items-center gap-2">
@@ -96,40 +96,40 @@ export function TaskSectionItem({ section, tasks, workspaceId, userId }: TaskSec
                 onChange={(e) => setEditName(e.target.value)}
                 onBlur={handleRenameSubmit}
                 onKeyDown={(e) => e.key === 'Enter' && handleRenameSubmit()}
-                className="h-7 py-1 px-2 text-sm font-bold bg-neutral-50"
+                className="h-7 py-1 px-2 text-sm font-bold bg-background border-border text-foreground"
               />
-              <Button size="icon" variant="ghost" className="h-6 w-6 text-green-600 hover:bg-green-50" onMouseDown={(e) => { e.preventDefault(); handleRenameSubmit(); }}>
+              <Button size="icon" variant="ghost" className="h-6 w-6 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10" onMouseDown={(e) => { e.preventDefault(); handleRenameSubmit(); }}>
                 <Check className="h-3.5 w-3.5" />
               </Button>
             </div>
           ) : (
             <h3 
-              className={`font-bold text-neutral-900 ${!isUncategorized ? 'cursor-pointer hover:text-indigo-600 transition-colors' : ''}`}
+              className={`font-bold text-foreground ${!isUncategorized ? 'cursor-pointer hover:text-primary transition-colors' : ''}`}
               onClick={() => !isUncategorized && setIsEditingName(true)}
             >
               {section.name}
             </h3>
           )}
           
-          <span className="text-xs font-semibold text-neutral-500 px-2 py-0.5 bg-neutral-100 rounded-full ml-2">
+          <span className="text-xs font-semibold text-muted-foreground px-2 py-0.5 bg-muted rounded-full ml-2">
             {tasks.length}
           </span>
         </div>
         
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="sm" onClick={() => setIsAddingTask(true)} className="h-7 px-2 text-neutral-500 hover:text-indigo-600 hover:bg-indigo-50">
+          <Button variant="ghost" size="sm" onClick={() => setIsAddingTask(true)} className="h-7 px-2 text-muted-foreground hover:text-primary hover:bg-primary/10">
             <Plus className="h-3.5 w-3.5 mr-1" /> Add
           </Button>
           {!isUncategorized && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-neutral-500 hover:text-neutral-700">
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40 rounded-xl">
-                <DropdownMenuItem onClick={() => setIsEditingName(true)} className="rounded-lg cursor-pointer">Rename</DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600 rounded-lg cursor-pointer">Delete section</DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-40 rounded-xl bg-card border-border">
+                <DropdownMenuItem onClick={() => setIsEditingName(true)} className="rounded-lg cursor-pointer text-foreground focus:bg-accent focus:text-accent-foreground">Rename</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:bg-destructive/10 focus:text-destructive rounded-lg cursor-pointer">Delete section</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -144,7 +144,7 @@ export function TaskSectionItem({ section, tasks, workspaceId, userId }: TaskSec
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden"
           >
-            <div className="p-3 bg-neutral-50/50 flex flex-col gap-2 rounded-b-2xl">
+            <div className="p-3 bg-muted/30 flex flex-col gap-2 rounded-b-2xl">
               <TaskList tasks={tasks} sectionId={section.id} workspaceId={workspaceId} userId={userId} />
               
               {isAddingTask ? (
@@ -160,7 +160,7 @@ export function TaskSectionItem({ section, tasks, workspaceId, userId }: TaskSec
                   <Button 
                     variant="ghost" 
                     onClick={() => setIsAddingTask(true)} 
-                    className="w-full justify-start text-neutral-500 hover:text-indigo-600 hover:bg-white h-8"
+                    className="w-full justify-start text-muted-foreground hover:text-primary hover:bg-background h-8"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     New task

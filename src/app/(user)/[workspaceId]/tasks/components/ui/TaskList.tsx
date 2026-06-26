@@ -18,12 +18,12 @@ export function TaskList({ tasks, sectionId, workspaceId, userId }: TaskListProp
 
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-6 px-4 text-center bg-white/50 border border-dashed border-neutral-200 rounded-xl m-1">
-        <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center mb-2">
-          <ListTodo className="w-4 h-4 text-neutral-400" />
+      <div className="flex flex-col items-center justify-center py-6 px-4 text-center bg-muted/30 border border-dashed border-border rounded-xl m-1">
+        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center mb-2">
+          <ListTodo className="w-4 h-4 text-muted-foreground" />
         </div>
-        <p className="text-sm font-medium text-neutral-900">No tasks here yet</p>
-        <p className="text-xs text-neutral-500 mt-1">Add a task below to get started</p>
+        <p className="text-sm font-medium text-foreground">No tasks here yet</p>
+        <p className="text-xs text-muted-foreground mt-1">Add a task below to get started</p>
       </div>
     );
   }

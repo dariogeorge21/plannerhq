@@ -22,6 +22,7 @@ export interface Channel {
   created_by: string;
   slug: string;
   is_direct: boolean;
+  is_private: boolean;
   updated_at: string;
   created_at: string;
 }

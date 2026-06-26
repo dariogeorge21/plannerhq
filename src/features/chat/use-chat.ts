@@ -255,6 +255,57 @@ export function useChat(workspaceId: string, customChannelId?: string) {
     }
   }, [workspaceId]);
 
+  const currentUserRole = workspaceMembers.find(m => m.user_id === currentUserId)?.role || 'member';
+
+  const createChannel = useCallback(async (name: string, description?: string, isPrivate: boolean = false, memberIds: string[] = []) => {
+    try {
+      setLoading(true);
+      const { CreateChannelForWorkspace } = await import('./channel');
+      const newChannel = await CreateChannelForWorkspace(workspaceId, name, description, isPrivate, memberIds);
+      setChannels(prev => [...prev, newChannel]);
+      setActiveChannelId(newChannel.id);
+      return { success: true, channel: newChannel };
+    } catch (err: any) {
+      console.error("Failed to create channel:", err);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  }, [workspaceId]);
+
+  const deleteChannel = useCallback(async (channelId: string) => {
+    try {
+      setLoading(true);
+      const { DeleteChannel } = await import('./channel');
+      await DeleteChannel(channelId, workspaceId);
+      setChannels(prev => prev.filter(c => c.id !== channelId));
+      if (activeChannelId === channelId) {
+        const generalChannel = channels.find(c => c.slug === 'general');
+        setActiveChannelId(generalChannel?.id || null);
+      }
+      return { success: true };
+    } catch (err: any) {
+      console.error("Failed to delete channel:", err);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  }, [workspaceId, activeChannelId, channels]);
+
+  const updateChannelMembers = useCallback(async (channelId: string, addedIds: string[], removedIds: string[]) => {
+    try {
+      setLoading(true);
+      const { UpdateChannelMembers } = await import('./channel');
+      await UpdateChannelMembers(workspaceId, channelId, addedIds, removedIds);
+      return { success: true };
+    } catch (err: any) {
+      console.error("Failed to update channel members:", err);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  }, [workspaceId]);
+
   return {
     channels,
     messages,
@@ -267,9 +318,13 @@ export function useChat(workspaceId: string, customChannelId?: string) {
     sendMessage,
     setTyping,
     currentUserId,
+    currentUserRole,
     activeChannelId,
     setActiveChannelId,
     workspaceMembers,
     startDirectChat,
+    createChannel,
+    deleteChannel,
+    updateChannelMembers,
   };
 }

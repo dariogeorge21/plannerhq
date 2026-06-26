@@ -33,10 +33,14 @@ export function ChatLayout({ workspaceId, initialChannelId }: ChatLayoutProps) {
     sendMessage,
     setTyping,
     currentUserId,
+    currentUserRole,
     activeChannelId,
     setActiveChannelId,
     workspaceMembers,
     startDirectChat,
+    createChannel,
+    deleteChannel,
+    updateChannelMembers,
   } = useChat(workspaceId, initialChannelId);
 
   const activeChannel = channels.find((c) => c.id === activeChannelId);
@@ -86,6 +90,10 @@ export function ChatLayout({ workspaceId, initialChannelId }: ChatLayoutProps) {
           workspaceMembers={workspaceMembers}
           startDirectChat={(id) => { startDirectChat(id); if (window.innerWidth < 768) setLeftSidebarOpen(false); }}
           currentUserId={currentUserId}
+          currentUserRole={currentUserRole}
+          createChannel={createChannel}
+          deleteChannel={deleteChannel}
+          updateChannelMembers={updateChannelMembers}
           loading={loading && channels.length === 0}
         />
       </div>

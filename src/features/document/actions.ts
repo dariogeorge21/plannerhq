@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { createDocumentService } from "./services";
+import { LogWorkspaceActivity } from "../workspace/workspace";
 import {
   CreateSectionSchema,
   UpdateSectionSchema,
@@ -78,6 +79,7 @@ export async function createDocumentAction(payload: unknown) {
     const service = createDocumentService(supabase);
     
     const document = await service.createDocument(data.workspaceId, data.sectionId, data.title);
+    await LogWorkspaceActivity(data.workspaceId, "create_document", "document", document.id, { title: data.title });
     revalidatePath(`/${data.workspaceId}`);
     return { success: true, data: document };
   } catch (error: any) {
@@ -98,6 +100,8 @@ export async function updateDocumentAction(payload: unknown, workspaceId: string
       section_id: data.sectionId,
     });
     
+    await LogWorkspaceActivity(workspaceId, "update_document", "document", data.documentId, { title: data.title });
+
     revalidatePath(`/${workspaceId}`);
     revalidatePath(`/${workspaceId}/docs/${data.documentId}`);
     return { success: true, data: document };
@@ -112,6 +116,7 @@ export async function deleteDocumentAction(documentId: string, workspaceId: stri
     const service = createDocumentService(supabase);
     
     await service.deleteDocument(documentId);
+    await LogWorkspaceActivity(workspaceId, "delete_document", "document", documentId, {});
     revalidatePath(`/${workspaceId}`);
     return { success: true };
   } catch (error: any) {

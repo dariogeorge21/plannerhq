@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { createCalendarService } from "./services";
 import { CreateEventSchema, UpdateEventSchema } from "./validations";
+import { LogWorkspaceActivity } from "../workspace/workspace";
 
 export async function createEventAction(payload: unknown) {
   try {
@@ -27,6 +28,7 @@ export async function createEventAction(payload: unknown) {
       userData.user.id
     );
 
+    await LogWorkspaceActivity(data.workspace_id, "create_calendar_event", "calendar_event", event.id, { title: data.title });
     revalidatePath(`/${data.workspace_id}/calendar`);
     return { success: true, data: event };
   } catch (error: any) {
@@ -54,6 +56,7 @@ export async function updateEventAction(payload: unknown) {
       userData.user.id
     );
 
+    await LogWorkspaceActivity(workspace_id, "update_calendar_event", "calendar_event", id, { updates });
     revalidatePath(`/${workspace_id}/calendar`);
     return { success: true, data: event };
   } catch (error: any) {
@@ -71,6 +74,7 @@ export async function deleteEventAction(eventId: string, workspaceId: string) {
     if (!userData.user) throw new Error("Unauthorized");
 
     await service.deleteEvent(eventId);
+    await LogWorkspaceActivity(workspaceId, "delete_calendar_event", "calendar_event", eventId, {});
     revalidatePath(`/${workspaceId}/calendar`);
     return { success: true };
   } catch (error: any) {

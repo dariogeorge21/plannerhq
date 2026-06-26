@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { createTaskService } from "./services";
+import { LogWorkspaceActivity } from "../workspace/workspace";
 import {
   TaskSectionSchema,
   TaskSectionUpdateSchema,
@@ -93,6 +94,7 @@ export async function createTaskAction(payload: unknown) {
       data.parent_id || null,
       userData.user.id
     );
+    await LogWorkspaceActivity(data.workspace_id, "create_task", "task", task.id, { title: data.title });
     revalidatePath(`/${data.workspace_id}/tasks`);
     console.log(task)
     return { success: true, data: task };
@@ -110,6 +112,7 @@ export async function updateTaskAction(payload: unknown, workspaceId: string) {
 
     const { id, workspace_id, ...updates } = data;
     const task = await service.updateTask(id, updates);
+    await LogWorkspaceActivity(workspaceId, "update_task", "task", id, { updates });
     revalidatePath(`/${workspaceId}/tasks`);
     return { success: true, data: task };
   } catch (error: any) {
@@ -123,6 +126,7 @@ export async function deleteTaskAction(taskId: string, workspaceId: string) {
     const service = createTaskService(supabase);
 
     await service.deleteTask(taskId);
+    await LogWorkspaceActivity(workspaceId, "delete_task", "task", taskId, {});
     revalidatePath(`/${workspaceId}/tasks`);
     return { success: true };
   } catch (error: any) {

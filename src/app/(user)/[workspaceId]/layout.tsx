@@ -22,7 +22,8 @@ import {
   FolderOpen,
   Search,
   Sun,
-  Moon
+  Moon,
+  Activity
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -143,6 +144,7 @@ export default function WorkspaceLayout({
     { name: "Files", href: `/${workspaceId}/files`, icon: FolderOpen, exact: false },
     { name: "Members", href: `/${workspaceId}/members`, icon: Users, exact: false },
     { name: "Settings", href: `/${workspaceId}/settings`, icon: Settings, exact: false },
+    ...(workspace.role === 'owner' ? [{ name: "Workspace Logs", href: `/${workspaceId}/logs`, icon: Activity, exact: false }] : []),
   ];
 
   const isActive = (href: string, exact: boolean) => {

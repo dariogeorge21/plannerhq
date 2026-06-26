@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { WorkspaceRole, InviteStatus } from "@/types/workspace";
 import { revalidatePath } from "next/cache";
 import { checkCollaboratorLimit } from "@/features/billing/usage";
+import { LogWorkspaceActivity } from "./workspace";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -131,6 +132,8 @@ export async function InviteUserToWorkspaceByHqid(formData: FormData): Promise<I
         return { success: false, message: "Failed to send invitation" };
     }
 
+    await LogWorkspaceActivity(workspaceId, "invite_user", "member", inviteeId, { method: 'hqid', role });
+
     revalidatePath(`/${workspaceId}`);
     revalidatePath(`/${workspaceId}/settings`);
     return { success: true, message: "Invitation sent successfully" };
@@ -185,6 +188,8 @@ export async function InviteUserToWorkspaceByEmail(formData: FormData): Promise<
         return { success: false, message: "Failed to send invitation" };
     }
 
+    await LogWorkspaceActivity(workspaceId, "invite_user", "member", inviteeId, { method: 'email', role });
+
     revalidatePath(`/${workspaceId}`);
     revalidatePath(`/${workspaceId}/settings`);
     return { success: true, message: "Invitation sent successfully" };
@@ -204,6 +209,8 @@ export async function RemoveUserFromWorkspace(formData: FormData): Promise<Invit
         .eq('user_id', userId);
 
     if (error) return { success: false, message: "Failed to remove user" };
+
+    await LogWorkspaceActivity(workspaceId, "remove_user", "member", userId, {});
 
     revalidatePath(`/${workspaceId}`);
     revalidatePath(`/${workspaceId}/members`);
@@ -347,6 +354,8 @@ export async function CancelInvitation(formData: FormData): Promise<InviteResult
         console.error("CancelInvitation error:", error.message);
         return { success: false, message: "Failed to cancel invitation" };
     }
+
+    await LogWorkspaceActivity(workspaceId, "cancel_invite", "invite", invitationId, {});
 
     revalidatePath(`/${workspaceId}`);
     revalidatePath(`/${workspaceId}/members`);

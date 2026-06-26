@@ -2,8 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { Channel } from "./types";
-import { GetWorkspaceMembers } from "../workspace/workspace";
-
+import { GetWorkspaceMembers, LogWorkspaceActivity } from "../workspace/workspace";
 export async function CreateChannelForWorkspace(workspaceId: string, name: string, description?: string, isPrivate: boolean = false, memberIds: string[] = []): Promise<Channel> {
   const slug = name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.random().toString(36).substring(2, 7);
   const supabase = await createClient();
@@ -57,6 +56,8 @@ export async function CreateChannelForWorkspace(workspaceId: string, name: strin
       console.error("Failed to add members to private channel:", membersError);
     }
   }
+
+  await LogWorkspaceActivity(workspaceId, "create_channel", "channel", channelId, { name, isPrivate });
 
   return {
     id: channelId,
@@ -117,6 +118,9 @@ export async function DeleteChannel(channelId: string, workspaceId: string): Pro
     .eq('workspace_id', workspaceId);
 
   if (error) throw error;
+
+  await LogWorkspaceActivity(workspaceId, "delete_channel", "channel", channelId, { name: channelData?.slug });
+
   return { id: channelId } as Channel;
 }
 
@@ -158,6 +162,8 @@ export async function UpdateChannelMembers(workspaceId: string, channelId: strin
       .from('chat_channel_members')
       .insert(membersToInsert);
   }
+
+  await LogWorkspaceActivity(workspaceId, "update_channel_members", "channel", channelId, { added: addedMemberIds, removed: removedMemberIds });
 
   return { success: true };
 }

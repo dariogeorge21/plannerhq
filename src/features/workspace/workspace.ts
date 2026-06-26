@@ -245,6 +245,7 @@ export async function UpdateMemberRole(formData: FormData): Promise<{ success: b
     if (error) {
         return { success: false, message: "Failed to update member role" };
     }
+    await LogWorkspaceActivity(workspaceId, "update_member_role", "member", userId, { role });
     revalidatePath(`/${workspaceId}`);
     revalidatePath(`/${workspaceId}/members`);
     return { success: true, message: "Member role updated successfully" };
@@ -267,6 +268,7 @@ export async function LeaveWorkspace(formData: FormData): Promise<{ success: boo
     if (error) {
         return { success: false, message: "Failed to leave workspace" };
     }
+    await LogWorkspaceActivity(workspaceId, "leave_workspace", "workspace", workspaceId, {});
     revalidatePath('/dashboard');
     return { success: true, message: "Left workspace successfully" };
 }
@@ -330,4 +332,65 @@ export async function UpdateWorkspaceLastActive(workspaceId: string): Promise<{ 
     }
     
     return { success: true, message: "Last active updated successfully" };
+}
+
+export async function LogWorkspaceActivity(
+    workspaceId: string,
+    actionType: string,
+    entityType: string,
+    entityId: string | null = null,
+    metadata: any = {}
+): Promise<void> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+        await supabase.from('workspace_activity_logs').insert({
+            workspace_id: workspaceId,
+            user_id: user.id,
+            action_type: actionType,
+            entity_type: entityType,
+            entity_id: entityId,
+            metadata: metadata
+        });
+    } catch (error) {
+        console.error("Failed to log workspace activity:", error);
+    }
+}
+
+export async function GetWorkspaceActivityLogs(workspaceId: string, page: number = 1, pageSize: number = 20): Promise<{ success: boolean, message: string, data?: any[], totalCount?: number }> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { success: false, message: "User not found" };
+    }
+
+    // Verify user is owner
+    const { data: member, error: memberError } = await supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+    
+    if (memberError || member?.role !== 'owner') {
+        return { success: false, message: "Access denied" };
+    }
+
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize - 1;
+
+    const { data, error, count } = await supabase
+        .from('workspace_activity_logs')
+        .select('*, profiles(display_name, avatar_url, email)', { count: 'exact' })
+        .eq('workspace_id', workspaceId)
+        .order('created_at', { ascending: false })
+        .range(start, end);
+
+    if (error) {
+        return { success: false, message: "Failed to fetch workspace logs" };
+    }
+
+    return { success: true, message: "Logs fetched successfully", data, totalCount: count || 0 };
 }

@@ -8,6 +8,7 @@ export interface Workspace {
   description: string | null;
   created_at: string;
   is_deleted: boolean;
+  is_archived?: boolean; // Alias for is_deleted
   deleted_at: string | null;
   created_by: string;
   role?: WorkspaceRole; // Joined role for current user

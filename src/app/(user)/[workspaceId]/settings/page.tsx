@@ -2,13 +2,7 @@
 "use client";
 
 import React, { useEffect, useState, useTransition, use } from "react";
-import { GetWorkspace, UpdateWorkspace, ArchieveWorkspace, GetWorkspaceMembers } from "@/features/workspace/workspace";
-import {
-  InviteUserToWorkspaceByHqid,
-  InviteUserToWorkspaceByEmail,
-  ListInvitationsForWorkspace,
-  DeclineInvitation
-} from "@/features/workspace/invites";
+import { GetWorkspace, UpdateWorkspace, ArchieveWorkspace, GetWorkspaceMembers, LeaveWorkspace } from "@/features/workspace/workspace";
 import { useSession } from "@/features/auth/providers/SessionProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,26 +11,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   Loader2,
-  ShieldAlert,
   Settings,
   Archive,
-  Mail,
-  Hash,
-  Clock,
-  X
+  LogOut
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Workspace, WorkspaceMember } from "@/types/workspace";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { AvatarPicker } from "@/app/(user)/profile/components/ui/avatar-picker";
-
-type WorkspaceInviteItem = {
-  id: string;
-  invitee_email: string | null;
-  invitee_hqid: string | null;
-  role: string;
-  created_at: string;
-};
 
 export default function WorkspaceSettingsPage({
   params: paramsPromise,
@@ -62,9 +44,9 @@ export default function WorkspaceSettingsPage({
   const [showArchiveConfirm, setShowArchiveConfirm] = useState(false);
   const [isArchivePending, startArchiveTransition] = useTransition();
 
-  // Invites state
-  const [pendingInvites, setPendingInvites] = useState<WorkspaceInviteItem[]>([]);
-  const [invitesLoading, setInvitesLoading] = useState(true);
+  // Leave state
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [isLeavePending, startLeaveTransition] = useTransition();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,23 +75,6 @@ export default function WorkspaceSettingsPage({
     };
     fetchData();
   }, [workspaceId, user]);
-
-  const loadInvites = async () => {
-    try {
-      const res = await ListInvitationsForWorkspace(workspaceId);
-      if (res.success && res.data) {
-        setPendingInvites(res.data);
-      }
-    } finally {
-      setInvitesLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (currentUserRole === 'owner' || currentUserRole === 'admin') {
-      loadInvites();
-    }
-  }, [currentUserRole, workspaceId]);
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,133 +111,143 @@ export default function WorkspaceSettingsPage({
     });
   };
 
-  const handleCancelInvite = async (inviteId: string) => {
-    const formData = new FormData();
-    formData.append("invitationId", inviteId);
-    const res = await DeclineInvitation(formData);
-    if (res.success) {
-      toast.success("Invitation cancelled");
-      setPendingInvites(prev => prev.filter(i => i.id !== inviteId));
-    } else {
-      toast.error(res.message || "Failed to cancel invitation");
-    }
+  const handleLeaveWorkspace = () => {
+    startLeaveTransition(async () => {
+      const formData = new FormData();
+      formData.append("workspaceId", workspaceId);
+      const res = await LeaveWorkspace(formData);
+
+      if (res.success) {
+        toast.success("You have left the workspace");
+        router.push("/dashboard");
+      } else {
+        toast.error(res.message || "Failed to leave workspace");
+        setShowLeaveConfirm(false);
+      }
+    });
   };
 
-  if (loading || !workspace) {
+  if (loading || !workspace || !currentUserRole) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  const hasPrivilege = currentUserRole === 'owner' || currentUserRole === 'admin';
-
-  if (!hasPrivilege) {
-    return (
-      <div className="max-w-3xl mx-auto mt-10 p-8 bg-white border border-neutral-200/60 rounded-3xl text-center shadow-xl">
-        <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-neutral-900 mb-2">Insufficient Permissions</h2>
-        <p className="text-neutral-500">Only Workspace Owners and Admins can access settings.</p>
-      </div>
-    );
-  }
+  const canEdit = currentUserRole === 'owner' || currentUserRole === 'admin';
+  const canArchive = currentUserRole === 'owner';
+  const canLeave = currentUserRole === 'admin' || currentUserRole === 'member';
 
   return (
-    <div className="max-w-4xl mx-auto p-6 lg:p-10 space-y-10">
+    <div className="max-w-4xl mx-auto p-6 lg:p-10 space-y-10 font-sans">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900">Workspace Settings</h1>
-        <p className="text-neutral-500 mt-2 font-medium">Manage your workspace preferences, pending invitations, and danger zone actions.</p>
+        <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Workspace Settings</h1>
+            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+                {currentUserRole}
+            </span>
+        </div>
+        <p className="text-muted-foreground mt-2 font-medium">Manage your workspace preferences and settings.</p>
       </div>
 
       <div className="space-y-8">
         {/* General Settings */}
-        <section className="bg-white border border-neutral-200/60 rounded-3xl shadow-sm overflow-hidden">
-          <div className="border-b border-neutral-100 p-6 bg-neutral-50/50 flex items-center gap-3">
-            <Settings className="w-5 h-5 text-neutral-500" />
-            <h2 className="text-lg font-bold text-neutral-900">General Information</h2>
+        <section className="bg-card border border-border rounded-3xl shadow-sm overflow-hidden">
+          <div className="border-b border-border p-6 bg-muted/20 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Settings className="w-5 h-5 text-muted-foreground" />
+              <h2 className="text-lg font-bold text-foreground">General Information</h2>
+            </div>
+            {!canEdit && (
+                <span className="text-sm text-muted-foreground font-medium bg-muted px-3 py-1 rounded-full">
+                    Read-only (Owner or Admin required)
+                </span>
+            )}
           </div>
           <form onSubmit={handleUpdate} className="p-6 md:p-8 space-y-8">
-            <div className="mb-4">
+            <div className={`mb-4 ${!canEdit ? 'pointer-events-none opacity-80' : ''}`}>
               <AvatarPicker 
                 value={avatarUrl} 
                 onChange={(url) => setAvatarUrl(url)} 
-                displayName={name || workspace?.name || "?"} 
+                displayName={name || workspace?.name || "?"}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="ws-name" className="text-sm font-semibold text-neutral-900">Workspace Name</Label>
-              <Input
-                id="ws-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                disabled={isUpdatePending}
-                className="max-w-md rounded-xl border-neutral-300 focus-visible:ring-indigo-500"
-              />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                <Label htmlFor="ws-name" className="text-sm font-semibold text-foreground">Workspace Name</Label>
+                <Input
+                    id="ws-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    disabled={!canEdit || isUpdatePending}
+                    className="w-full rounded-xl border-input focus-visible:ring-primary bg-background"
+                />
+                </div>
+                
+                <div className="space-y-2">
+                <Label htmlFor="ws-slug" className="text-sm font-semibold text-foreground">Workspace Slug</Label>
+                <Input
+                    id="ws-slug"
+                    value={workspace.slug}
+                    readOnly
+                    disabled
+                    className="w-full rounded-xl border-input bg-muted text-muted-foreground cursor-not-allowed font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Unique identifier used in URLs.</p>
+                </div>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="ws-desc" className="text-sm font-semibold text-neutral-900">Description</Label>
+              <Label htmlFor="ws-desc" className="text-sm font-semibold text-foreground">Description</Label>
               <Textarea
                 id="ws-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                disabled={isUpdatePending}
-                className="max-w-xl min-h-[100px] rounded-xl border-neutral-300 focus-visible:ring-indigo-500 resize-y"
+                disabled={!canEdit || isUpdatePending}
+                className="max-w-xl min-h-[100px] rounded-xl border-input focus-visible:ring-primary resize-y bg-background"
               />
             </div>
-            <div className="pt-2">
-              <Button type="submit" disabled={isUpdatePending} className="rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white font-semibold shadow-sm h-10 px-6">
-                {isUpdatePending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Save Changes"}
-              </Button>
-            </div>
+            
+            {canEdit && (
+                <div className="pt-2">
+                <Button type="submit" disabled={isUpdatePending} className="rounded-xl bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-sm h-10 px-6 transition-all active:scale-95">
+                    {isUpdatePending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Save Changes"}
+                </Button>
+                </div>
+            )}
           </form>
         </section>
 
-        {/* Pending Invitations */}
-        <section className="bg-white border border-neutral-200/60 rounded-3xl shadow-sm overflow-hidden">
-          <div className="border-b border-neutral-100 p-6 bg-neutral-50/50 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-neutral-500" />
-              <h2 className="text-lg font-bold text-neutral-900">Pending Invitations</h2>
-            </div>
-          </div>
-          <div className="p-0">
-            {invitesLoading ? (
-              <div className="p-8 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-neutral-400" /></div>
-            ) : pendingInvites.length === 0 ? (
-              <div className="p-8 text-center text-neutral-500 font-medium">No pending invitations.</div>
-            ) : (
-              <div className="divide-y divide-neutral-100">
-                {pendingInvites.map(inv => (
-                  <div key={inv.id} className="flex items-center justify-between p-4 px-6 hover:bg-neutral-50/50 transition-colors">
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-neutral-900 flex items-center gap-2">
-                        {inv.invitee_email ? <Mail className="w-4 h-4 text-neutral-400" /> : <Hash className="w-4 h-4 text-neutral-400" />}
-                        {inv.invitee_email || inv.invitee_hqid}
-                      </span>
-                      <span className="text-xs text-neutral-500 font-medium mt-1">
-                        Invited as <strong className="uppercase">{inv.role}</strong> on {new Date(inv.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => handleCancelInvite(inv.id)} className="text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors">
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+        {/* Member Actions */}
+        {canLeave && (
+            <section className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
+                <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                    <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                    <LogOut className="w-5 h-5 text-muted-foreground" /> Leave Workspace
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-1 font-medium max-w-lg">
+                    You will lose access to all notes, tasks, and files. You will need a new invitation to rejoin.
+                    </p>
+                </div>
+                <Button variant="outline" onClick={() => setShowLeaveConfirm(true)} className="rounded-xl font-bold shadow-sm whitespace-nowrap hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 border-border transition-colors">
+                    Leave Workspace
+                </Button>
+                </div>
+            </section>
+        )}
 
         {/* Danger Zone */}
-        {currentUserRole === 'owner' && (
-          <section className="border border-red-200 bg-red-50/30 rounded-3xl overflow-hidden">
+        {canArchive && (
+          <section className="border border-destructive/30 bg-destructive/5 rounded-3xl overflow-hidden shadow-sm">
             <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div>
-                <h2 className="text-lg font-bold text-red-700 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-destructive flex items-center gap-2">
                   <Archive className="w-5 h-5" /> Danger Zone
                 </h2>
-                <p className="text-sm text-red-600/80 mt-1 font-medium max-w-lg">
+                <p className="text-sm text-destructive/80 mt-1 font-medium max-w-lg">
                   Archiving this workspace will suspend all activities. Data will be preserved, but members will lose access.
                 </p>
               </div>
@@ -284,23 +259,47 @@ export default function WorkspaceSettingsPage({
         )}
       </div>
 
+      {/* Archive Confirm Modal */}
       <Dialog open={showArchiveConfirm} onOpenChange={setShowArchiveConfirm}>
-        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-neutral-200 rounded-3xl">
+        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-border bg-card rounded-3xl">
           <div className="p-8 text-center flex flex-col items-center">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-6 ring-8 ring-red-50">
+            <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mb-6 ring-8 ring-destructive/5">
               <Archive className="w-8 h-8" />
             </div>
-            <DialogTitle className="text-xl font-bold text-neutral-900 tracking-tight">Archive Workspace?</DialogTitle>
-            <DialogDescription className="mt-3 text-neutral-500 text-sm leading-relaxed">
-              Are you sure you want to archive <strong>"{workspace.name}"</strong>? You can restore it later, but all active collaborations will be paused immediately.
+            <DialogTitle className="text-xl font-bold text-foreground tracking-tight">Archive Workspace?</DialogTitle>
+            <DialogDescription className="mt-3 text-muted-foreground text-sm leading-relaxed">
+              Are you sure you want to archive <strong>"{workspace?.name}"</strong>? You can restore it later, but all active collaborations will be paused immediately.
             </DialogDescription>
           </div>
-          <div className="p-6 bg-neutral-50 border-t border-neutral-100 flex gap-3">
-            <Button variant="outline" disabled={isArchivePending} onClick={() => setShowArchiveConfirm(false)} className="flex-1 rounded-xl border-neutral-300 font-semibold">
+          <div className="p-6 bg-muted/30 border-t border-border flex gap-3">
+            <Button variant="outline" disabled={isArchivePending} onClick={() => setShowArchiveConfirm(false)} className="flex-1 rounded-xl border-border font-semibold bg-background hover:bg-accent transition-colors">
               Cancel
             </Button>
             <Button variant="destructive" disabled={isArchivePending} onClick={handleArchiveWorkspace} className="flex-1 rounded-xl font-semibold shadow-sm">
               {isArchivePending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Archive Space"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Leave Confirm Modal */}
+      <Dialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
+        <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-border bg-card rounded-3xl">
+          <div className="p-8 text-center flex flex-col items-center">
+            <div className="w-16 h-16 bg-accent text-muted-foreground rounded-full flex items-center justify-center mb-6 ring-8 ring-accent/50">
+              <LogOut className="w-8 h-8" />
+            </div>
+            <DialogTitle className="text-xl font-bold text-foreground tracking-tight">Leave Workspace?</DialogTitle>
+            <DialogDescription className="mt-3 text-muted-foreground text-sm leading-relaxed">
+              Are you sure you want to leave <strong>"{workspace?.name}"</strong>? You will lose access to all its content immediately.
+            </DialogDescription>
+          </div>
+          <div className="p-6 bg-muted/30 border-t border-border flex gap-3">
+            <Button variant="outline" disabled={isLeavePending} onClick={() => setShowLeaveConfirm(false)} className="flex-1 rounded-xl border-border font-semibold bg-background hover:bg-accent transition-colors">
+              Cancel
+            </Button>
+            <Button variant="destructive" disabled={isLeavePending} onClick={handleLeaveWorkspace} className="flex-1 rounded-xl font-semibold shadow-sm">
+              {isLeavePending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Leave Workspace"}
             </Button>
           </div>
         </DialogContent>

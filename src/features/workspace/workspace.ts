@@ -48,6 +48,20 @@ export async function CreateWorkspace(formData: FormData): Promise<{ success: bo
 export async function ArchieveWorkspace(formData: FormData): Promise<{ success: boolean, message: string }> {
     const supabase = await createClient();
     const workspaceId = formData.get('workspaceId') as string;
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "User not found" };
+
+    const { data: member, error: memberError } = await supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+    
+    if (memberError || member?.role !== 'owner') {
+        return { success: false, message: "Access denied. Only owners can archive workspaces." };
+    }
 
     const { error: workspaceError } = await supabase
         .from('workspaces')
@@ -57,8 +71,42 @@ export async function ArchieveWorkspace(formData: FormData): Promise<{ success: 
     if (workspaceError) {
         return { success: false, message: "Failed to archive workspace" }
     }
+    
+    await LogWorkspaceActivity(workspaceId, "archive_workspace", "workspace", workspaceId, {});
     revalidatePath('/dashboard');
     return { success: true, message: "Workspace archived successfully" };
+}
+
+export async function UnarchiveWorkspace(formData: FormData): Promise<{ success: boolean, message: string }> {
+    const supabase = await createClient();
+    const workspaceId = formData.get('workspaceId') as string;
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "User not found" };
+
+    const { data: member, error: memberError } = await supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+    
+    if (memberError || member?.role !== 'owner') {
+        return { success: false, message: "Access denied. Only owners can unarchive workspaces." };
+    }
+
+    const { error: workspaceError } = await supabase
+        .from('workspaces')
+        .update({ is_deleted: false, deleted_at: null })
+        .eq('id', workspaceId);
+
+    if (workspaceError) {
+        return { success: false, message: "Failed to unarchive workspace" }
+    }
+    
+    await LogWorkspaceActivity(workspaceId, "unarchive_workspace", "workspace", workspaceId, {});
+    revalidatePath('/dashboard');
+    return { success: true, message: "Workspace unarchived successfully" };
 }
 
 export async function UpdateWorkspace(formData: FormData): Promise<{ success: boolean, message: string }> {
@@ -68,6 +116,20 @@ export async function UpdateWorkspace(formData: FormData): Promise<{ success: bo
     const workspaceId = formData.get('workspaceId') as string;
     const workspaceDescription = formData.get('workspaceDescription') as string;
     const avatarUrl = formData.get('avatarUrl') as string | null;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: "User not found" };
+
+    const { data: member, error: memberError } = await supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+    
+    if (memberError || (member?.role !== 'owner' && member?.role !== 'admin')) {
+        return { success: false, message: "Access denied. Only owners and admins can update settings." };
+    }
 
     const updatePayload: any = {
         name: workspaceName,
@@ -103,6 +165,7 @@ export type WorkspaceListItem = {
     avatar_url: string | null;
     memberCount: number;
     lastActive?: string | null;
+    is_archived: boolean;
 };
 
 export type ListWorkspaceResult = {
@@ -125,8 +188,7 @@ export async function ListWorkspace(): Promise<ListWorkspaceResult> {
     const { data, error } = await supabase
         .from('workspace_members')
         .select('role, joined_at, last_active, workspaces!inner(id, name, slug, description, created_at, created_by, is_deleted, avatar_url)')
-        .eq('user_id', user.id)
-        .filter('workspaces.is_deleted', 'eq', false);
+        .eq('user_id', user.id);
 
     if (error) {
         return { success: false, message: "Failed to list workspace" };
@@ -176,7 +238,8 @@ export async function ListWorkspace(): Promise<ListWorkspaceResult> {
         joined_at: item.joined_at,
         avatar_url: item.workspaces.avatar_url,
         memberCount: countsMap[item.workspaces.id] || 1,
-        lastActive: item.last_active
+        lastActive: item.last_active,
+        is_archived: item.workspaces.is_deleted
     }));
 
     const owned = allWorkspaces.filter(ws => ws.role === 'owner');
@@ -202,7 +265,37 @@ export async function GetWorkspace(workspaceId: string): Promise<{ success: bool
     if (error) {
         return { success: false, message: "Workspace not found" };
     }
-    return { success: true, message: "Workspace fetched successfully", data };
+    return { success: true, message: "Workspace fetched successfully", data: { ...data, is_archived: data.is_deleted } };
+}
+
+export async function GetWorkspaceIncludingArchived(workspaceId: string): Promise<{ success: boolean, message: string, data?: any }> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { success: false, message: "User not found" };
+    }
+
+    const { data, error } = await supabase
+        .from('workspaces')
+        .select('*')
+        .eq('id', workspaceId)
+        .single();
+
+    if (error) {
+        return { success: false, message: "Workspace not found" };
+    }
+
+    // Fetch the user's role for this workspace
+    const { data: member } = await supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+    
+    // Add is_archived alias and role
+    const workspaceData = { ...data, is_archived: data.is_deleted, role: member?.role };
+    return { success: true, message: "Workspace fetched successfully", data: workspaceData };
 }
 
 export async function GetWorkspaceMembers(workspaceId: string): Promise<{ success: boolean, message: string, data?: any[] }> {
@@ -257,6 +350,17 @@ export async function LeaveWorkspace(formData: FormData): Promise<{ success: boo
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { success: false, message: "User not found" };
+    }
+
+    const { data: member, error: memberError } = await supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+    
+    if (memberError || member?.role === 'owner') {
+        return { success: false, message: "Owners cannot leave the workspace. Transfer ownership or archive it instead." };
     }
 
     const { error } = await supabase

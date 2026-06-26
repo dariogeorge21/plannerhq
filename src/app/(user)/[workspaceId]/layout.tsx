@@ -4,7 +4,7 @@
 import React, { useEffect, useState, use } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { GetWorkspace, UpdateWorkspaceLastActive } from "@/features/workspace/workspace";
+import { GetWorkspaceIncludingArchived, UpdateWorkspaceLastActive, UnarchiveWorkspace } from "@/features/workspace/workspace";
 import { useSession } from "@/features/auth/providers/SessionProvider";
 import {
   LayoutDashboard,
@@ -84,7 +84,7 @@ export default function WorkspaceLayout({
 
   const fetchWorkspaceDetails = async () => {
     try {
-      const res = await GetWorkspace(workspaceId);
+      const res = await GetWorkspaceIncludingArchived(workspaceId);
       if (res.success && res.data) {
         setWorkspace(res.data);
         UpdateWorkspaceLastActive(workspaceId);
@@ -130,6 +130,44 @@ export default function WorkspaceLayout({
           <Button asChild className="w-full rounded-xl bg-foreground text-background hover:scale-[1.02] transition-transform h-12 font-semibold shadow-lg shadow-foreground/10">
             <Link href="/dashboard">Return to Dashboard</Link>
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (workspace.is_deleted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden font-sans">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-muted/20 rounded-full blur-[100px] pointer-events-none" />
+        <div className="max-w-md w-full bg-card/60 backdrop-blur-xl border border-border/50 rounded-3xl p-8 text-center shadow-2xl shadow-black/5 dark:shadow-black/40 relative z-10">
+          <div className="w-16 h-16 bg-muted text-muted-foreground rounded-2xl flex items-center justify-center mx-auto mb-6 ring-4 ring-muted/50">
+            <FolderOpen className="w-8 h-8" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2 tracking-tight">Workspace Archived</h1>
+          <p className="text-muted-foreground mb-8 leading-relaxed">
+            This workspace has been archived. You can no longer access its notes, tasks, or settings.
+          </p>
+          <div className="flex flex-col gap-3">
+            {workspace.role === 'owner' && (
+              <form action={async (formData) => {
+                const res = await UnarchiveWorkspace(formData);
+                if (res.success) {
+                  toast.success(res.message);
+                  window.location.reload();
+                } else {
+                  toast.error(res.message);
+                }
+              }}>
+                <input type="hidden" name="workspaceId" value={workspaceId} />
+                <Button type="submit" className="w-full rounded-xl bg-primary text-primary-foreground hover:scale-[1.02] transition-transform h-12 font-semibold shadow-lg shadow-primary/20">
+                  Unarchive Workspace
+                </Button>
+              </form>
+            )}
+            <Button asChild variant="outline" className="w-full rounded-xl hover:scale-[1.02] transition-transform h-12 font-semibold">
+              <Link href="/dashboard">Return to Dashboard</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );

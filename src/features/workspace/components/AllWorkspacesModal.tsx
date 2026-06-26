@@ -204,7 +204,7 @@ export function AllWorkspacesModal({
                                                     initial={{ opacity: 0, y: 4 }}
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ delay: index * 0.03 }}
-                                                    className="grid grid-cols-12 gap-4 px-4 py-3 items-center border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors group rounded-xl cursor-pointer"
+                                                    className={`grid grid-cols-12 gap-4 px-4 py-3 items-center border-b border-neutral-100 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors group rounded-xl cursor-pointer ${ws.is_archived ? 'opacity-60' : ''}`}
                                                     onClick={() => handleOpen(ws.id)}
                                                 >
                                                     {/* # */}
@@ -227,12 +227,21 @@ export function AllWorkspacesModal({
 
                                                     {/* Role */}
                                                     <div className="col-span-2" onClick={(e) => e.stopPropagation()}>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className="capitalize text-xs rounded-full px-2.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 font-medium"
-                                                        >
-                                                            {ws.role}
-                                                        </Badge>
+                                                        {ws.is_archived ? (
+                                                            <Badge
+                                                                variant="destructive"
+                                                                className="text-[10px] uppercase tracking-wider rounded-md px-2 py-0.5 bg-red-100/50 text-red-600 dark:bg-red-900/20 dark:text-red-400 border-none font-bold shadow-none"
+                                                            >
+                                                                Archived
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="capitalize text-xs rounded-full px-2.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 font-medium"
+                                                            >
+                                                                {ws.role}
+                                                            </Badge>
+                                                        )}
                                                     </div>
 
                                                     {/* Members */}
@@ -250,9 +259,17 @@ export function AllWorkspacesModal({
                                                     {/* Actions */}
                                                     <div className="col-span-1 flex justify-end" onClick={(e) => e.stopPropagation()}>
                                                         {/* Only button for opening the workspace */}
-                                                        <Button onClick={() => handleOpen(ws.id)} disabled={loadingId === ws.id} className="gap-2 cursor-pointer">
-                                                            <ExternalLink className="w-4 h-4" />
-                                                            Open
+                                                        <Button 
+                                                            variant={ws.is_archived ? "secondary" : "default"}
+                                                            onClick={() => handleOpen(ws.id)} 
+                                                            disabled={loadingId === ws.id} 
+                                                            className="gap-2 cursor-pointer h-8 px-3"
+                                                        >
+                                                            {ws.is_archived ? (
+                                                                <span className="text-xs">View</span>
+                                                            ) : (
+                                                                <><ExternalLink className="w-3.5 h-3.5" /> <span className="text-xs">Open</span></>
+                                                            )}
                                                         </Button>
                                                     </div>
                                                 </motion.div>

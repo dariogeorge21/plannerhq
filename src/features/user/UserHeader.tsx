@@ -25,7 +25,12 @@ export function UserHeader({ user }: UserHeaderProps) {
 
                 {/* Primary Navigation (visible on md+) */}
                 <div className="hidden md:flex flex-1 justify-center">
-                    <PrimaryNavigation />
+                    <PrimaryNavigation
+                        workspaces={[]}
+                        loading={false}
+                        onViewAll={() => { }}
+                        onCreateNew={() => { }}
+                    />
                 </div>
 
                 {/* Right controls */}

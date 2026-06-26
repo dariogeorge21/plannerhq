@@ -7,8 +7,8 @@ import { createLowlight } from "lowlight";
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 import { SlashCommandExtension } from "./slash-extension";
-import { getFileMentionExtension } from "@/features/file/components/editor/FileMentionExtension";
-import { EditorFileUploadPlugin } from "@/features/file/components/editor/EditorFileUploadPlugin";
+import { getFileMentionExtension } from "@/app/(user)/[workspaceId]/files/components/editor/FileMentionExtension";
+import { EditorFileUploadPlugin } from "@/app/(user)/[workspaceId]/files/components/editor/EditorFileUploadPlugin";
 import Link from "@tiptap/extension-link";
 
 const lowlight = createLowlight();
@@ -21,7 +21,7 @@ export const getEditorExtensions = (ydoc: any, provider: any, workspaceId?: stri
         levels: [1, 2, 3],
       },
     }),
-    Placeholder.configure({ 
+    Placeholder.configure({
       placeholder: "Press '/' for commands, or start writing...",
       emptyEditorClass: 'is-editor-empty',
     }),

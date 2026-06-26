@@ -20,6 +20,9 @@ export const getEditorExtensions = (ydoc: any, provider: any, workspaceId?: stri
       heading: {
         levels: [1, 2, 3],
       },
+      codeBlock: false,
+      // @ts-ignore - Some versions of StarterKit might not have link
+      link: false,
     }),
     Placeholder.configure({
       placeholder: "Press '/' for commands, or start writing...",

@@ -24,9 +24,9 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
     const p = new SupabaseProvider(room, doc, supabase, {
       awareness: true,
       persistence: {
-        table: "document_content",
-        roomColumn: "document_id",
-        stateColumn: "content",
+        table: "yjs_document_state",
+        roomColumn: "room",
+        stateColumn: "state",
       },
     });
 

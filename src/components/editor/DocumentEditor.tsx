@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { debounce } from "lodash";
 
-import { useDocument, useUpdateDocument } from "@/features/document/hooks";
+import { useDocument, useUpdateDocument, useSaveDocumentContent } from "@/features/document/hooks";
 import { Loader2, FileText } from "lucide-react";
 
 import { useCollaborationProvider } from "@/features/collaboration/provider";
@@ -38,6 +38,7 @@ export default function DocumentEditor({
   const [title, setTitle] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadFile = useUploadFile(workspaceId);
+  const saveContent = useSaveDocumentContent(workspaceId);
 
   useEffect(() => {
     if (doc) setTitle(doc.title);
@@ -50,6 +51,13 @@ export default function DocumentEditor({
     [documentId, updateDocument]
   );
 
+  const debouncedSaveContent = useCallback(
+    debounce((content: any) => {
+      saveContent.mutate({ documentId, content });
+    }, 1500),
+    [documentId, saveContent]
+  );
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTitle(e.target.value);
     debouncedUpdateTitle(e.target.value);
@@ -59,6 +67,9 @@ export default function DocumentEditor({
 
   const editor = useEditor({
     extensions: getEditorExtensions(ydoc, provider, workspaceId, documentId),
+    onUpdate: ({ editor }) => {
+      debouncedSaveContent(editor.getJSON());
+    },
     editorProps: {
       attributes: {
         class: [

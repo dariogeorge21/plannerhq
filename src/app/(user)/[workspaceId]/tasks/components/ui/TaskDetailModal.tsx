@@ -6,24 +6,24 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  useUpdateTask, 
-  useSetDeadline, 
-  useTaskAssignees, 
-  useAssignUser, 
-  useUnassignUser 
+import {
+  useUpdateTask,
+  useSetDeadline,
+  useTaskAssignees,
+  useAssignUser,
+  useUnassignUser
 } from "@/features/task/hooks";
 import { useWorkspaceMembers } from "@/features/workspace/hooks";
-import TaskAttachment from "@/features/file/components/TaskAttachment";
+import TaskAttachment from "../../../files/components/TaskAttachment";
 import { DeadlinePicker } from "@/components/ui/deadline-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { 
-  AlignLeft, 
-  CheckCircle2, 
-  Circle, 
-  UserPlus, 
+import {
+  AlignLeft,
+  CheckCircle2,
+  Circle,
+  UserPlus,
   X,
   Flag,
   AlertCircle
@@ -75,7 +75,7 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
 
   const assignees = allAssignees.filter(a => a.task_id === task.id);
   const assigneeUserIds = assignees.map(a => a.user_id);
-  
+
   const handleAssign = (memberId: string) => {
     assignUser.mutate({ task_id: task.id, user_id: memberId });
   };
@@ -98,9 +98,9 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
         <div className="flex flex-col h-full">
           <SheetHeader className="px-6 py-4 border-b border-neutral-100 bg-white/50 sticky top-0 z-10 backdrop-blur-md">
             <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              <Button
+                variant="ghost"
+                size="icon"
                 className={`h-8 w-8 rounded-full border ${task.completed ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-neutral-300 text-neutral-400 hover:text-indigo-500 hover:border-indigo-500'}`}
                 onClick={() => updateTask.mutate({ id: task.id, completed: !task.completed, status: !task.completed ? 'done' : 'todo' })}
               >
@@ -155,9 +155,9 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
 
               <div className="text-neutral-500 font-medium">Deadline</div>
               <div>
-                <DeadlinePicker 
-                  value={task.due_date} 
-                  onChange={(date) => setDeadline.mutate({ taskId: task.id, due_date: date })} 
+                <DeadlinePicker
+                  value={task.due_date}
+                  onChange={(date) => setDeadline.mutate({ taskId: task.id, due_date: date })}
                 />
               </div>
 
@@ -192,9 +192,9 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                       {members.map((member: any) => {
                         const isAssigned = assigneeUserIds.includes(member.user_id);
                         return (
-                          <Button 
-                            key={member.user_id} 
-                            variant="ghost" 
+                          <Button
+                            key={member.user_id}
+                            variant="ghost"
                             className="justify-start px-2 py-1.5 h-auto font-normal"
                             onClick={() => isAssigned ? handleUnassign(member.user_id) : handleAssign(member.user_id)}
                           >
@@ -232,10 +232,10 @@ export function TaskDetailModal({ task, workspaceId, isOpen, onClose, userId }: 
                 className="min-h-[150px] resize-y border-neutral-200 bg-neutral-50/50 focus-visible:bg-white rounded-xl"
               />
             </div>
-            
+
             {/* Attachments */}
             <TaskAttachment taskId={task.id} workspaceId={workspaceId} />
-            
+
             <div className="mt-auto pt-6 text-xs text-neutral-400 flex flex-col gap-1">
               <div>Created on {format(new Date(task.created_at), "MMM d, yyyy 'at' h:mm a")}</div>
               <div>Last updated {format(new Date(task.updated_at), "MMM d, yyyy 'at' h:mm a")}</div>

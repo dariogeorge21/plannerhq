@@ -12,7 +12,7 @@ export default async function CalendarPage(props: { params: Promise<{ workspaceI
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#FAFAFA] text-foreground">
+    <div className="flex flex-col h-full bg-background text-foreground">
       <main className="flex-1 overflow-hidden w-full">
         <CalendarPageClient workspaceId={params.workspaceId} />
       </main>

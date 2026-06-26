@@ -2,7 +2,7 @@
 
 import React from "react";
 import { format, isSameDay, startOfWeek, addDays, eachHourOfInterval, startOfDay, endOfDay } from "date-fns";
-import { CalendarItemType, CalendarEventWithDetails, CalendarTask } from "../../types";
+import { CalendarItemType, CalendarEventWithDetails, CalendarTask } from "@/features/calendar/types";
 import { EventCard } from "./EventCard";
 import { cn } from "@/lib/utils";
 
@@ -38,23 +38,23 @@ export function WeekView({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-b-xl overflow-hidden border-x border-b border-neutral-200/60 shadow-sm">
+    <div className="flex flex-col h-full bg-card text-card-foreground rounded-b-xl overflow-hidden border-x border-b border-border shadow-sm">
       {/* Header */}
-      <div className="flex border-b border-neutral-100 bg-neutral-50/50">
-        <div className="w-16 shrink-0 border-r border-neutral-100" /> {/* Time column header */}
+      <div className="flex border-b border-border bg-muted/30">
+        <div className="w-16 shrink-0 border-r border-border" /> {/* Time column header */}
         <div className="flex-1 grid grid-cols-7">
           {weekDays.map(day => {
             const isToday = isSameDay(day, new Date());
             return (
               <div 
                 key={day.toString()} 
-                className="flex flex-col items-center py-3 border-r border-neutral-100 last:border-r-0 cursor-pointer hover:bg-neutral-100/50"
+                className="flex flex-col items-center py-3 border-r border-border last:border-r-0 cursor-pointer hover:bg-accent/50"
                 onClick={() => onDayClick(day)}
               >
-                <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">{format(day, "EEE")}</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{format(day, "EEE")}</span>
                 <span className={cn(
                   "text-lg font-semibold w-8 h-8 flex items-center justify-center rounded-full mt-0.5",
-                  isToday ? "bg-indigo-600 text-white shadow-sm" : "text-neutral-800"
+                  isToday ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"
                 )}>
                   {format(day, "d")}
                 </span>
@@ -65,14 +65,14 @@ export function WeekView({
       </div>
 
       {/* Grid */}
-      <div className="flex-1 overflow-y-auto relative bg-neutral-50/20">
+      <div className="flex-1 overflow-y-auto relative bg-background">
         <div className="flex relative" style={{ height: `${24 * 60}px` }}>
           {/* Time axis */}
-          <div className="w-16 shrink-0 border-r border-neutral-100 bg-white z-10">
+          <div className="w-16 shrink-0 border-r border-border bg-card z-10">
             {hours.map((hour, i) => (
               <div key={i} className="h-[60px] relative">
                 {i > 0 && (
-                  <span className="absolute -top-2.5 right-2 text-[10px] font-medium text-neutral-400">
+                  <span className="absolute -top-2.5 right-2 text-[10px] font-medium text-muted-foreground">
                     {format(hour, "ha")}
                   </span>
                 )}
@@ -85,7 +85,7 @@ export function WeekView({
             {/* Grid lines */}
             <div className="absolute inset-0 pointer-events-none">
               {hours.map((_, i) => (
-                <div key={i} className="h-[60px] border-t border-neutral-100 w-full" />
+                <div key={i} className="h-[60px] border-t border-border w-full" />
               ))}
             </div>
 
@@ -97,7 +97,7 @@ export function WeekView({
               return (
                 <div 
                   key={day.toString()} 
-                  className="relative border-r border-neutral-100 last:border-r-0 h-full"
+                  className="relative border-r border-border last:border-r-0 h-full"
                   onClick={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     const y = e.clientY - rect.top;

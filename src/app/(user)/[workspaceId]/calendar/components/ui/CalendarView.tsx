@@ -10,8 +10,8 @@ import { DayView } from "./DayView";
 import { CreateEventModal } from "../modals/CreateEventModal";
 import { EditEventModal } from "../modals/EditEventModal";
 import { EventDetailModal } from "../modals/EventDetailModal";
-import { useCalendarEvents, useCalendarTasks, useWorkspaceMembersForCalendar } from "../../hooks";
-import { CalendarEventWithDetails, CalendarTask } from "../../types";
+import { useCalendarEvents, useCalendarTasks, useWorkspaceMembersForCalendar } from "@/features/calendar/hooks";
+import { CalendarEventWithDetails, CalendarTask } from "@/features/calendar/types";
 
 interface CalendarViewProps {
   workspaceId: string;
@@ -77,8 +77,8 @@ export function CalendarView({ workspaceId }: CalendarViewProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-neutral-50 p-4 md:p-6 lg:p-8">
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-200/60 flex flex-col h-full">
+    <div className="flex flex-col h-full bg-muted/30 p-4 md:p-6 lg:p-8">
+      <div className="bg-card text-card-foreground rounded-xl shadow-sm border border-border flex flex-col h-full">
         <CalendarToolbar
           currentDate={currentDate}
           activeView={activeView}

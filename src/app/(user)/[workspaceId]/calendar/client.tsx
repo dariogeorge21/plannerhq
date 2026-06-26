@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CalendarView } from "@/features/calendar/components/ui/CalendarView";
+import { CalendarView } from "./components/ui/CalendarView";
 
 interface CalendarPageClientProps {
   workspaceId: string;

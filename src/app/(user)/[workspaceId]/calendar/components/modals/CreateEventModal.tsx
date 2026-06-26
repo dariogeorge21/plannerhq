@@ -7,8 +7,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EventForm, EventFormData } from "../ui/EventForm";
-import { WorkspaceMemberOption } from "../../types";
-import { useCreateEvent } from "../../hooks";
+import { WorkspaceMemberOption } from "@/features/calendar/types";
+import { useCreateEvent } from "@/features/calendar/hooks";
 import { toast } from "sonner";
 
 interface CreateEventModalProps {

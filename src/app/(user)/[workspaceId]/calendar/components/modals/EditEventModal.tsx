@@ -8,8 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { EventForm, EventFormData } from "../ui/EventForm";
-import { WorkspaceMemberOption, CalendarEventWithDetails } from "../../types";
-import { useUpdateEvent } from "../../hooks";
+import { WorkspaceMemberOption, CalendarEventWithDetails } from "@/features/calendar/types";
+import { useUpdateEvent } from "@/features/calendar/hooks";
 import { toast } from "sonner";
 
 interface EditEventModalProps {

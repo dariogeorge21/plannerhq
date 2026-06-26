@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import { format, isSameDay, isSameMonth, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval } from "date-fns";
-import { CalendarItemType, CalendarEventWithDetails, CalendarTask } from "../../types";
+import { CalendarEventWithDetails, CalendarTask } from "@/features/calendar/types"
 import { EventCard } from "./EventCard";
 import { cn } from "@/lib/utils";
 
@@ -34,11 +33,11 @@ export function MonthView({
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className="flex flex-col h-full w-full bg-white rounded-b-xl overflow-hidden border-x border-b border-neutral-200/60 shadow-sm">
+    <div className="flex flex-col h-full w-full bg-card text-card-foreground rounded-b-xl overflow-hidden border-x border-b border-border shadow-sm">
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 border-b border-neutral-100 bg-neutral-50/50">
+      <div className="grid grid-cols-7 border-b border-border bg-muted/30">
         {weekDays.map((day) => (
-          <div key={day} className="text-center text-xs font-semibold text-neutral-500 py-3 uppercase tracking-wider">
+          <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-3 uppercase tracking-wider">
             {day}
           </div>
         ))}
@@ -49,11 +48,11 @@ export function MonthView({
         {days.map((day, i) => {
           const isToday = isSameDay(day, new Date());
           const isCurrentMonth = isSameMonth(day, monthStart);
-          
+
           // Get items for this day
           const dayEvents = events.filter(e => isSameDay(new Date(e.start_at), day));
           const dayTasks = tasks.filter(t => isSameDay(new Date(t.due_date), day));
-          
+
           // Combine and sort (events first, then tasks)
           const allItems = [
             ...dayEvents.map(e => ({ item: e, type: 'event' as const })),
@@ -65,8 +64,8 @@ export function MonthView({
               key={day.toString()}
               onClick={() => onDayClick(day)}
               className={cn(
-                "min-h-[120px] p-1.5 border-r border-b border-neutral-100 relative group cursor-pointer transition-colors hover:bg-neutral-50/50",
-                !isCurrentMonth && "bg-neutral-50/30",
+                "min-h-[120px] p-1.5 border-r border-b border-border relative group cursor-pointer transition-colors hover:bg-accent/50",
+                !isCurrentMonth && "bg-muted/10",
                 (i + 1) % 7 === 0 && "border-r-0" // Remove right border for last column
               )}
             >
@@ -74,8 +73,8 @@ export function MonthView({
                 <span
                   className={cn(
                     "text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full",
-                    !isCurrentMonth ? "text-neutral-400" : "text-neutral-700",
-                    isToday && "bg-indigo-600 text-white shadow-sm"
+                    !isCurrentMonth ? "text-muted-foreground/50" : "text-foreground",
+                    isToday && "bg-primary text-primary-foreground shadow-sm"
                   )}
                 >
                   {format(day, dateFormat)}
@@ -93,7 +92,7 @@ export function MonthView({
                   />
                 ))}
                 {allItems.length > 4 && (
-                  <div className="text-[10px] font-semibold text-neutral-500 pl-1">
+                  <div className="text-[10px] font-semibold text-muted-foreground pl-1">
                     +{allItems.length - 4} more
                   </div>
                 )}

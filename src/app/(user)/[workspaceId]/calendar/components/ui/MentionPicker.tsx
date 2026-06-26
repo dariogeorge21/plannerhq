@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { WorkspaceMemberOption } from "../../types";
+import { WorkspaceMemberOption } from "@/features/calendar/types";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
@@ -60,9 +60,9 @@ export function MentionPicker({
   return (
     <div className="space-y-3">
       <div className="flex items-center space-x-2">
-        <Switch 
-          id="mention-all" 
-          checked={mentionAll} 
+        <Switch
+          id="mention-all"
+          checked={mentionAll}
           onCheckedChange={(checked) => {
             onMentionAllChange(checked);
             if (checked) {

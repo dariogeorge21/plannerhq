@@ -3,7 +3,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CalendarItemType, CalendarEventWithDetails, CalendarTask } from "../../types";
+import { CalendarItemType, CalendarEventWithDetails, CalendarTask } from "@/features/calendar/types"
 import { Clock, Link as LinkIcon, CheckCircle2 } from "lucide-react";
 
 interface EventCardProps {
@@ -20,24 +20,24 @@ export function EventCard({ item, type, view, onClick, isAllDay = false }: Event
   const eventItem = item as CalendarEventWithDetails;
 
   // Determine styles based on type and priority
-  let bgClass = "bg-indigo-50 border-indigo-200 hover:bg-indigo-100 text-indigo-700";
-  let solidBgClass = "bg-indigo-500";
+  let bgClass = "bg-indigo-50 border-indigo-200 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:border-indigo-500/30 dark:hover:bg-indigo-500/30 dark:text-indigo-300";
+  let solidBgClass = "bg-indigo-500 dark:bg-indigo-400";
   
   if (isTask) {
     if (taskItem.completed) {
-      bgClass = "bg-neutral-100 border-neutral-200 hover:bg-neutral-200 text-neutral-500 opacity-70";
-      solidBgClass = "bg-neutral-400";
+      bgClass = "bg-neutral-100 border-neutral-200 hover:bg-neutral-200 text-neutral-500 opacity-70 dark:bg-neutral-800/50 dark:border-neutral-700 dark:hover:bg-neutral-800 dark:text-neutral-400";
+      solidBgClass = "bg-neutral-400 dark:bg-neutral-500";
     } else {
-      bgClass = "bg-teal-50 border-teal-200 hover:bg-teal-100 text-teal-700";
-      solidBgClass = "bg-teal-500";
+      bgClass = "bg-teal-50 border-teal-200 hover:bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:border-teal-500/30 dark:hover:bg-teal-500/30 dark:text-teal-300";
+      solidBgClass = "bg-teal-500 dark:bg-teal-400";
     }
   } else {
     if (eventItem.priority === 'high') {
-      bgClass = "bg-rose-50 border-rose-200 hover:bg-rose-100 text-rose-700";
-      solidBgClass = "bg-rose-500";
+      bgClass = "bg-rose-50 border-rose-200 hover:bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:border-rose-500/30 dark:hover:bg-rose-500/30 dark:text-rose-300";
+      solidBgClass = "bg-rose-500 dark:bg-rose-400";
     } else if (eventItem.priority === 'low') {
-      bgClass = "bg-emerald-50 border-emerald-200 hover:bg-emerald-100 text-emerald-700";
-      solidBgClass = "bg-emerald-500";
+      bgClass = "bg-emerald-50 border-emerald-200 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:border-emerald-500/30 dark:hover:bg-emerald-500/30 dark:text-emerald-300";
+      solidBgClass = "bg-emerald-500 dark:bg-emerald-400";
     }
   }
 

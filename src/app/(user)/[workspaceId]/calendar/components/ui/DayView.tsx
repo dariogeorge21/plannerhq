@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import { format, isSameDay, eachHourOfInterval, startOfDay, endOfDay } from "date-fns";
-import { CalendarItemType, CalendarEventWithDetails, CalendarTask } from "../../types";
+import { CalendarEventWithDetails, CalendarTask } from "@/features/calendar/types"
 import { EventCard } from "./EventCard";
 import { cn } from "@/lib/utils";
 
@@ -39,15 +38,15 @@ export function DayView({
   const dayTasks = tasks.filter(t => isSameDay(new Date(t.due_date), currentDate));
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-b-xl overflow-hidden border-x border-b border-neutral-200/60 shadow-sm">
+    <div className="flex flex-col h-full bg-card text-card-foreground rounded-b-xl overflow-hidden border-x border-b border-border shadow-sm">
       {/* Header */}
-      <div className="flex border-b border-neutral-100 bg-neutral-50/50">
-        <div className="w-16 shrink-0 border-r border-neutral-100" />
+      <div className="flex border-b border-border bg-muted/30">
+        <div className="w-16 shrink-0 border-r border-border" />
         <div className="flex-1 flex flex-col items-center py-3">
-          <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider">{format(currentDate, "EEEE")}</span>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{format(currentDate, "EEEE")}</span>
           <span className={cn(
             "text-lg font-semibold w-8 h-8 flex items-center justify-center rounded-full mt-0.5",
-            isSameDay(currentDate, new Date()) ? "bg-indigo-600 text-white shadow-sm" : "text-neutral-800"
+            isSameDay(currentDate, new Date()) ? "bg-primary text-primary-foreground shadow-sm" : "text-foreground"
           )}>
             {format(currentDate, "d")}
           </span>
@@ -55,14 +54,14 @@ export function DayView({
       </div>
 
       {/* Grid */}
-      <div className="flex-1 overflow-y-auto relative bg-neutral-50/20">
+      <div className="flex-1 overflow-y-auto relative bg-background">
         <div className="flex relative" style={{ height: `${24 * 60}px` }}>
           {/* Time axis */}
-          <div className="w-16 shrink-0 border-r border-neutral-100 bg-white z-10">
+          <div className="w-16 shrink-0 border-r border-border bg-card z-10">
             {hours.map((hour, i) => (
               <div key={i} className="h-[60px] relative">
                 {i > 0 && (
-                  <span className="absolute -top-2.5 right-2 text-[10px] font-medium text-neutral-400">
+                  <span className="absolute -top-2.5 right-2 text-[10px] font-medium text-muted-foreground">
                     {format(hour, "ha")}
                   </span>
                 )}
@@ -83,7 +82,7 @@ export function DayView({
             {/* Grid lines */}
             <div className="absolute inset-0 pointer-events-none">
               {hours.map((_, i) => (
-                <div key={i} className="h-[60px] border-t border-neutral-100 w-full" />
+                <div key={i} className="h-[60px] border-t border-border w-full" />
               ))}
             </div>
 

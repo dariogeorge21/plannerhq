@@ -8,8 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CalendarEventWithDetails, WorkspaceMemberOption } from "../../types";
-import { useDeleteEvent } from "../../hooks";
+import { CalendarEventWithDetails, WorkspaceMemberOption } from "@/features/calendar/types";
+import { useDeleteEvent } from "@/features/calendar/hooks";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, Edit2, Trash2, AlignLeft, Users, AtSign, Loader2 } from "lucide-react";

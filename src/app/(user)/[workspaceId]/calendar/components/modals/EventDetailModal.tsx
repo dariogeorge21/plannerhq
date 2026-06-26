@@ -53,9 +53,9 @@ export function EventDetailModal({
   };
 
   const getPriorityColor = (p: string) => {
-    if (p === 'high') return "bg-rose-100 text-rose-800";
-    if (p === 'low') return "bg-emerald-100 text-emerald-800";
-    return "bg-indigo-100 text-indigo-800";
+    if (p === 'high') return "bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300";
+    if (p === 'low') return "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300";
+    return "bg-indigo-100 text-indigo-800 dark:bg-indigo-500/20 dark:text-indigo-300";
   };
 
   const start = new Date(event.start_at);
@@ -75,10 +75,10 @@ export function EventDetailModal({
         onClose();
       }
     }}>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border-neutral-200">
-        <DialogHeader className="px-6 py-5 border-b border-neutral-100 bg-white relative">
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border-border bg-card">
+        <DialogHeader className="px-6 py-5 border-b border-border bg-muted/30 relative">
           <div className="flex justify-between items-start pr-8">
-            <DialogTitle className="text-xl font-bold tracking-tight text-neutral-900 pr-2">
+            <DialogTitle className="text-xl font-bold tracking-tight text-foreground pr-2">
               {event.title}
             </DialogTitle>
             <Badge className={`uppercase text-[10px] font-bold tracking-wider rounded-md border-none px-2 py-0.5 ${getPriorityColor(event.priority)}`} variant="secondary">
@@ -89,12 +89,12 @@ export function EventDetailModal({
 
         <div className="p-6 space-y-6">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center shrink-0 mt-0.5">
-              <CalendarDays className="w-4 h-4 text-neutral-500" />
+            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+              <CalendarDays className="w-4 h-4 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-neutral-900">{format(start, "EEEE, MMMM d, yyyy")}</p>
-              <div className="flex items-center text-sm text-neutral-500 mt-1">
+              <p className="text-sm font-semibold text-foreground">{format(start, "EEEE, MMMM d, yyyy")}</p>
+              <div className="flex items-center text-sm text-muted-foreground mt-1">
                 <Clock className="w-3.5 h-3.5 mr-1.5" />
                 {timeDisplay}
               </div>
@@ -102,13 +102,13 @@ export function EventDetailModal({
           </div>
 
           {event.description && (
-            <div className="flex items-start gap-3 pt-4 border-t border-neutral-100">
-              <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center shrink-0 mt-0.5">
-                <AlignLeft className="w-4 h-4 text-neutral-500" />
+            <div className="flex items-start gap-3 pt-4 border-t border-border">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                <AlignLeft className="w-4 h-4 text-muted-foreground" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-neutral-900 mb-1">Description</p>
-                <div className="text-sm text-neutral-600 whitespace-pre-wrap leading-relaxed">
+                <p className="text-sm font-semibold text-foreground mb-1">Description</p>
+                <div className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
                   {event.description}
                 </div>
               </div>
@@ -116,18 +116,18 @@ export function EventDetailModal({
           )}
 
           {(event.mention_all || mentionedMembers.length > 0) && (
-            <div className="flex items-start gap-3 pt-4 border-t border-neutral-100">
-              <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center shrink-0 mt-0.5">
-                <AtSign className="w-4 h-4 text-neutral-500" />
+            <div className="flex items-start gap-3 pt-4 border-t border-border">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                <AtSign className="w-4 h-4 text-muted-foreground" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-neutral-900 mb-2">Mentions</p>
+                <p className="text-sm font-semibold text-foreground mb-2">Mentions</p>
                 {event.mention_all ? (
-                  <Badge variant="secondary" className="bg-indigo-50 text-indigo-700">@all workspace members</Badge>
+                  <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">@all workspace members</Badge>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {mentionedMembers.map(m => (
-                      <Badge variant="secondary" key={m.user_id} className="bg-neutral-100 text-neutral-700 hover:bg-neutral-200">
+                      <Badge variant="secondary" key={m.user_id} className="bg-muted text-foreground hover:bg-accent border border-border">
                         <Avatar className="h-4 w-4 mr-1.5 inline-block">
                           <AvatarImage src={m.avatar_url || ""} />
                           <AvatarFallback className="text-[9px]">{m.display_name?.substring(0,2).toUpperCase() || 'U'}</AvatarFallback>
@@ -143,7 +143,7 @@ export function EventDetailModal({
         </div>
 
         {canEdit && (
-          <div className="p-4 bg-neutral-50 border-t border-neutral-100 flex justify-between items-center">
+          <div className="p-4 bg-muted/30 border-t border-border flex justify-between items-center rounded-b-2xl">
             {isConfirmingDelete ? (
               <div className="flex items-center gap-2 w-full justify-between">
                 <span className="text-sm text-red-600 font-medium pl-2">Delete this event?</span>

@@ -56,9 +56,9 @@ export function EditEventModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border-neutral-200">
-        <DialogHeader className="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50">
-          <DialogTitle className="text-xl font-bold tracking-tight text-neutral-900">
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border-border bg-card">
+        <DialogHeader className="px-6 py-4 border-b border-border bg-muted/30">
+          <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
             Edit Event
           </DialogTitle>
         </DialogHeader>

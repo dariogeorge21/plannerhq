@@ -59,7 +59,7 @@ export function MentionPicker({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center space-x-2">
+      {/* <div className="flex items-center space-x-2">
         <Switch
           id="mention-all"
           checked={mentionAll}
@@ -74,7 +74,7 @@ export function MentionPicker({
         <Label htmlFor="mention-all" className="cursor-pointer font-medium text-sm text-neutral-700">
           Mention all workspace members (@all)
         </Label>
-      </div>
+      </div> */}
 
       {!mentionAll && (
         <div className="flex flex-col gap-2">

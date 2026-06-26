@@ -58,34 +58,34 @@ export const FileMentionList = forwardRef((props: FileMentionListProps, ref) => 
 
   if (props.isLoading) {
     return (
-      <div className="bg-white rounded-xl shadow-xl border border-neutral-200 overflow-hidden w-64 p-4 flex justify-center">
-        <Loader2 className="w-5 h-5 animate-spin text-neutral-400" />
+      <div className="bg-popover rounded-xl shadow-xl border border-border overflow-hidden w-64 p-4 flex justify-center">
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-xl border border-neutral-200 overflow-hidden w-64 max-h-80 overflow-y-auto">
+    <div className="bg-popover rounded-xl shadow-xl border border-border overflow-hidden w-64 max-h-80 overflow-y-auto z-50 animate-in fade-in zoom-in-95 duration-200">
       {props.items.length ? (
-        <div className="p-1">
+        <div className="p-1.5 flex flex-col gap-1">
           {props.items.map((item, index) => (
             <button
               className={`
-                w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-3 transition-colors
-                ${index === selectedIndex ? 'bg-violet-50 text-violet-900' : 'text-neutral-700 hover:bg-neutral-50'}
+                w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors
+                ${index === selectedIndex ? 'bg-primary text-primary-foreground font-semibold shadow-sm' : 'text-popover-foreground hover:bg-muted'}
               `}
               key={index}
               onClick={() => selectItem(index)}
             >
-              <div className={`p-1 rounded-md ${index === selectedIndex ? 'bg-violet-100 text-violet-600' : 'bg-neutral-100 text-neutral-500'}`}>
+              <div className={`p-1.5 rounded-md ${index === selectedIndex ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                 {getFileIcon(item.mime_type)}
               </div>
-              <span className="truncate font-medium">{item.file_name}</span>
+              <span className="truncate">{item.file_name}</span>
             </button>
           ))}
         </div>
       ) : (
-        <div className="px-4 py-3 text-sm text-neutral-500 text-center">
+        <div className="px-4 py-4 text-sm font-medium text-muted-foreground text-center">
           No files found
         </div>
       )}

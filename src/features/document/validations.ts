@@ -53,3 +53,9 @@ export const RestoreVersionSchema = z.object({
   documentId: z.string().uuid("Invalid document ID"),
   versionId: z.string().uuid("Invalid version ID"),
 });
+
+export const ToggleFavoriteSchema = z.object({
+  workspaceId: z.string().uuid("Invalid workspace ID"),
+  documentId: z.string().uuid("Invalid document ID"),
+  isFavorite: z.boolean(),
+});

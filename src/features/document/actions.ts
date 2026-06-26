@@ -13,6 +13,7 @@ import {
   SaveDocumentContentSchema,
   CreateVersionSchema,
   RestoreVersionSchema,
+  ToggleFavoriteSchema,
 } from "./validations";
 
 export async function createSectionAction(payload: unknown) {
@@ -190,6 +191,25 @@ export async function deleteVersionAction(versionId: string) {
     const service = createDocumentService(supabase);
     
     await service.deleteVersion(versionId);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function toggleFavoriteAction(payload: unknown, workspaceId: string) {
+  try {
+    const data = ToggleFavoriteSchema.parse(payload);
+    const supabase = await createClient();
+    const service = createDocumentService(supabase);
+    
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData.user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    await service.toggleFavoriteDocument(data.workspaceId, data.documentId, data.isFavorite, authData.user.id);
+    revalidatePath(`/${workspaceId}`);
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message };

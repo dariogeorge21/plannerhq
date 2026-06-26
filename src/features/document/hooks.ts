@@ -9,8 +9,8 @@ import {
   createDocumentAction,
   updateDocumentAction,
   deleteDocumentAction,
-  reorderDocumentsAction,
   saveDocumentContentAction,
+  toggleFavoriteAction,
 } from "./actions";
 
 export function useSections(workspaceId: string | undefined) {
@@ -189,6 +189,55 @@ export function useReorderDocuments(workspaceId: string) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] });
+    },
+  });
+}
+
+export function useFavoriteDocuments(workspaceId: string | undefined) {
+  return useQuery({
+    queryKey: ["favorite_documents", workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return [];
+      const supabase = createClient();
+      const service = createDocumentService(supabase);
+      return service.getFavoriteDocuments(workspaceId);
+    },
+    enabled: !!workspaceId,
+  });
+}
+
+export function useToggleFavoriteDocument(workspaceId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { documentId: string; isFavorite: boolean }) =>
+      toggleFavoriteAction({ workspaceId, documentId: data.documentId, isFavorite: data.isFavorite }, workspaceId),
+    onMutate: async ({ documentId, isFavorite }) => {
+      await queryClient.cancelQueries({ queryKey: ["favorite_documents", workspaceId] });
+      const previousFavorites = queryClient.getQueryData<any[]>(["favorite_documents", workspaceId]);
+
+      if (previousFavorites) {
+        let updatedFavorites = [...previousFavorites];
+        if (isFavorite) {
+          // Optimistically add
+          // We don't have the full document details, so we might need to invalidate immediately 
+          // or we can just fetch the document from cache if possible.
+          // For simplicity and correctness, we will just invalidate on success.
+          // But to be slightly optimistic, let's just use the previous for now.
+        } else {
+          // Optimistically remove
+          updatedFavorites = updatedFavorites.filter(fav => fav.document_id !== documentId);
+        }
+        queryClient.setQueryData(["favorite_documents", workspaceId], updatedFavorites);
+      }
+      return { previousFavorites };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousFavorites) {
+        queryClient.setQueryData(["favorite_documents", workspaceId], context.previousFavorites);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["favorite_documents", workspaceId] });
     },
   });
 }

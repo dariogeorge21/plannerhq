@@ -1,5 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { Section, Document, DocumentContent } from "./types";
+import { Section, Document, DocumentContent, FavoriteDocument } from "./types";
 
 export const createDocumentService = (supabase: SupabaseClient) => ({
   async getSections(workspaceId: string): Promise<Section[]> {
@@ -236,5 +236,31 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
       .eq("id", versionId);
 
     if (error) throw new Error(error.message);
+  },
+
+  async getFavoriteDocuments(workspaceId: string): Promise<FavoriteDocument[]> {
+    const { data, error } = await supabase
+      .from("favorite_documents")
+      .select("*, document:documents(*)")
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  async toggleFavoriteDocument(workspaceId: string, documentId: string, isFavorite: boolean, userId: string): Promise<void> {
+    if (isFavorite) {
+      const { error } = await supabase
+        .from("favorite_documents")
+        .insert({ workspace_id: workspaceId, document_id: documentId, user_id: userId });
+      if (error && error.code !== '23505') throw new Error(error.message); // Ignore unique violation if already favorited
+    } else {
+      const { error } = await supabase
+        .from("favorite_documents")
+        .delete()
+        .match({ workspace_id: workspaceId, document_id: documentId, user_id: userId });
+      if (error) throw new Error(error.message);
+    }
   },
 });

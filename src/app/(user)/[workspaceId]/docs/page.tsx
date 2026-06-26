@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { FileText, Sparkles, PencilLine, Clock, Zap, Plus, Search } from "lucide-react";
+import { FileText, Sparkles, PencilLine, Clock, Zap, Plus, Search, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
-import { useDocuments } from "@/features/document/hooks";
+import { useDocuments, useFavoriteDocuments } from "@/features/document/hooks";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -18,9 +18,11 @@ export default function DocsDashboard() {
   const params = useParams();
   const workspaceId = params?.workspaceId as string;
   const { data: documents, isLoading } = useDocuments(workspaceId);
+  const { data: favorites, isLoading: isFavoritesLoading } = useFavoriteDocuments(workspaceId);
 
   // We sort by an assumed updated_at or id, for now just slice
   const recentDocs = documents ? [...documents].reverse().slice(0, 4) : [];
+  const favDocs = favorites?.map(f => f.document).filter(Boolean) || [];
 
   return (
     <div className="h-full w-full bg-background relative overflow-y-auto p-8 lg:p-12">
@@ -50,6 +52,36 @@ export default function DocsDashboard() {
             className="w-full h-14 pl-12 pr-4 bg-card border border-border rounded-2xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm"
           />
         </motion.div>
+
+        {/* Favorites */}
+        {favDocs.length > 0 && (
+          <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+                <Star className="w-5 h-5 text-amber-500 fill-amber-500" />
+                Favorite Documents
+              </h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {favDocs.slice(0, 4).map((doc) => doc && (
+                <Link key={doc.id} href={`/${workspaceId}/docs/${doc.id}`} className="group relative bg-card hover:bg-accent/50 border border-amber-500/20 hover:border-amber-500/40 rounded-2xl p-5 transition-all hover:shadow-md hover:shadow-amber-500/5 flex flex-col justify-between h-32">
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <PencilLine className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500 shrink-0">
+                      <FileText className="w-5 h-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-foreground truncate">{doc.title || "Untitled"}</h3>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </motion.section>
+        )}
 
         {/* Continue Editing */}
         <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>

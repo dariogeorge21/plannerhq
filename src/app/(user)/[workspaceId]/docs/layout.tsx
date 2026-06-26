@@ -11,7 +11,9 @@ import {
   useDeleteSection,
   useReorderSections,
   useDeleteDocument,
-  useReorderDocuments
+  useReorderDocuments,
+  useFavoriteDocuments,
+  useToggleFavoriteDocument
 } from "@/features/document/hooks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,7 +57,11 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   const deleteDocument = useDeleteDocument(workspaceId);
   const reorderDocuments = useReorderDocuments(workspaceId);
 
+  const { data: favorites } = useFavoriteDocuments(workspaceId);
+  const toggleFavorite = useToggleFavoriteDocument(workspaceId);
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [isFavoritesExpanded, setIsFavoritesExpanded] = useState(true);
   
   const [isSectionModalOpen, setIsSectionModalOpen] = useState(false);
   const [sectionName, setSectionName] = useState("");
@@ -183,9 +189,47 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               <FileText className="w-4 h-4" />
               <span>All Documents</span>
             </Link>
-            <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer transition-colors">
-              <Star className="w-4 h-4" />
-              <span>Favorites</span>
+            <div className="flex flex-col">
+              <div 
+                className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer transition-colors group"
+                onClick={() => setIsFavoritesExpanded(!isFavoritesExpanded)}
+              >
+                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground group-hover:bg-accent/50 rounded-md shrink-0">
+                  {isFavoritesExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                </Button>
+                <Star className="w-4 h-4" />
+                <span>Favorites</span>
+              </div>
+              <AnimatePresence>
+                {isFavoritesExpanded && favorites && favorites.length > 0 && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="flex flex-col gap-0.5 overflow-hidden ml-5 border-l border-border pl-2 mt-1"
+                  >
+                    {favorites.map((fav) => {
+                      const doc = fav.document;
+                      if (!doc) return null;
+                      const isActive = pathname.includes(`/docs/${doc.id}`);
+                      return (
+                        <Link 
+                          key={fav.id}
+                          href={`/${workspaceId}/docs/${doc.id}`}
+                          className={`flex items-center gap-2.5 min-w-0 text-sm py-1.5 px-2 rounded-lg transition-colors ${
+                            isActive 
+                              ? 'bg-primary/10 text-primary font-semibold' 
+                              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                          }`}
+                        >
+                          <FileText className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <span className="truncate">{doc.title}</span>
+                        </Link>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer transition-colors">
               <Clock className="w-4 h-4" />
@@ -293,6 +337,19 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                               </Link>
                               
                               <div className="flex items-center opacity-0 group-hover:opacity-100 transition-all gap-0.5 pr-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-6 w-6 rounded-md hover:bg-accent text-muted-foreground hover:text-amber-500"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const isFav = favorites?.some(f => f.document_id === doc.id) ?? false;
+                                    toggleFavorite.mutate({ documentId: doc.id, isFavorite: !isFav });
+                                  }}
+                                >
+                                  <Star className={`w-3.5 h-3.5 ${favorites?.some(f => f.document_id === doc.id) ? 'fill-amber-500 text-amber-500' : ''}`} />
+                                </Button>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="h-6 w-6 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground">

@@ -38,3 +38,12 @@ export interface DocumentVersion {
   is_deleted: boolean;
   created_at: string;
 }
+
+export interface FavoriteDocument {
+  id: string;
+  user_id: string;
+  workspace_id: string;
+  document_id: string;
+  created_at: string;
+  document?: Document;
+}

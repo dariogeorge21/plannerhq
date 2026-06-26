@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { WorkspaceMember, WorkspaceActivityLog } from "@/types/workspace";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, Calendar, Activity, Mail, Fingerprint, ShieldAlert, CheckCircle2, MessageSquare, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ShieldCheck, Mail, FileText, CheckCircle2, MessageSquare, Activity, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface MemberProfileSheetProps {
   isOpen: boolean;
@@ -16,121 +16,83 @@ interface MemberProfileSheetProps {
   onManageRole: (userId: string) => void;
 }
 
-export default function MemberProfileSheet({
-  isOpen,
-  onOpenChange,
-  member,
-  activities,
-  currentUserRole,
-  onManageRole
-}: MemberProfileSheetProps) {
+export default function MemberProfileSheet({ isOpen, onOpenChange, member, activities, currentUserRole }: MemberProfileSheetProps) {
   if (!member) return null;
 
-  const hasAdminPrivilege = currentUserRole === 'owner' || currentUserRole === 'admin';
   const memberActivities = activities.filter(a => a.user_id === member.user_id).slice(0, 5);
 
   const getActivityIcon = (type: string) => {
     if (type.includes("task")) return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
-    if (type.includes("document") || type.includes("note")) return <FileText className="w-4 h-4 text-indigo-500" />;
-    if (type.includes("chat") || type.includes("message")) return <MessageSquare className="w-4 h-4 text-amber-500" />;
-    return <Activity className="w-4 h-4 text-neutral-400" />;
+    if (type.includes("document") || type.includes("note")) return <FileText className="w-4 h-4 text-blue-500" />;
+    if (type.includes("chat") || type.includes("message")) return <MessageSquare className="w-4 h-4 text-purple-500" />;
+    return <Activity className="w-4 h-4 text-muted-foreground" />;
   };
 
-  const formatActionType = (type: string) => {
-    return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  };
+  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md p-0 overflow-y-auto border-l border-neutral-200">
-        {/* Cover & Avatar Header */}
-        <div className="h-32 bg-gradient-to-r from-indigo-500 to-purple-600 relative">
-          <div className="absolute -bottom-10 left-6">
-            {member.avatar_url ? (
-              <img src={member.avatar_url} alt={member.display_name} className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm" />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-white border-4 border-white shadow-sm flex items-center justify-center">
-                <div className="w-full h-full rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-extrabold text-2xl">
-                  {member.display_name.charAt(0).toUpperCase()}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="absolute top-4 right-4">
-             <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white shadow-sm ${
-                member.role === 'owner' ? 'text-indigo-700' :
-                member.role === 'admin' ? 'text-purple-700' :
-                'text-neutral-600'
-              }`}>
-                {member.role === 'owner' && <ShieldAlert className="w-3 h-3 mr-1" />}
-                {member.role === 'admin' && <ShieldCheck className="w-3 h-3 mr-1" />}
-                {member.role}
-              </span>
+      <SheetContent className="w-full sm:max-w-md border-l border-border bg-background p-0 flex flex-col shadow-2xl">
+
+        {/* Minimal Profile Header */}
+        <div className="relative pt-12 pb-6 px-6 flex flex-col items-center border-b border-border bg-muted/10">
+          <Avatar className="w-24 h-24 border-4 border-background shadow-md mb-4">
+            <AvatarImage src={member.avatar_url || ""} />
+            <AvatarFallback className="text-2xl font-semibold bg-primary/10 text-primary">
+              {member.display_name ? getInitials(member.display_name) : <User className="w-10 h-10" />}
+            </AvatarFallback>
+          </Avatar>
+
+          <SheetTitle className="text-2xl font-bold tracking-tight text-foreground text-center">
+            {member.display_name || "Unknown User"}
+          </SheetTitle>
+
+          <Badge variant={member.role === 'admin' || member.role === 'owner' ? 'default' : 'secondary'} className="mt-2 rounded-full px-3 shadow-sm">
+            {member.role === 'owner' && <ShieldCheck className="w-3 h-3 mr-1" />}
+            {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+          </Badge>
+
+          <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground bg-background px-3 py-1.5 rounded-full border border-border shadow-sm">
+            <Mail className="w-4 h-4" />
+            <span className="truncate max-w-[200px]">{member.email}</span>
           </div>
         </div>
 
-        <div className="px-6 pt-14 pb-6 border-b border-neutral-100">
-          <SheetHeader>
-            <SheetTitle className="text-2xl font-extrabold text-neutral-900 text-left">{member.display_name}</SheetTitle>
-            <SheetDescription className="text-left flex flex-col gap-2 mt-2">
-              <div className="flex items-center gap-2 text-neutral-600 font-medium text-sm">
-                <Mail className="w-4 h-4 text-neutral-400" />
-                {member.email}
-              </div>
-              <div className="flex items-center gap-2 text-neutral-600 font-medium text-sm">
-                <Fingerprint className="w-4 h-4 text-neutral-400" />
-                <span className="font-mono text-xs bg-neutral-100 px-1.5 py-0.5 rounded text-neutral-500">{member.hqid}</span>
-              </div>
-              <div className="flex items-center gap-2 text-neutral-600 font-medium text-sm">
-                <Calendar className="w-4 h-4 text-neutral-400" />
-                Joined {new Date(member.joined_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-              </div>
-            </SheetDescription>
-          </SheetHeader>
-          
-          {hasAdminPrivilege && member.role !== 'owner' && (
-            <div className="mt-6 flex gap-3">
-              <Button onClick={() => { onOpenChange(false); onManageRole(member.user_id); }} variant="outline" className="flex-1 rounded-xl font-semibold border-neutral-200">
-                Manage Role
-              </Button>
+        {/* Clean Activity Timeline */}
+        <div className="flex-1 overflow-y-auto p-6 scrollbar-none">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-6">Recent Activity</h3>
+
+          {memberActivities.length > 0 ? (
+            <div className="relative border-l-2 border-border/50 ml-3 space-y-8 pb-4">
+              {memberActivities.map((activity, idx) => (
+                <div key={idx} className="relative pl-6">
+                  {/* Timeline Node */}
+                  <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-background border-2 border-border flex items-center justify-center shadow-sm">
+                    {getActivityIcon(activity.action_type)}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex flex-col gap-1">
+                    <p className="text-sm font-medium text-foreground leading-tight">
+                      {activity.action_type.replace(/_/g, ' ')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {activity.entity_type} {activity.entity_id ? "updated" : ""}
+                    </p>
+                    <time className="text-[10px] font-semibold text-muted-foreground/60 mt-1">
+                      {new Date(activity.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </time>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-10 flex flex-col items-center">
+              <Activity className="w-8 h-8 text-muted-foreground/30 mb-3" />
+              <p className="text-sm text-muted-foreground">No recent activity found.</p>
             </div>
           )}
         </div>
-
-        {/* Activity Feed Section */}
-        <div className="p-6">
-          <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Activity className="w-4 h-4 text-neutral-400" /> Recent Activity
-          </h3>
-          
-          <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-neutral-200 before:to-transparent">
-            {memberActivities.length > 0 ? (
-              memberActivities.map((activity) => (
-                <div key={activity.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    {/* Icon */}
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-neutral-50 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 relative z-10">
-                        {getActivityIcon(activity.action_type)}
-                    </div>
-                    {/* Card */}
-                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-3 rounded-xl border border-neutral-100 bg-white shadow-sm">
-                        <div className="flex items-center justify-between space-x-2 mb-1">
-                            <div className="font-bold text-neutral-900 text-xs">{formatActionType(activity.action_type)}</div>
-                            <time className="text-[10px] font-medium text-neutral-500">{new Date(activity.created_at).toLocaleDateString()}</time>
-                        </div>
-                        <div className="text-xs text-neutral-500">
-                          {activity.entity_type} {activity.entity_id ? "updated" : ""}
-                        </div>
-                    </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-sm text-neutral-500">No recent activity found.</p>
-              </div>
-            )}
-          </div>
-        </div>
-
       </SheetContent>
     </Sheet>
   );

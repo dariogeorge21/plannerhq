@@ -18,34 +18,34 @@ export default function RolePermissionsMatrix() {
   ];
 
   return (
-    <div className="bg-white border border-neutral-200/60 rounded-3xl shadow-sm overflow-hidden flex flex-col">
-      <div className="px-6 py-5 border-b border-neutral-100 bg-neutral-50/50">
-        <h3 className="text-sm font-bold text-neutral-900">Permissions Reference</h3>
-        <p className="text-xs text-neutral-500 mt-1">Review what each role can do within this workspace.</p>
+    <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col">
+      <div className="px-6 py-5 border-b border-border bg-muted/30">
+        <h3 className="text-sm font-bold text-foreground">Permissions Reference</h3>
+        <p className="text-xs text-muted-foreground mt-1">Review what each role can do within this workspace.</p>
       </div>
       
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-neutral-100 bg-white">
-              <th className="py-4 px-6 text-xs font-bold text-neutral-500 uppercase tracking-wider w-[40%]">Capability</th>
-              <th className="py-4 px-6 text-xs font-bold text-indigo-700 uppercase tracking-wider bg-indigo-50/30 text-center">Owner</th>
-              <th className="py-4 px-6 text-xs font-bold text-purple-700 uppercase tracking-wider bg-purple-50/30 text-center">Admin</th>
-              <th className="py-4 px-6 text-xs font-bold text-neutral-500 uppercase tracking-wider text-center">Member</th>
+            <tr className="border-b border-border bg-card">
+              <th className="py-4 px-6 text-xs font-bold text-muted-foreground uppercase tracking-wider w-[40%]">Capability</th>
+              <th className="py-4 px-6 text-xs font-bold text-primary uppercase tracking-wider bg-primary/5 text-center">Owner</th>
+              <th className="py-4 px-6 text-xs font-bold text-foreground uppercase tracking-wider bg-muted/10 text-center">Admin</th>
+              <th className="py-4 px-6 text-xs font-bold text-muted-foreground uppercase tracking-wider text-center">Member</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody className="divide-y divide-border">
             {permissions.map((perm, idx) => (
-              <tr key={idx} className="hover:bg-neutral-50/30 transition-colors">
-                <td className="py-3 px-6 text-sm font-medium text-neutral-700">{perm.name}</td>
-                <td className="py-3 px-6 text-center bg-indigo-50/10">
-                  {perm.owner ? <Check className="w-4 h-4 text-indigo-600 mx-auto" /> : <Minus className="w-4 h-4 text-neutral-300 mx-auto" />}
+              <tr key={idx} className="hover:bg-muted/50 transition-colors">
+                <td className="py-3 px-6 text-sm font-medium text-foreground">{perm.name}</td>
+                <td className="py-3 px-6 text-center bg-primary/5">
+                  {perm.owner ? <Check className="w-4 h-4 text-primary mx-auto" /> : <Minus className="w-4 h-4 text-muted-foreground/30 mx-auto" />}
                 </td>
-                <td className="py-3 px-6 text-center bg-purple-50/10">
-                  {perm.admin ? <Check className="w-4 h-4 text-purple-600 mx-auto" /> : <Minus className="w-4 h-4 text-neutral-300 mx-auto" />}
+                <td className="py-3 px-6 text-center bg-muted/5">
+                  {perm.admin ? <Check className="w-4 h-4 text-primary mx-auto" /> : <Minus className="w-4 h-4 text-muted-foreground/30 mx-auto" />}
                 </td>
                 <td className="py-3 px-6 text-center">
-                  {perm.member ? <Check className="w-4 h-4 text-emerald-600 mx-auto" /> : <Minus className="w-4 h-4 text-neutral-300 mx-auto" />}
+                  {perm.member ? <Check className="w-4 h-4 text-primary mx-auto" /> : <Minus className="w-4 h-4 text-muted-foreground/30 mx-auto" />}
                 </td>
               </tr>
             ))}

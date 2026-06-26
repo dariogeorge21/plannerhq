@@ -120,8 +120,8 @@ export default function MembersDashboard({
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900">Workspace Members</h1>
-          <p className="text-neutral-500 mt-2 font-medium">Manage access, permissions, and team members for {workspace.name}.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Workspace Members</h1>
+          <p className="text-muted-foreground mt-2 font-medium">Manage access, permissions, and team members for {workspace.name}.</p>
         </div>
         {hasAdminPrivilege && (
           <Button 
@@ -144,25 +144,25 @@ export default function MembersDashboard({
       {/* Main Content Area */}
       <div className="space-y-6">
         {/* Tabs */}
-        <div className="flex gap-2 border-b border-neutral-200 pb-px">
+        <div className="flex gap-2 border-b border-border pb-px">
           <button 
             onClick={() => setActiveTab("members")}
-            className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors ${activeTab === "members" ? "border-indigo-600 text-indigo-600" : "border-transparent text-neutral-500 hover:text-neutral-900 hover:border-neutral-300"}`}
+            className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors ${activeTab === "members" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
           >
             Active Members
           </button>
           <button 
             onClick={() => setActiveTab("invites")}
-            className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors flex items-center gap-2 ${activeTab === "invites" ? "border-indigo-600 text-indigo-600" : "border-transparent text-neutral-500 hover:text-neutral-900 hover:border-neutral-300"}`}
+            className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors flex items-center gap-2 ${activeTab === "invites" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
           >
             Pending Invites 
             {invites.length > 0 && (
-              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === "invites" ? "bg-indigo-100 text-indigo-700" : "bg-neutral-100 text-neutral-600"}`}>{invites.length}</span>
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === "invites" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{invites.length}</span>
             )}
           </button>
           <button 
             onClick={() => setActiveTab("permissions")}
-            className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors ${activeTab === "permissions" ? "border-indigo-600 text-indigo-600" : "border-transparent text-neutral-500 hover:text-neutral-900 hover:border-neutral-300"}`}
+            className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors ${activeTab === "permissions" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
           >
             Roles & Permissions
           </button>

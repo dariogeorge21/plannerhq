@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface MembersDirectoryListProps {
   members: WorkspaceMember[];
@@ -33,90 +34,83 @@ export default function MembersDirectoryList({
   const hasAdminPrivilege = currentUserRole === 'owner' || currentUserRole === 'admin';
 
   return (
-    <div className="bg-white border border-neutral-200/60 rounded-3xl shadow-sm overflow-hidden flex flex-col">
-      <div className="px-6 py-4 border-b border-neutral-100 bg-neutral-50/50 grid grid-cols-12 gap-4 items-center">
-        <div className="col-span-6 md:col-span-5 text-xs font-bold text-neutral-500 uppercase tracking-wider">Member</div>
-        <div className="hidden md:block md:col-span-3 text-xs font-bold text-neutral-500 uppercase tracking-wider">Role</div>
-        <div className="col-span-4 md:col-span-3 text-xs font-bold text-neutral-500 uppercase tracking-wider">Joined</div>
-        <div className="col-span-2 md:col-span-1 text-right text-xs font-bold text-neutral-500 uppercase tracking-wider"></div>
+    <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col">
+      {/* Table Header mapping semantic colors */}
+      <div className="px-6 py-4 border-b border-border bg-muted/30 grid grid-cols-12 gap-4 items-center">
+        <div className="col-span-6 md:col-span-5 text-xs font-bold text-muted-foreground uppercase tracking-wider">Member</div>
+        <div className="hidden md:block md:col-span-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Role</div>
+        <div className="col-span-4 md:col-span-3 text-xs font-bold text-muted-foreground uppercase tracking-wider">Joined</div>
+        <div className="col-span-2 md:col-span-1 text-right"></div>
       </div>
 
-      <div className="divide-y divide-neutral-100">
+      <div className="divide-y divide-border">
         {members.map((member) => {
           const isSelf = member.user_id === currentUserId;
           const canManage = hasAdminPrivilege && !isSelf && member.role !== 'owner';
 
           return (
-            <div
-              key={member.user_id}
-              className="px-6 py-4 grid grid-cols-12 gap-4 items-center hover:bg-neutral-50/50 transition-colors group cursor-pointer"
-              onClick={() => onViewProfile(member)}
-            >
-              <div className="col-span-6 md:col-span-5 flex items-center gap-4">
-                <div className="relative">
-                  {member.avatar_url ? (
-                    <img src={member.avatar_url} alt={member.display_name} className="w-10 h-10 rounded-full object-cover border border-neutral-200" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                      {member.display_name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  {/* Status Indicator (Mocked online status) */}
-                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-bold text-neutral-900 flex items-center gap-2">
+            <div key={member.user_id} className="px-6 py-3 grid grid-cols-12 gap-4 items-center hover:bg-muted/50 transition-colors group cursor-pointer" onClick={() => onViewProfile(member)}>
+              {/* Avatar Section */}
+              <div className="col-span-6 md:col-span-5 flex items-center gap-3">
+                <Avatar className="w-10 h-10">
+                    <AvatarImage src={member.avatar_url || ""} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                         {member.display_name?.substring(0,2).toUpperCase() || "U"}
+                    </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col truncate">
+                  <span className="text-sm font-semibold text-foreground truncate flex items-center gap-2">
                     {member.display_name}
-                    {isSelf && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 uppercase tracking-wider bg-neutral-100 text-neutral-600">You</Badge>}
+                    {isSelf && <Badge variant="secondary" className="text-[10px] px-1.5 py-0 uppercase tracking-wider bg-muted text-muted-foreground">You</Badge>}
                   </span>
-                  <span className="text-xs text-neutral-500 font-medium truncate max-w-[150px] sm:max-w-[200px]">{member.email}</span>
+                  <span className="text-xs text-muted-foreground truncate">{member.email}</span>
                 </div>
               </div>
 
+              {/* Role Section */}
               <div className="hidden md:flex md:col-span-3 items-center">
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${member.role === 'owner' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
-                    member.role === 'admin' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                      'bg-neutral-50 text-neutral-600 border-neutral-200'
-                  }`}>
+                <Badge variant={member.role === 'admin' || member.role === 'owner' ? 'default' : 'secondary'} className="rounded-full px-2.5 py-0.5 shadow-sm">
                   {member.role === 'owner' && <ShieldAlert className="w-3 h-3 mr-1" />}
                   {member.role === 'admin' && <ShieldCheck className="w-3 h-3 mr-1" />}
-                  {member.role}
-                </span>
+                  {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                </Badge>
               </div>
 
-              <div className="col-span-4 md:col-span-3 text-sm font-medium text-neutral-500 flex items-center">
+              {/* Joined Section */}
+              <div className="col-span-4 md:col-span-3 text-sm font-medium text-muted-foreground flex items-center">
                 {new Date(member.joined_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
               </div>
 
+              {/* Actions Section - Only shows clearly on row hover for minimalism */}
               <div className="col-span-2 md:col-span-1 flex justify-end">
                 {canManage ? (
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div onClick={(e) => e.stopPropagation()} className="opacity-50 group-hover:opacity-100 transition-opacity">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-neutral-400 hover:text-neutral-900 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <MoreHorizontal className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-background shadow-sm border border-transparent hover:border-border">
+                          <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48 rounded-xl p-2 shadow-xl border-neutral-200/60">
-                        <div className="px-2 py-1.5 text-xs font-bold text-neutral-500 uppercase tracking-wider mb-1">Manage Role</div>
+                      <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+                        <div className="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Manage Role</div>
                         <DropdownMenuItem
                           onClick={() => onUpdateRole(member.user_id, 'admin')}
                           className="rounded-lg cursor-pointer font-medium mb-1"
                           disabled={member.role === 'admin'}
                         >
-                          <ShieldCheck className="w-4 h-4 mr-2 text-purple-600" /> Make Admin
+                          <ShieldCheck className="w-4 h-4 mr-2 text-primary" /> Make Admin
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => onUpdateRole(member.user_id, 'member')}
                           className="rounded-lg cursor-pointer font-medium"
                           disabled={member.role === 'member'}
                         >
-                          <Edit2 className="w-4 h-4 mr-2 text-neutral-500" /> Make Member
+                          <Edit2 className="w-4 h-4 mr-2 text-muted-foreground" /> Make Member
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator className="my-1 border-neutral-100" />
+                        <DropdownMenuSeparator className="my-1 border-border" />
                         <DropdownMenuItem
                           onClick={() => onRemoveMember(member.user_id)}
-                          className="text-red-600 focus:text-red-700 focus:bg-red-50 rounded-lg cursor-pointer font-bold"
+                          className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg cursor-pointer font-bold"
                         >
                           <Trash2 className="w-4 h-4 mr-2" /> Remove Member
                         </DropdownMenuItem>
@@ -124,7 +118,7 @@ export default function MembersDirectoryList({
                     </DropdownMenu>
                   </div>
                 ) : (
-                  <div className="w-8 h-8" /> /* Placeholder to maintain layout */
+                  <div className="w-8 h-8" />
                 )}
               </div>
             </div>
@@ -132,11 +126,11 @@ export default function MembersDirectoryList({
         })}
         {members.length === 0 && (
           <div className="px-6 py-12 text-center flex flex-col items-center justify-center">
-            <div className="w-12 h-12 rounded-full bg-neutral-100 flex items-center justify-center mb-3">
-              <Users className="w-6 h-6 text-neutral-400" />
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+              <Users className="w-6 h-6 text-muted-foreground" />
             </div>
-            <h3 className="text-sm font-bold text-neutral-900">No members found</h3>
-            <p className="text-xs text-neutral-500 mt-1 max-w-sm">This workspace has no active members yet.</p>
+            <h3 className="text-sm font-bold text-foreground">No members found</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm">This workspace has no active members yet.</p>
           </div>
         )}
       </div>

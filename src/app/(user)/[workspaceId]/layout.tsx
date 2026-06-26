@@ -32,6 +32,33 @@ import { WorkspaceAvatar } from "@/components/ui/workspace-avatar";
 import { toast } from "sonner";
 import { TimeTrackerWidget } from "@/features/workspace/components/TimeTrackerWidget";
 
+// --- Progress Bar Component ---
+// Hooks into pathname changes to show a sleek, automated loading bar
+function TopProgressBar() {
+  const pathname = usePathname();
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  useEffect(() => {
+    setIsNavigating(true);
+    const timeout = setTimeout(() => setIsNavigating(false), 500);
+    return () => clearTimeout(timeout);
+  }, [pathname]);
+
+  return (
+    <AnimatePresence>
+      {isNavigating && (
+        <motion.div
+          initial={{ width: "0%", opacity: 1 }}
+          animate={{ width: "100%", opacity: 0 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
+          className="fixed top-0 left-0 h-[3px] bg-gradient-to-r from-primary/60 via-primary to-primary z-[100] shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+        />
+      )}
+    </AnimatePresence>
+  );
+}
+
 export default function WorkspaceLayout({
   children,
   params: paramsPromise,
@@ -87,16 +114,19 @@ export default function WorkspaceLayout({
 
   if (!workspace) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-card border border-border rounded-3xl p-8 text-center shadow-2xl shadow-black/5">
-          <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-screen bg-background flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Subtle background glow for error state */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-destructive/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="max-w-md w-full bg-card/60 backdrop-blur-xl border border-border/50 rounded-3xl p-8 text-center shadow-2xl shadow-black/5 dark:shadow-black/40 relative z-10">
+          <div className="w-16 h-16 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center mx-auto mb-6 ring-4 ring-destructive/5">
             <ShieldAlert className="w-8 h-8" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2 tracking-tight">Access Denied</h1>
           <p className="text-muted-foreground mb-8 leading-relaxed">
             You don't have permission to view this workspace, or it does not exist.
           </p>
-          <Button asChild className="w-full rounded-xl bg-foreground text-background hover:opacity-90 h-12 font-semibold">
+          <Button asChild className="w-full rounded-xl bg-foreground text-background hover:scale-[1.02] transition-transform h-12 font-semibold shadow-lg shadow-foreground/10">
             <Link href="/dashboard">Return to Dashboard</Link>
           </Button>
         </div>
@@ -122,18 +152,19 @@ export default function WorkspaceLayout({
 
   return (
     <div className="flex h-screen bg-background overflow-hidden font-sans selection:bg-primary/20">
+      <TopProgressBar />
 
       {/* DESKTOP SIDEBAR */}
       <motion.aside
         initial={false}
         animate={{ width: isCollapsed ? 80 : 280 }}
-        className="hidden md:flex flex-col bg-sidebar border-r border-border relative z-20 shadow-sm"
+        className="hidden md:flex flex-col bg-sidebar/80 backdrop-blur-xl border-r border-border relative z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.2)]"
       >
-        <div className="h-16 flex items-center px-6 border-b border-border">
-          <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
-            <WorkspaceAvatar workspace={workspace} className="w-8 h-8 rounded-lg shadow-inner" />
+        <div className="h-16 flex items-center px-6 border-b border-border/50">
+          <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden group">
+            <WorkspaceAvatar workspace={workspace} className="w-8 h-8 rounded-lg shadow-sm group-hover:shadow-md transition-shadow" />
             {!isCollapsed && (
-              <span className="font-bold text-sidebar-foreground tracking-tight truncate">
+              <span className="font-bold text-sidebar-foreground tracking-tight truncate group-hover:text-primary transition-colors">
                 {workspace.name}
               </span>
             )}
@@ -142,18 +173,18 @@ export default function WorkspaceLayout({
 
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-20 bg-background border border-border shadow-sm w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition-colors z-30"
+          className="absolute -right-3 top-20 bg-background border border-border shadow-md w-6 h-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary transition-all hover:scale-110 z-30"
         >
           <ChevronsLeft className={`w-3.5 h-3.5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
         </button>
 
         <div className="px-3 pt-4 pb-2">
-          <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border bg-background hover:bg-accent transition-colors text-muted-foreground hover:text-foreground group ${isCollapsed ? 'justify-center px-0' : ''}`}>
-            <Search className="w-4 h-4 shrink-0" />
+          <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-accent/80 transition-all text-muted-foreground hover:text-foreground group hover:shadow-sm ${isCollapsed ? 'justify-center px-0' : ''}`}>
+            <Search className="w-4 h-4 shrink-0 group-hover:scale-110 transition-transform" />
             {!isCollapsed && (
               <div className="flex flex-1 items-center justify-between">
                 <span className="text-sm font-medium">Search</span>
-                <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                <kbd className="hidden lg:inline-flex h-5 items-center gap-1 rounded-md border border-border bg-muted/50 px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
                   <span className="text-xs">⌘</span>K
                 </kbd>
               </div>
@@ -161,14 +192,14 @@ export default function WorkspaceLayout({
           </button>
         </div>
 
-        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto scrollbar-none relative">
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto scrollbar-none relative">
           {navLinks.map((link) => {
             const active = isActive(link.href, link.exact);
             return (
               <Link
                 key={link.name}
                 href={link.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${active
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative ${active
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
                   }`}
@@ -176,21 +207,21 @@ export default function WorkspaceLayout({
                 {active && (
                   <motion.div
                     layoutId="activeSidebarPill"
-                    className="absolute inset-0 bg-primary/10 rounded-xl -z-10"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/10 rounded-xl -z-10 shadow-sm"
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
                   />
                 )}
                 {!active && (
-                  <div className="absolute inset-0 bg-accent rounded-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-accent/50 rounded-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 )}
-                <link.icon className={`w-5 h-5 shrink-0 relative z-10 ${active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`} />
+                <link.icon className={`w-5 h-5 shrink-0 relative z-10 transition-transform duration-300 ${active ? "text-primary scale-110" : "text-muted-foreground group-hover:scale-110 group-hover:text-foreground"}`} />
                 {!isCollapsed && (
                   <span className={`text-sm font-semibold relative z-10 ${active ? "text-primary" : ""}`}>
                     {link.name}
                   </span>
                 )}
                 {isCollapsed && (
-                  <div className="absolute left-14 bg-foreground text-background text-xs font-semibold px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-xl z-50">
+                  <div className="absolute left-14 bg-popover border border-border text-popover-foreground text-xs font-semibold px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all shadow-xl z-50 translate-x-[-10px] group-hover:translate-x-0">
                     {link.name}
                   </div>
                 )}
@@ -199,11 +230,11 @@ export default function WorkspaceLayout({
           })}
         </nav>
 
-        <div className="p-4 border-t border-border flex flex-col gap-2">
+        <div className="p-4 border-t border-border/50 flex flex-col gap-2 bg-sidebar/50">
           {mounted && (
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className={`flex items-center justify-center gap-2 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-colors shadow-xs ${isCollapsed ? 'px-0' : ''}`}
+              className={`flex items-center justify-center gap-2 w-full rounded-xl border border-border/50 bg-background/50 px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-accent hover:text-foreground transition-all shadow-sm hover:shadow ${isCollapsed ? 'px-0' : ''}`}
             >
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               {!isCollapsed && <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>}
@@ -211,7 +242,7 @@ export default function WorkspaceLayout({
           )}
           <Link
             href="/dashboard"
-            className={`flex items-center justify-center gap-2 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-colors shadow-xs ${isCollapsed ? 'px-0' : ''}`}
+            className={`flex items-center justify-center gap-2 w-full rounded-xl border border-transparent hover:border-destructive/30 bg-background/50 px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all shadow-sm hover:shadow ${isCollapsed ? 'px-0' : ''}`}
           >
             {isCollapsed ? <ChevronsLeft className="w-5 h-5" /> : <span>Exit Workspace</span>}
           </Link>
@@ -219,25 +250,25 @@ export default function WorkspaceLayout({
       </motion.aside>
 
       {/* MOBILE HEADER */}
-      <header className="md:hidden flex items-center justify-between h-16 bg-white/80 backdrop-blur-xl border-b border-neutral-200/60 px-5 fixed top-0 w-full z-40">
+      <header className="md:hidden flex items-center justify-between h-16 bg-background/80 backdrop-blur-xl border-b border-border px-5 fixed top-0 w-full z-40 shadow-sm">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <WorkspaceAvatar workspace={workspace} className="w-8 h-8 rounded-lg shadow-inner" />
-          <span className="font-bold text-neutral-900 tracking-tight truncate max-w-[150px]">
+          <WorkspaceAvatar workspace={workspace} className="w-8 h-8 rounded-lg shadow-sm" />
+          <span className="font-bold text-foreground tracking-tight truncate max-w-[150px]">
             {workspace.name}
           </span>
         </Link>
         <div className="flex items-center gap-2">
-            <TimeTrackerWidget workspaceId={workspaceId} />
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-neutral-100 text-neutral-600 transition-colors"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+          <TimeTrackerWidget workspaceId={workspaceId} />
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-accent text-foreground transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
         </div>
       </header>
 
-      {/* MOBILE SIDEBAR MODAL */}
+      {/* MOBILE SIDEBAR MODAL - Theme Compliant */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
@@ -246,25 +277,25 @@ export default function WorkspaceLayout({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm z-40 md:hidden"
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
             />
             <motion.aside
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-[280px] bg-white shadow-2xl z-50 flex flex-col md:hidden"
+              className="fixed inset-y-0 left-0 w-[280px] bg-card border-r border-border shadow-2xl z-50 flex flex-col md:hidden"
             >
-              <div className="h-16 flex items-center justify-between px-6 border-b border-neutral-100">
-                <span className="font-bold text-neutral-900">Menu</span>
+              <div className="h-16 flex items-center justify-between px-6 border-b border-border">
+                <span className="font-bold text-foreground">Menu</span>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-500 hover:bg-neutral-200"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-accent text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+              <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
                 {navLinks.map((link) => {
                   const active = isActive(link.href, link.exact);
                   return (
@@ -272,22 +303,22 @@ export default function WorkspaceLayout({
                       key={link.name}
                       href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold transition-all ${active
-                        ? "text-indigo-700 bg-indigo-50 border border-indigo-100/50"
-                        : "text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50"
+                      className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ${active
+                        ? "text-primary bg-primary/10 border border-primary/20 shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent"
                         }`}
                     >
-                      <link.icon className={`w-5 h-5 ${active ? "text-indigo-600" : "text-neutral-400"}`} />
+                      <link.icon className={`w-5 h-5 ${active ? "text-primary scale-110" : "text-muted-foreground"} transition-transform`} />
                       <span>{link.name}</span>
                     </Link>
                   );
                 })}
               </nav>
-              <div className="p-5 border-t border-neutral-100 bg-neutral-50/50">
+              <div className="p-5 border-t border-border bg-muted/20">
                 <Link
                   href="/dashboard"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full rounded-xl bg-white border border-neutral-200/80 px-4 py-3 text-sm font-bold text-neutral-700 shadow-sm"
+                  className="flex items-center justify-center gap-2 w-full rounded-xl bg-background border border-border px-4 py-3 text-sm font-bold text-foreground shadow-sm hover:shadow-md transition-shadow hover:border-destructive/30 hover:text-destructive"
                 >
                   Exit Workspace
                 </Link>
@@ -298,11 +329,16 @@ export default function WorkspaceLayout({
       </AnimatePresence>
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 overflow-y-auto pt-16 md:pt-0 relative bg-background">
+      <main className="flex-1 overflow-y-auto pt-16 md:pt-0 relative bg-background/50">
         <div className="absolute top-4 right-6 z-30 hidden md:block">
-            <TimeTrackerWidget workspaceId={workspaceId} />
+          <TimeTrackerWidget workspaceId={workspaceId} />
         </div>
-        {children}
+
+        <div className="h-full w-full relative">
+          {/* Optional: Add a subtle ambient top gradient to the main content area for premium feel */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-sidebar/30 to-transparent pointer-events-none" />
+          {children}
+        </div>
       </main>
     </div>
   );

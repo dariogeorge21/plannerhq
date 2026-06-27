@@ -370,9 +370,7 @@ export default function WorkspaceLayout({
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 overflow-y-auto pt-16 md:pt-0 relative bg-background/50">
-        <div className="absolute top-4 right-6 z-30 hidden md:block">
-          <TimeTrackerWidget workspaceId={workspaceId} />
-        </div>
+
 
         <div className="h-full w-full relative">
           {/* Optional: Add a subtle ambient top gradient to the main content area for premium feel */}
@@ -380,6 +378,9 @@ export default function WorkspaceLayout({
           {children}
         </div>
       </main>
+      <div className="absolute bottom-4 right-6 z-30 hidden md:block">
+        <TimeTrackerWidget workspaceId={workspaceId} />
+      </div>
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { useCollaborationProvider } from "@/features/collaboration/provider";
 import OfflineBanner from "./OfflineBanner";
 import PresenceAvatars from "./PresenceAvatars";
 import VersionHistoryPanel from "./VersionHistoryPanel";
+import SaveVersionCTA from "./SaveVersionCTA";
 import FloatingBubbleMenu from "./FloatingBubbleMenu";
 import { getEditorExtensions } from "@/lib/editor/extensions";
 import { useUploadFile } from "@/features/file/hooks";
@@ -192,7 +193,10 @@ export default function DocumentEditor({
           )}
         </div>
         <PresenceAvatars users={activeUsers} />
-        <VersionHistoryPanel documentId={documentId} />
+        <div className="flex items-center gap-2">
+          <VersionHistoryPanel documentId={documentId} />
+          <SaveVersionCTA documentId={documentId} />
+        </div>
       </div>
 
       {/* ── Scrollable document area ─────────────────────────────────────────── */}

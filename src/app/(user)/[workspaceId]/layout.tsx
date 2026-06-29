@@ -32,9 +32,18 @@ import { Workspace } from "@/types/workspace";
 import { WorkspaceAvatar } from "@/components/ui/workspace-avatar";
 import { toast } from "sonner";
 import { TimeTrackerWidget } from "@/features/workspace/components/TimeTrackerWidget";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// --- Progress Bar Component ---
-// Hooks into pathname changes to show a sleek, automated loading bar
+const LOADING_MESSAGES = [
+  "Connecting to your team...",
+  "Fetching your documents...",
+  "Loading your tasks...",
+  "Syncing calendar events...",
+  "Warming up the editor...",
+  "Starting the chat...",
+  "Almost there!",
+];
+
 function TopProgressBar() {
   const pathname = usePathname();
   const [isNavigating, setIsNavigating] = useState(false);
@@ -57,6 +66,92 @@ function TopProgressBar() {
         />
       )}
     </AnimatePresence>
+  );
+}
+
+export function WorkspaceSkeletonLoader({ userName }: { userName?: string }) {
+  const [messageIndex, setMessageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
+    }, 300);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex h-screen w-full flex-col bg-background">
+      <header className="flex h-14 items-center justify-between border-b px-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <Skeleton className="h-8 w-8 rounded-full" />
+        </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar skeleton */}
+        <aside className="w-64 border-r bg-muted/20 p-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-5" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <Skeleton key={i} className="h-8 w-full" />
+              ))}
+            </div>
+            <Skeleton className="h-px w-full" />
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-6 w-3/4" />
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Main content skeleton */}
+        <main className="flex-1 p-6">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-9 w-24" />
+            </div>
+
+            {/* Status message with animated dots */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="animate-pulse">●</span>
+              <span>{LOADING_MESSAGES[messageIndex]}</span>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-32 w-full" />
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-1/4" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-3/4" />
+            </div>
+          </div>
+        </main>
+      </div>
+
+      {/* Optional: subtle footer with personalized greeting */}
+      {userName && (
+        <div className="absolute bottom-4 right-6 text-xs text-muted-foreground/60">
+          Welcome back, {userName}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -103,14 +198,7 @@ export default function WorkspaceLayout({
   }, [workspaceId]);
 
   if (loading || authLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-sm font-medium text-muted-foreground animate-pulse">Loading workspace...</p>
-        </div>
-      </div>
-    );
+    return <WorkspaceSkeletonLoader userName={user?.displayName} />;
   }
 
   if (!workspace) {

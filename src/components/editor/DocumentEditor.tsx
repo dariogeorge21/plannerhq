@@ -34,6 +34,7 @@ export default function DocumentEditor({
     isConnected,
     isOffline,
     activeUsers,
+    awareness,
   } = useCollaborationProvider(documentId, workspaceId);
 
   const [title, setTitle] = useState("");
@@ -67,7 +68,7 @@ export default function DocumentEditor({
   };
 
   const editor = useEditor({
-    extensions: getEditorExtensions(ydoc, provider, workspaceId, documentId),
+    extensions: getEditorExtensions(ydoc, awareness, workspaceId, documentId),
     onUpdate: ({ editor }) => {
       debouncedSaveContent(editor.getJSON());
     },
@@ -78,7 +79,7 @@ export default function DocumentEditor({
           "min-h-[500px]",
           // Headings
           "prose-headings:font-bold prose-headings:tracking-tight",
-          "prose-h1:text-4xl prose-h1:mb-4 prose-h1:mt-8",
+          "pros:text-4xl prose-h1:mb-4 prose-h1:mt-8",
           "prose-h2:text-2xl prose-h2:mb-3 prose-h2:mt-6",
           "prose-h3:text-xl prose-h3:mb-2 prose-h3:mt-5",
           // Paragraphs
@@ -209,16 +210,16 @@ export default function DocumentEditor({
 
         {/* Document inner container */}
         <div className="max-w-[800px] mx-auto px-6 sm:px-10 md:px-14 lg:px-16 pb-32">
-          
+
           {/* Document title */}
           <div className={`pt-16 pb-6 ${doc?.cover ? '-mt-16 relative z-10' : ''}`}>
-            
+
             {doc?.icon && (
               <div className="text-6xl sm:text-7xl mb-4 leading-none">
                 {doc.icon}
               </div>
             )}
-            
+
             <textarea
               value={title}
               onChange={handleTitleChange}
@@ -241,18 +242,17 @@ export default function DocumentEditor({
 
           {/* Editor content */}
           <div
-            className={`transition-opacity duration-300 ${
-              isOffline ? "opacity-40 pointer-events-none" : "opacity-100"
-            }`}
+            className={`transition-opacity duration-300 ${isOffline ? "opacity-40 pointer-events-none" : "opacity-100"
+              }`}
           >
             <EditorContent editor={editor} />
           </div>
-          
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileSelect} 
-            className="hidden" 
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            className="hidden"
           />
         </div>
       </div>

@@ -79,5 +79,5 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
     };
   }, [documentId, workspaceId, supabase, doc]);
 
-  return { provider, doc, isConnected, isOffline, activeUsers };
+  return { provider, doc, isConnected, isOffline, activeUsers, awareness: provider?.getAwareness() };
 }

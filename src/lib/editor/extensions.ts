@@ -13,7 +13,7 @@ import Link from "@tiptap/extension-link";
 
 const lowlight = createLowlight();
 
-export const getEditorExtensions = (ydoc: any, provider: any, workspaceId?: string, documentId?: string) => {
+export const getEditorExtensions = (ydoc: any, awareness: any, workspaceId?: string, documentId?: string) => {
   return [
     StarterKit.configure({
       undoRedo: false, // Required for Collaboration
@@ -35,8 +35,8 @@ export const getEditorExtensions = (ydoc: any, provider: any, workspaceId?: stri
     Collaboration.configure({
       document: ydoc,
     }),
-    ...(provider ? [CollaborationCaret.configure({
-      provider: provider.awareness ? provider : null,
+    ...(awareness ? [CollaborationCaret.configure({
+      provider: awareness,
     })] : []),
     ...(workspaceId ? [getFileMentionExtension(workspaceId)] : []),
     ...(workspaceId && documentId ? [EditorFileUploadPlugin.configure({ workspaceId, documentId })] : []),

@@ -9,6 +9,7 @@ import {
   createDocumentAction,
   updateDocumentAction,
   deleteDocumentAction,
+  reorderDocumentsAction,
   saveDocumentContentAction,
   toggleFavoriteAction,
 } from "./actions";

@@ -36,7 +36,7 @@ function BillingSuccessContent() {
   const pct = ((AUTO_REDIRECT_SECONDS - countdown) / AUTO_REDIRECT_SECONDS) * 100;
 
   return (
-    <div className="min-h-screen bg-[#F7F7F8] font-sans flex items-center justify-center px-5 py-12">
+    <div className="min-h-screen bg-background font-sans flex items-center justify-center px-5 py-12">
       <div className="max-w-lg w-full">
         {/* Success icon */}
         <motion.div
@@ -54,37 +54,37 @@ function BillingSuccessContent() {
           transition={{ delay: 0.2, duration: 0.4 }}
         >
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-extrabold text-neutral-900 mb-2">
+            <h1 className="text-3xl font-extrabold text-foreground mb-2">
               Subscription Activated!
             </h1>
-            <p className="text-neutral-500 text-base">
-              Welcome to <strong className="text-neutral-800">{plan}</strong>. Your account has been upgraded.
+            <p className="text-muted-foreground text-base">
+              Welcome to <strong className="text-foreground">{plan}</strong>. Your account has been upgraded.
             </p>
           </div>
 
           {/* Receipt card */}
-          <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden mb-6">
+          <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden mb-6">
             {/* Green top stripe */}
             <div className="h-1 bg-gradient-to-r from-emerald-400 to-teal-500" />
 
             <div className="p-6 space-y-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Payment Receipt</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Payment Receipt</p>
 
               <div className="space-y-3">
                 {[
                   { label: "Plan", value: plan },
                   { label: "Billing cycle", value: <span className="capitalize">{cycle}</span> },
-                  { label: "Amount paid", value: <span className="text-neutral-900 font-extrabold">{amount}</span> },
+                  { label: "Amount paid", value: <span className="text-foreground font-extrabold">{amount}</span> },
                   { label: "Date", value: format(new Date(), "MMMM d, yyyy") },
                   {
                     label: "Payment ID",
-                    value: <span className="font-mono text-[11px] text-neutral-500">{paymentId}</span>,
+                    value: <span className="font-mono text-[11px] text-muted-foreground">{paymentId}</span>,
                   },
                   { label: "Status", value: <span className="text-emerald-600 font-bold">Paid ✓</span> },
                 ].map((row) => (
-                  <div key={row.label} className="flex justify-between items-center text-sm border-b border-neutral-50 pb-3 last:border-0 last:pb-0">
-                    <span className="text-neutral-500">{row.label}</span>
-                    <span className="font-semibold text-neutral-800">{row.value}</span>
+                  <div key={row.label} className="flex justify-between items-center text-sm border-b border-border pb-3 last:border-0 last:pb-0">
+                    <span className="text-muted-foreground">{row.label}</span>
+                    <span className="font-semibold text-foreground">{row.value}</span>
                   </div>
                 ))}
               </div>
@@ -95,13 +95,13 @@ function BillingSuccessContent() {
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <button
               onClick={() => window.print()}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-neutral-700 hover:bg-neutral-50 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-border bg-card text-sm font-bold text-foreground hover:bg-muted transition-colors"
             >
               <Printer className="w-4 h-4" /> Print Receipt
             </button>
             <button
               onClick={() => router.push("/billing")}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-neutral-200 bg-white text-sm font-bold text-neutral-700 hover:bg-neutral-50 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-border bg-card text-sm font-bold text-foreground hover:bg-muted transition-colors"
             >
               <Home className="w-4 h-4" /> View Billing
             </button>
@@ -115,10 +115,10 @@ function BillingSuccessContent() {
 
           {/* Auto-redirect countdown */}
           <div className="text-center">
-            <p className="text-xs text-neutral-400 mb-2">
-              Redirecting to billing in <strong className="text-neutral-600">{countdown}s</strong>
+            <p className="text-xs text-muted-foreground mb-2">
+              Redirecting to billing in <strong className="text-muted-foreground">{countdown}s</strong>
             </p>
-            <div className="w-full h-1 bg-neutral-200 rounded-full overflow-hidden">
+            <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
@@ -137,10 +137,10 @@ export default function BillingSuccessPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#F7F7F8] flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center space-y-4">
             <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-neutral-500 text-sm">Loading receipt details...</p>
+            <p className="text-muted-foreground text-sm">Loading receipt details...</p>
           </div>
         </div>
       }

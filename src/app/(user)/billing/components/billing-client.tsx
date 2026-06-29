@@ -50,8 +50,8 @@ function usagePct(used: number, limit: number): number {
 }
 
 function usageBarColor(pct: number) {
-  if (pct >= 90) return "bg-red-500";
-  if (pct >= 70) return "bg-amber-500";
+  if (pct >= 90) return "dark:bg-red-9500";
+  if (pct >= 70) return "dark:bg-amber-9500";
   return "bg-indigo-500";
 }
 
@@ -74,16 +74,16 @@ function UsageMeter({
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-500">
+          <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
             {icon}
           </div>
-          <span className="text-sm font-semibold text-neutral-700">{label}</span>
+          <span className="text-sm font-semibold text-foreground">{label}</span>
         </div>
-        <span className="text-xs font-bold text-neutral-500">
+        <span className="text-xs font-bold text-muted-foreground">
           {isUnlimited ? `${formatFn(used)} used` : `${formatFn(used)} / ${formatFn(limit)}`}
         </span>
       </div>
-      <div className="h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden">
+      <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: isUnlimited ? "4%" : `${pct}%` }}
@@ -119,19 +119,19 @@ function CancelDialog({
           initial={{ opacity: 0, scale: 0.96, y: 8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96 }}
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-7 text-center"
+          className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-7 text-center"
         >
-          <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 rounded-full dark:bg-red-950 flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-7 h-7 text-red-500" />
           </div>
-          <h3 className="text-lg font-bold text-neutral-900 mb-2">Cancel subscription?</h3>
-          <p className="text-sm text-neutral-500 mb-6 leading-relaxed">
+          <h3 className="text-lg font-bold text-foreground mb-2">Cancel subscription?</h3>
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
             Your plan will remain active until the end of the current billing period. After that, you'll be moved to Free.
           </p>
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+              className="flex-1 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors"
             >
               Keep plan
             </button>
@@ -152,12 +152,12 @@ function CancelDialog({
 function LoadingSkeleton() {
   return (
     <div className="grid gap-5 animate-pulse">
-      <div className="h-44 rounded-2xl bg-neutral-200/60" />
+      <div className="h-44 rounded-2xl bg-muted/60" />
       <div className="grid sm:grid-cols-2 gap-5">
-        <div className="h-52 rounded-2xl bg-neutral-200/60" />
-        <div className="h-52 rounded-2xl bg-neutral-200/60" />
+        <div className="h-52 rounded-2xl bg-muted/60" />
+        <div className="h-52 rounded-2xl bg-muted/60" />
       </div>
-      <div className="h-40 rounded-2xl bg-neutral-200/60" />
+      <div className="h-40 rounded-2xl bg-muted/60" />
     </div>
   );
 }
@@ -222,17 +222,17 @@ export function BillingClient() {
 
   if (error) {
     return (
-      <div className="rounded-2xl border-2 border-dashed border-neutral-200 bg-white p-16 flex flex-col items-center text-center gap-4">
-        <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+      <div className="rounded-2xl border-2 border-dashed border-border bg-card p-16 flex flex-col items-center text-center gap-4">
+        <div className="w-14 h-14 rounded-full dark:bg-red-950 flex items-center justify-center">
           <AlertTriangle className="w-7 h-7 text-red-500" />
         </div>
         <div>
-          <p className="font-bold text-neutral-900">Failed to load billing data</p>
-          <p className="text-sm text-neutral-500 mt-1">{error}</p>
+          <p className="font-bold text-foreground">Failed to load billing data</p>
+          <p className="text-sm text-muted-foreground mt-1">{error}</p>
         </div>
         <button
           onClick={() => { setLoading(true); loadData(); }}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-neutral-200 text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors"
         >
           <RefreshCw className="w-4 h-4" /> Retry
         </button>
@@ -267,7 +267,7 @@ export function BillingClient() {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="relative bg-white border border-neutral-200 rounded-2xl overflow-hidden shadow-sm"
+          className="relative bg-card border border-border rounded-2xl overflow-hidden shadow-sm"
         >
           <div className={`h-1 w-full ${isPaid
             ? "bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-600"
@@ -278,28 +278,28 @@ export function BillingClient() {
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
               <div className="flex items-start gap-4">
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
-                  isPaid ? "bg-indigo-100" : "bg-neutral-100"
+                  isPaid ? "dark:bg-indigo-950" : "bg-muted"
                 }`}>
                   {isPaid
-                    ? <Zap className="w-6 h-6 text-indigo-600" />
-                    : <Sparkles className="w-6 h-6 text-neutral-500" />}
+                    ? <Zap className="w-6 h-6 dark:text-indigo-300" />
+                    : <Sparkles className="w-6 h-6 text-muted-foreground" />}
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">Current Plan</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Current Plan</p>
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <h2 className="text-2xl font-extrabold text-neutral-900">{dbPlan?.name as string || "Free Starter"}</h2>
+                    <h2 className="text-2xl font-extrabold text-foreground">{dbPlan?.name as string || "Free Starter"}</h2>
                     {isPaid && (
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
                         isCancelling
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-700"
+                          ? "dark:bg-amber-950 dark:text-amber-300"
+                          : "dark:bg-emerald-950 dark:text-emerald-300"
                       }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${isCancelling ? "bg-amber-500" : "bg-emerald-500"}`} />
+                        <span className={`w-1.5 h-1.5 rounded-full ${isCancelling ? "dark:bg-amber-9500" : "bg-emerald-500"}`} />
                         {isCancelling ? "Cancels at period end" : "Active"}
                       </span>
                     )}
                     {!isPaid && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-neutral-100 text-neutral-500">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-muted text-muted-foreground">
                         Free
                       </span>
                     )}
@@ -314,7 +314,7 @@ export function BillingClient() {
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${
                       !isPaid
                         ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/25"
-                        : "border border-neutral-200 text-neutral-700 hover:bg-neutral-50"
+                        : "border border-border text-foreground hover:bg-muted"
                     }`}
                   >
                     {!isPaid
@@ -325,7 +325,7 @@ export function BillingClient() {
                 {isPaid && !isCancelling && (
                   <button
                     onClick={() => setShowCancelDialog(true)}
-                    className="px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                    className="px-4 py-2.5 rounded-xl text-sm font-semibold text-red-600 hover:dark:bg-red-950 transition-colors"
                   >
                     Cancel
                   </button>
@@ -365,17 +365,17 @@ export function BillingClient() {
                     key={item.label}
                     className={`rounded-xl p-4 border ${
                       item.accent
-                        ? "bg-amber-50 border-amber-100"
-                        : "bg-neutral-50 border-neutral-100"
+                        ? "dark:bg-amber-950 border-amber-100"
+                        : "bg-muted border-border"
                     }`}
                   >
                     <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider mb-1.5 ${
-                      item.accent ? "text-amber-500" : "text-neutral-400"
+                      item.accent ? "text-amber-500" : "text-muted-foreground"
                     }`}>
                       {item.icon}
                       {item.label}
                     </div>
-                    <p className={`text-sm font-bold ${item.accent ? "text-amber-800" : "text-neutral-900"}`}>
+                    <p className={`text-sm font-bold ${item.accent ? "dark:text-amber-300" : "text-foreground"}`}>
                       {item.value}
                     </p>
                   </div>
@@ -384,7 +384,7 @@ export function BillingClient() {
             )}
 
             {isCancelling && endDate && (
-              <div className="mt-4 flex items-start gap-2.5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+              <div className="mt-4 flex items-start gap-2.5 p-4 dark:bg-amber-950 border border-amber-200 rounded-xl text-sm dark:text-amber-300">
                 <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
                 <p>
                   Your subscription cancels on <strong>{format(endDate, "MMMM d, yyyy")}</strong>.
@@ -397,7 +397,7 @@ export function BillingClient() {
               <div className="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-bold text-indigo-900 mb-1">Unlock the full PlannerHQ experience</p>
-                  <p className="text-xs text-indigo-600/80">
+                  <p className="text-xs dark:text-indigo-300/80">
                     Pro from <strong>₹299/mo</strong> billed yearly — 10 workspaces, 2 GB storage, 500K AI tokens/day
                   </p>
                 </div>
@@ -417,22 +417,22 @@ export function BillingClient() {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.07 }}
-          className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm"
+          className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-sm"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-lg font-bold text-neutral-900">Plans & Pricing</h2>
-              <p className="text-sm text-neutral-500">Choose the plan that fits your needs</p>
+              <h2 className="text-lg font-bold text-foreground">Plans & Pricing</h2>
+              <p className="text-sm text-muted-foreground">Choose the plan that fits your needs</p>
             </div>
-            <div className="flex bg-neutral-100 rounded-xl p-1">
+            <div className="flex bg-muted rounded-xl p-1">
               {(["monthly", "yearly"] as const).map((c) => (
                 <button
                   key={c}
                   onClick={() => setCycle(c)}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                     cycle === c
-                      ? "bg-white shadow-sm text-neutral-900"
-                      : "text-neutral-500 hover:text-neutral-700"
+                      ? "bg-card shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {c.charAt(0).toUpperCase() + c.slice(1)}
@@ -456,7 +456,7 @@ export function BillingClient() {
                   className={`relative rounded-2xl border p-6 transition-all ${
                     isCurrent
                       ? "border-indigo-300 bg-indigo-50/50 ring-2 ring-indigo-400"
-                      : "border-neutral-200 hover:border-indigo-200 hover:shadow-md"
+                      : "border-border hover:border-indigo-200 hover:shadow-md"
                   }`}
                 >
                   {plan.ribbon && !isCurrent && (
@@ -470,12 +470,12 @@ export function BillingClient() {
                     </span>
                   )}
 
-                  <h3 className="text-xl font-extrabold text-neutral-900">{plan.name}</h3>
-                  <p className="text-sm text-neutral-500 mt-1">{plan.description}</p>
+                  <h3 className="text-xl font-extrabold text-foreground">{plan.name}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{plan.description}</p>
 
                   <div className="mt-4 flex items-baseline gap-1">
-                    <span className="text-3xl font-extrabold text-neutral-900">{priceDisplay}</span>
-                    <span className="text-sm text-neutral-500">/mo</span>
+                    <span className="text-3xl font-extrabold text-foreground">{priceDisplay}</span>
+                    <span className="text-sm text-muted-foreground">/mo</span>
                   </div>
                   {cycle === "yearly" && (
                     <p className="text-xs text-emerald-600 font-bold mt-1">
@@ -485,7 +485,7 @@ export function BillingClient() {
 
                   <ul className="mt-5 space-y-2.5 text-sm">
                     {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-neutral-600">
+                      <li key={f} className="flex items-start gap-2.5 text-muted-foreground">
                         <Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
                         {f}
                       </li>
@@ -496,7 +496,7 @@ export function BillingClient() {
                     {isCurrent ? (
                       <button
                         disabled
-                        className="w-full py-2.5 rounded-xl bg-neutral-100 text-neutral-400 text-sm font-bold cursor-not-allowed"
+                        className="w-full py-2.5 rounded-xl bg-muted text-muted-foreground text-sm font-bold cursor-not-allowed"
                       >
                         <CheckCircle className="w-4 h-4 inline mr-1.5" /> Active
                       </button>
@@ -520,22 +520,22 @@ export function BillingClient() {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.14 }}
-          className="bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 shadow-sm"
+          className="bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-sm"
         >
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-                <BarChart3 className="w-4.5 h-4.5 text-neutral-600" />
+              <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">
+                <BarChart3 className="w-4.5 h-4.5 text-muted-foreground" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-neutral-900">Usage overview</h2>
-                <p className="text-xs text-neutral-400">Based on your {dbPlan?.name as string || "Free"} plan limits</p>
+                <h2 className="text-base font-bold text-foreground">Usage overview</h2>
+                <p className="text-xs text-muted-foreground">Based on your {dbPlan?.name as string || "Free"} plan limits</p>
               </div>
             </div>
             {!isPaid && (
               <button
                 onClick={() => router.push("/billing/checkout?plan=pro&cycle=yearly")}
-                className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                className="flex items-center gap-1.5 text-xs font-bold dark:text-indigo-300 hover:text-indigo-700 transition-colors"
               >
                 Upgrade <ChevronRight className="w-3.5 h-3.5" />
               </button>
@@ -579,65 +579,65 @@ export function BillingClient() {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.21 }}
-          className="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden"
+          className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden"
         >
-          <div className="px-6 sm:px-8 py-5 border-b border-neutral-100 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center">
-              <Receipt className="w-4.5 h-4.5 text-neutral-600" />
+          <div className="px-6 sm:px-8 py-5 border-b border-border flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center">
+              <Receipt className="w-4.5 h-4.5 text-muted-foreground" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-neutral-900">Payment history</h2>
-              <p className="text-xs text-neutral-400">Your recent transactions</p>
+              <h2 className="text-base font-bold text-foreground">Payment history</h2>
+              <p className="text-xs text-muted-foreground">Your recent transactions</p>
             </div>
           </div>
 
           {payments.length === 0 ? (
             <div className="p-12 flex flex-col items-center text-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-neutral-50 flex items-center justify-center">
-                <CreditCard className="w-5 h-5 text-neutral-300" />
+              <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-muted-foreground" />
               </div>
-              <p className="text-sm font-semibold text-neutral-400">No payment history yet</p>
-              <p className="text-xs text-neutral-400">Your transactions will appear here after your first payment.</p>
+              <p className="text-sm font-semibold text-muted-foreground">No payment history yet</p>
+              <p className="text-xs text-muted-foreground">Your transactions will appear here after your first payment.</p>
             </div>
           ) : (
-            <div className="divide-y divide-neutral-50">
-              <div className="hidden sm:grid grid-cols-4 gap-4 px-6 sm:px-8 py-3 bg-neutral-50/60">
-                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Date</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Payment ID</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 text-right">Amount</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 text-center">Status</span>
+            <div className="divide-y divide-border">
+              <div className="hidden sm:grid grid-cols-4 gap-4 px-6 sm:px-8 py-3 bg-muted/60">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Date</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Payment ID</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Amount</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Status</span>
               </div>
               {payments.map((p) => (
                 <div
                   key={p.id}
-                  className="grid sm:grid-cols-4 gap-2 sm:gap-4 px-6 sm:px-8 py-4 hover:bg-neutral-50/60 transition-colors"
+                  className="grid sm:grid-cols-4 gap-2 sm:gap-4 px-6 sm:px-8 py-4 hover:bg-muted/60 transition-colors"
                 >
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 sm:hidden mb-0.5">Date</p>
-                    <p className="text-sm font-semibold text-neutral-700">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden mb-0.5">Date</p>
+                    <p className="text-sm font-semibold text-foreground">
                       {format(new Date(p.created_at), "MMM d, yyyy")}
                     </p>
-                    <p className="text-xs text-neutral-400">
+                    <p className="text-xs text-muted-foreground">
                       {format(new Date(p.created_at), "h:mm a")}
                     </p>
                   </div>
                   <div className="sm:flex sm:items-center">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 sm:hidden mb-0.5">Payment ID</p>
-                    <p className="text-xs font-mono text-neutral-500 truncate max-w-[160px]">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden mb-0.5">Payment ID</p>
+                    <p className="text-xs font-mono text-muted-foreground truncate max-w-[160px]">
                       {p.razorpay_payment_id}
                     </p>
                   </div>
                   <div className="sm:flex sm:items-center sm:justify-end">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 sm:hidden mb-0.5">Amount</p>
-                    <p className="text-sm font-extrabold text-neutral-900">{paise(p.amount_paise)}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground sm:hidden mb-0.5">Amount</p>
+                    <p className="text-sm font-extrabold text-foreground">{paise(p.amount_paise)}</p>
                   </div>
                   <div className="sm:flex sm:items-center sm:justify-center">
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
                       p.status === "captured"
-                        ? "bg-emerald-100 text-emerald-700"
+                        ? "dark:bg-emerald-950 dark:text-emerald-300"
                         : p.status === "failed"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-neutral-100 text-neutral-600"
+                        ? "dark:bg-red-950 dark:text-red-300"
+                        : "bg-muted text-muted-foreground"
                     }`}>
                       {p.status === "captured"
                         ? <CheckCircle2 className="w-3 h-3" />
@@ -658,13 +658,13 @@ export function BillingClient() {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.28 }}
-          className="flex items-start gap-3 p-5 bg-neutral-50 border border-neutral-200 rounded-xl"
+          className="flex items-start gap-3 p-5 bg-muted border border-border rounded-xl"
         >
-          <Shield className="w-5 h-5 text-neutral-400 mt-0.5 shrink-0" />
-          <div className="text-sm text-neutral-500 space-y-0.5">
-            <p className="font-semibold text-neutral-700">Secure payments by Razorpay</p>
+          <Shield className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
+          <div className="text-sm text-muted-foreground space-y-0.5">
+            <p className="font-semibold text-foreground">Secure payments by Razorpay</p>
             <p>
-              All transactions are processed by <strong className="text-neutral-800">Razorpay</strong>, a PCI-DSS Level 1 certified payment
+              All transactions are processed by <strong className="text-foreground">Razorpay</strong>, a PCI-DSS Level 1 certified payment
               gateway. PlannerHQ never stores your card details. Subscriptions renew automatically until cancelled.
             </p>
           </div>

@@ -69,18 +69,18 @@ function ConfirmingOverlay() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-white/90 backdrop-blur-sm flex items-center justify-center"
+      className="fixed inset-0 z-50 bg-card/90 backdrop-blur-sm flex items-center justify-center"
     >
       <div className="text-center max-w-xs px-6">
         <div className="relative w-20 h-20 mx-auto mb-6">
           <div className="absolute inset-0 rounded-full border-4 border-indigo-100" />
           <div className="absolute inset-0 rounded-full border-4 border-t-indigo-600 animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <Zap className="w-8 h-8 text-indigo-600" />
+            <Zap className="w-8 h-8 dark:text-indigo-300" />
           </div>
         </div>
-        <h3 className="text-xl font-extrabold text-neutral-900 mb-2">Activating your subscription…</h3>
-        <p className="text-sm text-neutral-500">
+        <h3 className="text-xl font-extrabold text-foreground mb-2">Activating your subscription…</h3>
+        <p className="text-sm text-muted-foreground">
           Payment received. We're confirming with our servers. This takes a moment.
         </p>
         <div className="mt-6 flex items-center justify-center gap-1.5">
@@ -112,7 +112,7 @@ function SuccessOverlay({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-white flex items-center justify-center p-6"
+      className="fixed inset-0 z-50 bg-card flex items-center justify-center p-6"
     >
       <div className="max-w-md w-full text-center">
         {/* Success animation */}
@@ -120,14 +120,14 @@ function SuccessOverlay({
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 20, delay: 0.1 }}
-          className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6"
+          className="w-24 h-24 rounded-full dark:bg-emerald-950 flex items-center justify-center mx-auto mb-6"
         >
           <motion.div
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <CheckCircle2 className="w-12 h-12 text-emerald-600" />
+            <CheckCircle2 className="w-12 h-12 dark:text-emerald-400" />
           </motion.div>
         </motion.div>
 
@@ -136,35 +136,35 @@ function SuccessOverlay({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="text-3xl font-extrabold text-neutral-900 mb-2">You're all set! 🎉</h2>
-          <p className="text-neutral-500 mb-8 text-base">
-            Your <strong className="text-neutral-800">{data.planName}</strong> subscription is now active.
+          <h2 className="text-3xl font-extrabold text-foreground mb-2">You're all set! 🎉</h2>
+          <p className="text-muted-foreground mb-8 text-base">
+            Your <strong className="text-foreground">{data.planName}</strong> subscription is now active.
           </p>
 
           {/* Summary card */}
-          <div className="bg-neutral-50 border border-neutral-200 rounded-2xl p-6 text-left mb-8 space-y-3">
+          <div className="bg-muted border border-border rounded-2xl p-6 text-left mb-8 space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-500">Plan</span>
-              <span className="font-bold text-neutral-900">{data.planName}</span>
+              <span className="text-muted-foreground">Plan</span>
+              <span className="font-bold text-foreground">{data.planName}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-500">Billing</span>
-              <span className="font-bold text-neutral-900 capitalize">{data.cycle}</span>
+              <span className="text-muted-foreground">Billing</span>
+              <span className="font-bold text-foreground capitalize">{data.cycle}</span>
             </div>
-            <div className="flex justify-between text-sm border-t border-neutral-200 pt-3">
-              <span className="font-semibold text-neutral-700">Total paid</span>
-              <span className="font-extrabold text-neutral-900">{data.amountDisplay}</span>
+            <div className="flex justify-between text-sm border-t border-border pt-3">
+              <span className="font-semibold text-foreground">Total paid</span>
+              <span className="font-extrabold text-foreground">{data.amountDisplay}</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="text-neutral-400">Payment ID</span>
-              <span className="font-mono text-neutral-500 text-[11px]">{data.paymentId}</span>
+              <span className="text-muted-foreground">Payment ID</span>
+              <span className="font-mono text-muted-foreground text-[11px]">{data.paymentId}</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={onViewReceipt}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-neutral-200 text-sm font-bold text-neutral-700 hover:bg-neutral-50 transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-border text-sm font-bold text-foreground hover:bg-muted transition-colors"
             >
               View Receipt
             </button>
@@ -195,35 +195,35 @@ function ErrorOverlay({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-white/90 backdrop-blur-sm flex items-center justify-center p-6"
+      className="fixed inset-0 z-50 bg-card/90 backdrop-blur-sm flex items-center justify-center p-6"
     >
       <div className="max-w-sm w-full text-center">
         <motion.div
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-5"
+          className="w-20 h-20 rounded-full dark:bg-red-950 flex items-center justify-center mx-auto mb-5"
         >
-          <XCircle className="w-10 h-10 text-red-500" />
+          <XCircle className="w-10 h-10 dark:text-red-400" />
         </motion.div>
-        <h3 className="text-xl font-extrabold text-neutral-900 mb-2">Payment failed</h3>
-        <p className="text-sm text-neutral-500 mb-8 leading-relaxed">{message}</p>
+        <h3 className="text-xl font-extrabold text-foreground mb-2">Payment failed</h3>
+        <p className="text-sm text-muted-foreground mb-8 leading-relaxed">{message}</p>
         <div className="flex flex-col gap-3">
           <button
             onClick={onRetry}
-            className="flex items-center justify-center gap-2 py-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-bold transition-colors"
+            className="flex items-center justify-center gap-2 py-3 rounded-xl bg-foreground hover:bg-foreground/90 text-background text-sm font-bold transition-colors"
           >
             <RefreshCw className="w-4 h-4" /> Try again
           </button>
           <button
             onClick={onBack}
-            className="py-3 rounded-xl border border-neutral-200 text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
+            className="py-3 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
           >
             Back to billing
           </button>
           <a
             href="mailto:support@plannerhq.com"
-            className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+            className="text-xs text-muted-foreground hover:text-muted-foreground transition-colors"
           >
             Contact support if payment was deducted
           </a>
@@ -525,29 +525,29 @@ export function CheckoutClient({
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
-          className="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden"
+          className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden"
         >
           {/* Header */}
           <div className="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-600" />
-          <div className="px-7 py-6 border-b border-neutral-100">
-            <p className="text-[10px] font-black uppercase tracking-widest text-neutral-400 mb-1">You're upgrading to</p>
+          <div className="px-7 py-6 border-b border-border">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">You're upgrading to</p>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-                <Zap className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 rounded-xl dark:bg-indigo-950 flex items-center justify-center">
+                <Zap className="w-5 h-5 dark:text-indigo-300" />
               </div>
-              <h2 className="text-2xl font-extrabold text-neutral-900">{plan.name}</h2>
+              <h2 className="text-2xl font-extrabold text-foreground">{plan.name}</h2>
               {plan.ribbon && (
                 <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow">
                   {plan.ribbon}
                 </span>
               )}
             </div>
-            <p className="text-sm text-neutral-500 mt-2">{plan.description}</p>
+            <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
           </div>
 
           {/* Billing cycle toggle */}
-          <div className="px-7 py-5 border-b border-neutral-100">
-            <p className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-3">Billing cycle</p>
+          <div className="px-7 py-5 border-b border-border">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">Billing cycle</p>
             <div className="flex gap-3">
               {(["monthly", "yearly"] as const).map((c) => (
                 <button
@@ -555,12 +555,12 @@ export function CheckoutClient({
                   onClick={() => setCycle(c)}
                   className={`flex-1 py-2.5 rounded-xl border-2 text-sm font-bold capitalize transition-all ${cycle === c
                     ? "border-indigo-500 bg-indigo-50 text-indigo-700"
-                    : "border-neutral-200 text-neutral-500 hover:border-neutral-300 hover:bg-neutral-50"
+                    : "border-border text-muted-foreground hover:border-border hover:bg-muted"
                     }`}
                 >
                   {c}
                   {c === "yearly" && plan.savingLabel && (
-                    <span className="ml-1.5 text-[10px] font-black text-emerald-600">
+                    <span className="ml-1.5 text-[10px] font-black dark:text-emerald-400">
                       ({plan.savingLabel})
                     </span>
                   )}
@@ -570,11 +570,11 @@ export function CheckoutClient({
           </div>
 
           {/* Pricing breakdown */}
-          <div className="px-7 py-5 border-b border-neutral-100">
-            <p className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-4">Pricing breakdown</p>
+          <div className="px-7 py-5 border-b border-border">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">Pricing breakdown</p>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-neutral-600">{plan.name} plan</span>
+                <span className="text-sm text-muted-foreground">{plan.name} plan</span>
                 <div className="text-right">
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -583,32 +583,32 @@ export function CheckoutClient({
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 4 }}
                       transition={{ duration: 0.15 }}
-                      className="text-lg font-extrabold text-neutral-900"
+                      className="text-lg font-extrabold text-foreground"
                     >
                       {monthlyRate}
                     </motion.span>
                   </AnimatePresence>
-                  <span className="text-xs text-neutral-400 ml-1">/ mo</span>
+                  <span className="text-xs text-muted-foreground ml-1">/ mo</span>
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-neutral-500">Billed {cycle}</span>
+                <span className="text-sm text-muted-foreground">Billed {cycle}</span>
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={`${planKey}-${cycle}-total`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="text-sm font-bold text-neutral-700"
+                    className="text-sm font-bold text-foreground"
                   >
                     {billedAs}
                   </motion.span>
                 </AnimatePresence>
               </div>
               {saving && (
-                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-emerald-50 border border-emerald-100">
-                  <TrendingUp className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="text-xs font-bold text-emerald-700">{saving} vs monthly billing</span>
+                <div className="flex items-center gap-2 p-2.5 rounded-lg dark:bg-emerald-950 border border-emerald-100">
+                  <TrendingUp className="w-3.5 h-3.5 dark:text-emerald-400 shrink-0" />
+                  <span className="text-xs font-bold dark:text-emerald-300">{saving} vs monthly billing</span>
                 </div>
               )}
             </div>
@@ -616,10 +616,10 @@ export function CheckoutClient({
 
           {/* Features */}
           <div className="px-7 py-5">
-            <p className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-4">What's included</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">What's included</p>
             <ul className="space-y-2.5">
               {plan.features.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-neutral-600">
+                <li key={f} className="flex items-start gap-2.5 text-sm text-muted-foreground">
                   <Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
                   {f}
                 </li>
@@ -636,39 +636,39 @@ export function CheckoutClient({
           className="space-y-4"
         >
           {/* Pay card */}
-          <div className="bg-white border border-neutral-200 rounded-2xl shadow-sm p-6">
-            <h3 className="text-base font-extrabold text-neutral-900 mb-5">Order summary</h3>
+          <div className="bg-card border border-border rounded-2xl shadow-sm p-6">
+            <h3 className="text-base font-extrabold text-foreground mb-5">Order summary</h3>
 
             <div className="space-y-3 mb-5">
               <div className="flex justify-between text-sm">
-                <span className="text-neutral-500">{plan.name} — {cycle}</span>
-                <span className="font-bold text-neutral-800">{monthlyRate}/mo</span>
+                <span className="text-muted-foreground">{plan.name} — {cycle}</span>
+                <span className="font-bold text-foreground">{monthlyRate}/mo</span>
               </div>
               {cycle === "yearly" && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-neutral-500">Billed now (yearly)</span>
+                  <span className="text-muted-foreground">Billed now (yearly)</span>
                   <AnimatePresence mode="wait">
                     <motion.span
                       key={cycle}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="font-bold text-neutral-800"
+                      className="font-bold text-foreground"
                     >
                       {billedAs}
                     </motion.span>
                   </AnimatePresence>
                 </div>
               )}
-              <div className="border-t border-neutral-100 pt-3 flex justify-between">
-                <span className="font-semibold text-neutral-700 text-sm">Total today</span>
+              <div className="border-t border-border pt-3 flex justify-between">
+                <span className="font-semibold text-foreground text-sm">Total today</span>
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={`total-${cycle}`}
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 4 }}
-                    className="font-extrabold text-neutral-900 text-lg"
+                    className="font-extrabold text-foreground text-lg"
                   >
                     {billedAs}
                   </motion.span>
@@ -677,7 +677,7 @@ export function CheckoutClient({
             </div>
 
             {/* Legal note */}
-            <p className="text-[11px] text-neutral-400 leading-relaxed mb-5 flex items-start gap-1.5">
+            <p className="text-[11px] text-muted-foreground leading-relaxed mb-5 flex items-start gap-1.5">
               <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               By clicking "Pay now" you agree to our Terms. Your subscription auto-renews until cancelled.
               You'll be redirected to Razorpay's secure payment page.
@@ -701,26 +701,26 @@ export function CheckoutClient({
             {/* Back link */}
             <button
               onClick={() => router.push("/billing")}
-              className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs font-semibold text-neutral-400 hover:text-neutral-600 transition-colors"
+              className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-muted-foreground transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Back to billing
             </button>
           </div>
 
           {/* Security badge */}
-          <div className="flex items-center gap-2.5 p-4 bg-white border border-neutral-200 rounded-2xl">
-            <Shield className="w-5 h-5 text-neutral-400 shrink-0" />
-            <div className="text-xs text-neutral-500">
-              <span className="font-semibold text-neutral-700">Secured by Razorpay</span>
+          <div className="flex items-center gap-2.5 p-4 bg-card border border-border rounded-2xl">
+            <Shield className="w-5 h-5 text-muted-foreground shrink-0" />
+            <div className="text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">Secured by Razorpay</span>
               <br />
               PCI-DSS certified. We never store your card details.
             </div>
           </div>
 
           {/* Refund note */}
-          <div className="flex items-start gap-2.5 p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
-            <AlertTriangle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <p className="text-xs text-emerald-700">
+          <div className="flex items-start gap-2.5 p-4 dark:bg-emerald-950 border border-emerald-100 rounded-2xl">
+            <AlertTriangle className="w-4 h-4 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <p className="text-xs dark:text-emerald-300">
               <span className="font-bold">Cancel anytime.</span> You won't be charged again after cancellation,
               and access continues until the end of your billing period.
             </p>

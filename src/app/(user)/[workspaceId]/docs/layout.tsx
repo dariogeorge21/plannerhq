@@ -250,12 +250,20 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             sections?.map((section, sIndex) => {
               const isExpanded = expandedSections[section.id];
               const sectionDocs = documents?.filter(d => d.section_id === section.id).sort((a,b) => a.position - b.position) || [];
+              const isSectionOptimistic = section.id.startsWith("temp-");
 
               return (
-                <div key={section.id} className="flex flex-col">
+                <motion.div 
+                  layout 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: isSectionOptimistic ? 0.6 : 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  key={section.id} 
+                  className="flex flex-col relative"
+                >
                   <div 
-                    className="flex items-center justify-between group cursor-pointer mb-1 px-1 rounded-md hover:bg-accent/50"
-                    onClick={() => toggleSection(section.id)}
+                    className={`flex items-center justify-between group cursor-pointer mb-1 px-1 rounded-md hover:bg-accent/50 ${isSectionOptimistic ? 'pointer-events-none' : ''}`}
+                    onClick={() => !isSectionOptimistic && toggleSection(section.id)}
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       <Button variant="ghost" size="icon" className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md">
@@ -322,10 +330,18 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                       >
                         {sectionDocs.map((doc, dIndex, arr) => {
                           const isActive = pathname.includes(`/docs/${doc.id}`);
+                          const isDocOptimistic = doc.id.startsWith("temp-");
                           return (
-                            <div key={doc.id} className="flex items-center justify-between group rounded-lg transition-colors">
+                            <motion.div 
+                              layout
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: isDocOptimistic ? 0.6 : 1, x: 0 }}
+                              transition={{ duration: 0.2 }}
+                              key={doc.id} 
+                              className={`flex items-center justify-between group rounded-lg transition-colors relative ${isDocOptimistic ? 'pointer-events-none' : ''}`}
+                            >
                               <Link 
-                                href={`/${workspaceId}/docs/${doc.id}`}
+                                href={isDocOptimistic ? '#' : `/${workspaceId}/docs/${doc.id}`}
                                 className={`flex items-center gap-2.5 flex-1 min-w-0 text-sm py-1.5 px-2 rounded-lg transition-colors ${
                                   isActive 
                                     ? 'bg-primary/10 text-primary font-semibold' 
@@ -370,7 +386,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
-                            </div>
+                            </motion.div>
                           );
                         })}
                         {sectionDocs.length === 0 && (
@@ -388,7 +404,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </div>
+                </motion.div>
               );
             })
           )}

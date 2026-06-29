@@ -70,7 +70,29 @@ export function useCreateSection(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (name: string) => createSectionAction({ workspaceId, name }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] }),
+    onMutate: async (name) => {
+      await queryClient.cancelQueries({ queryKey: ["document_sections", workspaceId] });
+      const previous = queryClient.getQueryData<any[]>(["document_sections", workspaceId]);
+      if (previous) {
+        const optimistic = {
+          id: `temp-${Date.now()}`,
+          workspace_id: workspaceId,
+          name,
+          position: previous.length ? Math.max(...previous.map(p => p.position || 0)) + 1024 : 1024,
+          created_by: "temp",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        queryClient.setQueryData(["document_sections", workspaceId], [...previous, optimistic]);
+      }
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["document_sections", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] }),
   });
 }
 
@@ -79,7 +101,34 @@ export function useCreateDocument(workspaceId: string) {
   return useMutation({
     mutationFn: (data: { sectionId: string; title: string }) =>
       createDocumentAction({ workspaceId, sectionId: data.sectionId, title: data.title }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["documents", workspaceId] });
+      const previous = queryClient.getQueryData<any[]>(["documents", workspaceId]);
+      if (previous) {
+        const sectionDocs = previous.filter(d => d.section_id === data.sectionId);
+        const maxPos = sectionDocs.length ? Math.max(...sectionDocs.map(d => d.position || 0)) : 0;
+        const optimistic = {
+          id: `temp-${Date.now()}`,
+          workspace_id: workspaceId,
+          section_id: data.sectionId,
+          title: data.title,
+          icon: null,
+          cover: null,
+          position: maxPos + 1024,
+          created_by: "temp",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        queryClient.setQueryData(["documents", workspaceId], [...previous, optimistic]);
+      }
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["documents", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] }),
   });
 }
 
@@ -88,7 +137,23 @@ export function useUpdateDocument(workspaceId: string) {
   return useMutation({
     mutationFn: (data: { documentId: string; title?: string; icon?: string | null; cover?: string | null; sectionId?: string }) =>
       updateDocumentAction(data, workspaceId),
-    onSuccess: (res, vars) => {
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["documents", workspaceId] });
+      const previous = queryClient.getQueryData<any[]>(["documents", workspaceId]);
+      if (previous) {
+        const updated = previous.map((doc) =>
+          doc.id === data.documentId ? { ...doc, ...data, section_id: data.sectionId || doc.section_id } : doc
+        );
+        queryClient.setQueryData(["documents", workspaceId], updated);
+      }
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["documents", workspaceId], context.previous);
+      }
+    },
+    onSettled: (res, err, vars) => {
       queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] });
       queryClient.invalidateQueries({ queryKey: ["document", vars.documentId] });
     },
@@ -111,7 +176,23 @@ export function useUpdateSection(workspaceId: string) {
   return useMutation({
     mutationFn: (data: { sectionId: string; name: string }) =>
       updateSectionAction(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["document_sections", workspaceId] });
+      const previous = queryClient.getQueryData<any[]>(["document_sections", workspaceId]);
+      if (previous) {
+        const updated = previous.map((section) =>
+          section.id === data.sectionId ? { ...section, name: data.name } : section
+        );
+        queryClient.setQueryData(["document_sections", workspaceId], updated);
+      }
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["document_sections", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] }),
   });
 }
 
@@ -119,7 +200,20 @@ export function useDeleteSection(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (sectionId: string) => deleteSectionAction(sectionId, workspaceId),
-    onSuccess: () => {
+    onMutate: async (sectionId) => {
+      await queryClient.cancelQueries({ queryKey: ["document_sections", workspaceId] });
+      const previous = queryClient.getQueryData<any[]>(["document_sections", workspaceId]);
+      if (previous) {
+        queryClient.setQueryData(["document_sections", workspaceId], previous.filter(s => s.id !== sectionId));
+      }
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["document_sections", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] });
       queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] });
     },
@@ -160,7 +254,20 @@ export function useDeleteDocument(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (documentId: string) => deleteDocumentAction(documentId, workspaceId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] }),
+    onMutate: async (documentId) => {
+      await queryClient.cancelQueries({ queryKey: ["documents", workspaceId] });
+      const previous = queryClient.getQueryData<any[]>(["documents", workspaceId]);
+      if (previous) {
+        queryClient.setQueryData(["documents", workspaceId], previous.filter(d => d.id !== documentId));
+      }
+      return { previous };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["documents", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] }),
   });
 }
 

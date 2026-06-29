@@ -52,7 +52,7 @@ export default function AIResultDisplay({
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-lg bg-violet-500 flex items-center justify-center shadow-sm">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
+              {/* <Sparkles className="w-3.5 h-3.5 text-white" /> */}
             </div>
             <span className="text-xs font-semibold text-muted-foreground tracking-wide uppercase">
               {label}

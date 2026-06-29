@@ -17,6 +17,8 @@ import { getEditorExtensions } from "@/lib/editor/extensions";
 import { useUploadFile } from "@/features/file/hooks";
 import { getSignedUrlAction } from "@/features/file/actions";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // AI imports
 import AIAssistantButton from "./ai/AIAssistantButton";
@@ -218,11 +220,70 @@ export default function DocumentEditor({
   // ── Loading state ─────────────────────────────────────────────────────────
   if (isDocLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-7 h-7 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground font-medium">Loading document…</p>
-        </div>
+      <div className="flex h-full w-full items-center justify-center bg-background/50 backdrop-blur-sm p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col items-center max-w-md w-full p-8 rounded-3xl bg-card/80 backdrop-blur-xl border border-border shadow-2xl relative overflow-hidden"
+        >
+          {/* Animated gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5 opacity-50 pointer-events-none" />
+          
+          {/* Glowing orb */}
+          <motion.div
+            animate={{ 
+              scale: [1, 1.2, 1],
+              opacity: [0.2, 0.4, 0.2]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-primary/20 rounded-full blur-[50px] pointer-events-none"
+          />
+
+          <div className="relative z-10 flex flex-col items-center w-full">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+              className="relative w-20 h-20 flex items-center justify-center mb-6"
+            >
+              <div className="absolute inset-0 rounded-3xl border border-primary/20 rotate-45" />
+              <div className="absolute inset-0 rounded-3xl border border-primary/20 -rotate-12" />
+              <motion.div 
+                animate={{ rotate: -360 }}
+                transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+              >
+                <FileText className="w-8 h-8 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+              </motion.div>
+            </motion.div>
+
+            <h3 className="text-xl font-bold tracking-tight mb-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Preparing Document
+            </h3>
+            
+            <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium mb-8">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <span>Loading workspace data...</span>
+            </div>
+
+            {/* Document Skeleton Preview */}
+            <div className="w-full space-y-5 bg-background/50 p-6 rounded-2xl border border-border/50">
+              <Skeleton className="h-7 w-2/3 rounded-lg bg-primary/10" />
+              <div className="space-y-3">
+                <Skeleton className="h-3 w-full rounded-md" />
+                <Skeleton className="h-3 w-full rounded-md" />
+                <Skeleton className="h-3 w-4/5 rounded-md" />
+              </div>
+              <div className="pt-2 space-y-3">
+                <Skeleton className="h-3 w-full rounded-md" />
+                <Skeleton className="h-3 w-3/4 rounded-md" />
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     );
   }

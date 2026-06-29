@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { BillingCycle, PlanKey } from "@/types/types";
 import { SubscriptionRecord, PaymentRecord } from "@/types/billing";
-import { PLAN_CONFIG, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "./config";
+import { PLAN_CONFIG, NEXT_PUBLIC_RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "./config";
 import Razorpay from "razorpay";
 
 export async function getUserSubscription(userId: string) {
@@ -40,12 +40,12 @@ export async function createRazorpaySubscription(userId: string, planKey: PlanKe
         throw new Error(`Razorpay Plan ID not configured for ${planKey} / ${billingCycle}.`);
     }
 
-    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+    if (!NEXT_PUBLIC_RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
         throw new Error("Razorpay credentials are not configured on the server.");
     }
 
     const razorpay = new Razorpay({
-        key_id: RAZORPAY_KEY_ID,
+        key_id: NEXT_PUBLIC_RAZORPAY_KEY_ID,
         key_secret: RAZORPAY_KEY_SECRET,
     });
 
@@ -74,12 +74,12 @@ export async function cancelSubscription(userId: string) {
         throw new Error("No active paid subscription found to cancel.");
     }
 
-    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+    if (!NEXT_PUBLIC_RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
         throw new Error("Razorpay credentials are not configured on the server.");
     }
 
     const razorpay = new Razorpay({
-        key_id: RAZORPAY_KEY_ID,
+        key_id: NEXT_PUBLIC_RAZORPAY_KEY_ID,
         key_secret: RAZORPAY_KEY_SECRET,
     });
 

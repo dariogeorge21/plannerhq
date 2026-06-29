@@ -44,6 +44,6 @@ export const PLAN_CONFIG = {
     }
 } as Record<PlanKey, BillingPlan>;
 
-export const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
+export const NEXT_PUBLIC_RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
 export const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 export const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;

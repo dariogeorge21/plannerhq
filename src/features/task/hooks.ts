@@ -105,7 +105,31 @@ export function useCreateTaskSection(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (name: string) => createSectionAction({ workspace_id: workspaceId, name, sort_order: 0 }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["task_sections", workspaceId] }),
+    onMutate: async (name) => {
+      await queryClient.cancelQueries({ queryKey: ["task_sections", workspaceId] });
+      const previous = queryClient.getQueryData<TaskSection[]>(["task_sections", workspaceId]);
+      
+      const newSection: TaskSection = {
+        id: `temp-${Date.now()}`,
+        workspace_id: workspaceId,
+        name,
+        sort_order: previous ? previous.length : 0,
+        created_by: 'temp-user',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      if (previous) {
+        queryClient.setQueryData(["task_sections", workspaceId], [...previous, newSection]);
+      }
+      return { previous };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["task_sections", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["task_sections", workspaceId] }),
   });
 }
 
@@ -113,7 +137,24 @@ export function useUpdateTaskSection(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { id: string; name: string }) => updateSectionAction({ id: data.id, name: data.name, workspace_id: workspaceId, sort_order: 0 }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["task_sections", workspaceId] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["task_sections", workspaceId] });
+      const previous = queryClient.getQueryData<TaskSection[]>(["task_sections", workspaceId]);
+      
+      if (previous) {
+        queryClient.setQueryData(
+          ["task_sections", workspaceId],
+          previous.map((s) => (s.id === data.id ? { ...s, name: data.name } : s))
+        );
+      }
+      return { previous };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["task_sections", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["task_sections", workspaceId] }),
   });
 }
 
@@ -121,7 +162,37 @@ export function useDeleteTaskSection(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (sectionId: string) => deleteSectionAction(sectionId, workspaceId),
-    onSuccess: () => {
+    onMutate: async (sectionId) => {
+      await queryClient.cancelQueries({ queryKey: ["task_sections", workspaceId] });
+      await queryClient.cancelQueries({ queryKey: ["tasks", workspaceId] });
+      
+      const previousSections = queryClient.getQueryData<TaskSection[]>(["task_sections", workspaceId]);
+      const previousTasks = queryClient.getQueryData<Task[]>(["tasks", workspaceId]);
+      
+      if (previousSections) {
+        queryClient.setQueryData(
+          ["task_sections", workspaceId],
+          previousSections.filter((s) => s.id !== sectionId)
+        );
+      }
+      if (previousTasks) {
+        queryClient.setQueryData(
+          ["tasks", workspaceId],
+          previousTasks.filter((t) => t.section_id !== sectionId)
+        );
+      }
+      
+      return { previousSections, previousTasks };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previousSections) {
+        queryClient.setQueryData(["task_sections", workspaceId], context.previousSections);
+      }
+      if (context?.previousTasks) {
+        queryClient.setQueryData(["tasks", workspaceId], context.previousTasks);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["task_sections", workspaceId] });
       queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] });
     },
@@ -163,7 +234,41 @@ export function useCreateTask(workspaceId: string) {
   return useMutation({
     mutationFn: (data: { title: string; section_id?: string | null; parent_id?: string | null; due_date?: string | null }) =>
       createTaskAction({ workspace_id: workspaceId, ...data, status: 'todo', priority: 'none', sort_order: 0 }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks", workspaceId] });
+      const previous = queryClient.getQueryData<Task[]>(["tasks", workspaceId]);
+      
+      const newTask: Task = {
+        id: `temp-${Date.now()}`,
+        workspace_id: workspaceId,
+        section_id: data.section_id || null,
+        parent_id: data.parent_id || null,
+        title: data.title,
+        description: null,
+        status: 'todo',
+        priority: 'none',
+        due_date: data.due_date || null,
+        sort_order: 0,
+        completed: false,
+        viewed_by: [],
+        reviewed_by: [],
+        is_deleted: false,
+        created_by: 'temp-user',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      if (previous) {
+        queryClient.setQueryData(["tasks", workspaceId], [...previous, newTask]);
+      }
+      return { previous };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["tasks", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
   });
 }
 
@@ -172,7 +277,24 @@ export function useUpdateTask(workspaceId: string) {
   return useMutation({
     mutationFn: (data: Partial<Task> & { id: string }) =>
       updateTaskAction({ ...data, workspace_id: workspaceId }, workspaceId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks", workspaceId] });
+      const previous = queryClient.getQueryData<Task[]>(["tasks", workspaceId]);
+      
+      if (previous) {
+        queryClient.setQueryData(
+          ["tasks", workspaceId],
+          previous.map((t) => (t.id === data.id ? { ...t, ...data } : t))
+        );
+      }
+      return { previous };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["tasks", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
   });
 }
 
@@ -181,7 +303,24 @@ export function useSetDeadline(workspaceId: string) {
   return useMutation({
     mutationFn: (data: { taskId: string; due_date: string | null }) =>
       updateTaskAction({ id: data.taskId, due_date: data.due_date, workspace_id: workspaceId }, workspaceId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
+    onMutate: async (data) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks", workspaceId] });
+      const previous = queryClient.getQueryData<Task[]>(["tasks", workspaceId]);
+      
+      if (previous) {
+        queryClient.setQueryData(
+          ["tasks", workspaceId],
+          previous.map((t) => (t.id === data.taskId ? { ...t, due_date: data.due_date } : t))
+        );
+      }
+      return { previous };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["tasks", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
   });
 }
 
@@ -189,7 +328,24 @@ export function useDeleteTask(workspaceId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (taskId: string) => deleteTaskAction(taskId, workspaceId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: ["tasks", workspaceId] });
+      const previous = queryClient.getQueryData<Task[]>(["tasks", workspaceId]);
+      
+      if (previous) {
+        queryClient.setQueryData(
+          ["tasks", workspaceId],
+          previous.filter((t) => t.id !== taskId)
+        );
+      }
+      return { previous };
+    },
+    onError: (err, newTodo, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["tasks", workspaceId], context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["tasks", workspaceId] }),
   });
 }
 
@@ -206,7 +362,12 @@ export function useReorderTasks(workspaceId: string) {
         const updated = previous.map((task) => {
           const update = updates.find((u) => u.id === task.id);
           return update ? { ...task, sort_order: update.sort_order, section_id: update.sectionId } : task;
-        }).sort((a, b) => a.sort_order - b.sort_order);
+        }).sort((a, b) => {
+          if (a.sort_order === b.sort_order) {
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          }
+          return a.sort_order - b.sort_order;
+        });
 
         queryClient.setQueryData(["tasks", workspaceId], updated);
       }

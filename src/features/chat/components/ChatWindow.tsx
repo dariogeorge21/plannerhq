@@ -33,7 +33,7 @@ export function ChatWindow({
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!loadingMore && endRef.current) {
+    if (!loadingMore && endRef.current && messages.length > 0) {
       endRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, loadingMore, typingUsers]);

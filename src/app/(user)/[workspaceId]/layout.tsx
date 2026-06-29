@@ -148,6 +148,11 @@ export default function WorkspaceLayout({
   const pathname = usePathname();
   const { user, isLoading: authLoading } = useSession();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const [loadingHref, setLoadingHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoadingHref(null);
+  }, [pathname]);
   const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -308,6 +313,7 @@ export default function WorkspaceLayout({
               <Link
                 key={link.name}
                 href={link.href}
+                onClick={() => setLoadingHref(link.href)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative ${active
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
@@ -323,7 +329,11 @@ export default function WorkspaceLayout({
                 {!active && (
                   <div className="absolute inset-0 bg-accent/50 rounded-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 )}
-                <link.icon className={`w-5 h-5 shrink-0 relative z-10 transition-transform duration-300 ${active ? "text-primary scale-110" : "text-muted-foreground group-hover:scale-110 group-hover:text-foreground"}`} />
+                {loadingHref === link.href ? (
+                  <Loader2 className={`w-5 h-5 shrink-0 relative z-10 transition-transform duration-300 animate-spin ${active ? "text-primary" : "text-muted-foreground"}`} />
+                ) : (
+                  <link.icon className={`w-5 h-5 shrink-0 relative z-10 transition-transform duration-300 ${active ? "text-primary scale-110" : "text-muted-foreground group-hover:scale-110 group-hover:text-foreground"}`} />
+                )}
                 {!isCollapsed && (
                   <span className={`text-sm font-semibold relative z-10 ${active ? "text-primary" : ""}`}>
                     {link.name}
@@ -411,13 +421,20 @@ export default function WorkspaceLayout({
                     <Link
                       key={link.name}
                       href={link.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={() => {
+                        setLoadingHref(link.href);
+                        setIsMobileMenuOpen(false);
+                      }}
                       className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ${active
                         ? "text-primary bg-primary/10 border border-primary/20 shadow-sm"
                         : "text-muted-foreground hover:text-foreground hover:bg-accent"
                         }`}
                     >
-                      <link.icon className={`w-5 h-5 ${active ? "text-primary scale-110" : "text-muted-foreground"} transition-transform`} />
+                      {loadingHref === link.href ? (
+                        <Loader2 className={`w-5 h-5 animate-spin ${active ? "text-primary" : "text-muted-foreground"}`} />
+                      ) : (
+                        <link.icon className={`w-5 h-5 ${active ? "text-primary scale-110" : "text-muted-foreground"} transition-transform`} />
+                      )}
                       <span>{link.name}</span>
                     </Link>
                   );

@@ -14,7 +14,12 @@ interface TaskListProps {
 }
 
 export function TaskList({ tasks, sectionId, workspaceId, userId }: TaskListProps) {
-  const sortedTasks = [...tasks].sort((a, b) => a.sort_order - b.sort_order);
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.sort_order === b.sort_order) {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
+    return a.sort_order - b.sort_order;
+  });
 
   if (tasks.length === 0) {
     return (

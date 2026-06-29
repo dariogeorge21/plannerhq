@@ -130,7 +130,12 @@ export function KanbanBoard({ sections, tasks, workspaceId, userId }: KanbanBoar
           <KanbanColumn
             key={section.id}
             section={section}
-            tasks={tasks.filter(t => t.section_id === section.id).sort((a, b) => a.sort_order - b.sort_order)}
+            tasks={tasks.filter(t => t.section_id === section.id).sort((a, b) => {
+              if (a.sort_order === b.sort_order) {
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+              }
+              return a.sort_order - b.sort_order;
+            })}
             workspaceId={workspaceId}
             userId={userId}
           />
@@ -140,7 +145,12 @@ export function KanbanBoard({ sections, tasks, workspaceId, userId }: KanbanBoar
       {(uncategorizedTasks.length > 0 || sortedSections.length === 0) && (
         <KanbanColumn
           section={uncategorizedSection}
-          tasks={uncategorizedTasks.sort((a, b) => a.sort_order - b.sort_order)}
+          tasks={uncategorizedTasks.sort((a, b) => {
+            if (a.sort_order === b.sort_order) {
+              return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            }
+            return a.sort_order - b.sort_order;
+          })}
           workspaceId={workspaceId}
           userId={userId}
         />

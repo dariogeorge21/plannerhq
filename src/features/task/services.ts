@@ -80,28 +80,7 @@ export const createTaskService = (supabase: SupabaseClient) => ({
     parentId: string | null = null,
     userId: string
   ): Promise<Task> {
-    let sort_order = 1024;
-    
-    if (sectionId) {
-        const { data: maxPosData } = await supabase
-        .from("tasks")
-        .select("sort_order")
-        .eq("section_id", sectionId)
-        .order("sort_order", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-        if (maxPosData) sort_order = maxPosData.sort_order + 1024;
-    } else {
-        const { data: maxPosData } = await supabase
-        .from("tasks")
-        .select("sort_order")
-        .is("section_id", null)
-        .eq("workspace_id", workspaceId)
-        .order("sort_order", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-        if (maxPosData) sort_order = maxPosData.sort_order + 1024;
-    }
+    let sort_order = 0;
 
     const { data, error } = await supabase
       .from("tasks")

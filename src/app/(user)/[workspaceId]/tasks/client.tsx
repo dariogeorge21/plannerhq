@@ -14,7 +14,7 @@ import { arrayMove, SortableContext, verticalListSortingStrategy, sortableKeyboa
 import { TaskSectionList } from "./components/ui/TaskSectionList";
 import { KanbanBoard } from "./components/ui/KanbanBoard";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Sparkles, LayoutList, LayoutGrid, CheckCircle2, Clock, ListTodo, AlertCircle, X, Flag, CalendarDays } from "lucide-react";
+import { Plus, Search, LayoutList, LayoutGrid, KanbanSquare, CheckCircle2, Clock, ListTodo, AlertCircle, X, Flag, CalendarDays } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
@@ -77,7 +77,12 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
           const targetSectionId = overSection ? overSection.id : (overTask ? overTask.section_id : activeTask.section_id);
 
           if (activeTask.section_id === targetSectionId) {
-            const sectionTasks = tasks.filter(t => t.section_id === activeTask.section_id).sort((a, b) => a.sort_order - b.sort_order);
+            const sectionTasks = tasks.filter(t => t.section_id === activeTask.section_id).sort((a, b) => {
+              if (a.sort_order === b.sort_order) {
+                return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+              }
+              return a.sort_order - b.sort_order;
+            });
             const oldIndex = sectionTasks.findIndex((t) => t.id === active.id);
             const newIndex = overTask ? sectionTasks.findIndex((t) => t.id === over.id) : sectionTasks.length;
 
@@ -147,7 +152,7 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wide uppercase border border-primary/20">
-              <Sparkles className="w-3.5 h-3.5" /> Task Board
+              <KanbanSquare className="w-3.5 h-3.5" /> Task Board
             </div>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
               Tasks

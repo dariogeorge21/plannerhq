@@ -35,9 +35,6 @@ export const getEditorExtensions = (ydoc: any, awareness: any, workspaceId?: str
     Collaboration.configure({
       document: ydoc,
     }),
-    ...(awareness ? [CollaborationCaret.configure({
-      provider: awareness,
-    })] : []),
     ...(workspaceId ? [getFileMentionExtension(workspaceId)] : []),
     ...(workspaceId && documentId ? [EditorFileUploadPlugin.configure({ workspaceId, documentId })] : []),
     Link.configure({ openOnClick: false }),

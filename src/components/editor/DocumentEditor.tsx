@@ -74,28 +74,7 @@ export default function DocumentEditor({
     },
     editorProps: {
       attributes: {
-        class: [
-          "prose prose-neutral max-w-none focus:outline-none dark:prose-invert",
-          "min-h-[500px]",
-          // Headings
-          "prose-headings:font-bold prose-headings:tracking-tight",
-          "pros:text-4xl prose-h1:mb-4 prose-h1:mt-8",
-          "prose-h2:text-2xl prose-h2:mb-3 prose-h2:mt-6",
-          "prose-h3:text-xl prose-h3:mb-2 prose-h3:mt-5",
-          // Paragraphs
-          "prose-p:leading-[1.8] text-foreground",
-          // Code
-          "prose-pre:bg-neutral-900 prose-pre:text-neutral-50 prose-pre:rounded-xl prose-pre:shadow-lg dark:prose-pre:bg-neutral-950",
-          "prose-code:bg-muted prose-code:text-primary prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:text-[0.875em] prose-code:font-mono",
-          // Links
-          "prose-a:text-primary hover:prose-a:text-primary/80 prose-a:underline",
-          // Blockquote
-          "prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground prose-blockquote:not-italic",
-          // Lists
-          "prose-ul:marker:text-muted-foreground prose-ol:marker:text-muted-foreground",
-          // HR
-          "prose-hr:border-border",
-        ].join(" "),
+        class: "tiptap-editor focus:outline-none min-h-[500px]",
       },
     },
   });

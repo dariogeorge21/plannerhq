@@ -356,3 +356,71 @@
   white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
+/* ── Typography & Blocks (replacing missing Tailwind Typography) ────────────── */
+.ProseMirror p {
+  line-height: 1.8;
+  margin: 0.5rem 0;
+  color: var(--foreground);
+}
+
+.ProseMirror h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+}
+
+.ProseMirror h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+}
+
+.ProseMirror h3 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.025em;
+  color: var(--foreground);
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin: 1rem 0;
+  color: var(--foreground);
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror li {
+  margin: 0.25rem 0;
+}
+
+.ProseMirror li p {
+  margin: 0;
+}
+
+.ProseMirror a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.ProseMirror a:hover {
+  opacity: 0.8;
+}

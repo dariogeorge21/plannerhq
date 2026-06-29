@@ -18,6 +18,23 @@ import { useUploadFile } from "@/features/file/hooks";
 import { getSignedUrlAction } from "@/features/file/actions";
 import { toast } from "sonner";
 
+// AI imports
+import AIAssistantButton from "./ai/AIAssistantButton";
+import AIPromptModal from "./ai/AIPromptModal";
+import AITranslateModal from "./ai/AITranslateModal";
+import AIUsageBadge from "./ai/AIUsageBadge";
+import { AIAction } from "@/types/ai";
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
+
+interface AIModalState {
+  open: boolean;
+  action: AIAction;
+  selectedText: string;
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────────
+
 export default function DocumentEditor({
   workspaceId,
   documentId,
@@ -41,6 +58,15 @@ export default function DocumentEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadFile = useUploadFile(workspaceId);
   const saveContent = useSaveDocumentContent(workspaceId);
+
+  // ── AI State ───────────────────────────────────────────────────────────────
+  const [aiModal, setAIModal] = useState<AIModalState>({
+    open: false,
+    action: "generate",
+    selectedText: "",
+  });
+  const [translateModalOpen, setTranslateModalOpen] = useState(false);
+  const [translateSelectedText, setTranslateSelectedText] = useState("");
 
   useEffect(() => {
     if (doc) setTitle(doc.title);
@@ -79,6 +105,7 @@ export default function DocumentEditor({
     },
   });
 
+  // ── File Upload Event Listener ─────────────────────────────────────────────
   useEffect(() => {
     const handleOpenUpload = () => {
       fileInputRef.current?.click();
@@ -88,6 +115,70 @@ export default function DocumentEditor({
     return () => window.removeEventListener('open-editor-file-upload', handleOpenUpload);
   }, []);
 
+  // ── AI Event Bus (from slash commands + bubble menu) ─────────────────────
+  useEffect(() => {
+    const handleAIModal = (e: CustomEvent<{ action: string }>) => {
+      const action = e.detail?.action as AIAction;
+      if (!action || !editor) return;
+
+      // Get currently selected text from editor
+      const selectedText = editor.state.doc.textBetween(
+        editor.state.selection.from,
+        editor.state.selection.to,
+        "\n"
+      );
+
+      if (action === "translate") {
+        setTranslateSelectedText(selectedText);
+        setTranslateModalOpen(true);
+      } else {
+        setAIModal({ open: true, action, selectedText });
+      }
+    };
+
+    window.addEventListener("open-ai-modal", handleAIModal as EventListener);
+    return () => window.removeEventListener("open-ai-modal", handleAIModal as EventListener);
+  }, [editor]);
+
+  // ── AI Toolbar Button Handler ─────────────────────────────────────────────
+  const handleAIAction = useCallback(
+    (action: AIAction, selectedText: string) => {
+      if (action === "translate") {
+        setTranslateSelectedText(selectedText);
+        setTranslateModalOpen(true);
+      } else {
+        setAIModal({ open: true, action, selectedText });
+      }
+    },
+    []
+  );
+
+  // ── AI Content Insertion ─────────────────────────────────────────────────
+
+  const handleAIInsert = useCallback(
+    (content: string) => {
+      if (!editor) return;
+      editor.chain().focus().insertContent(content).run();
+    },
+    [editor]
+  );
+
+  const handleAIReplace = useCallback(
+    (content: string) => {
+      if (!editor) return;
+      const { from, to } = editor.state.selection;
+      if (from === to) {
+        // No selection — just insert at cursor
+        editor.chain().focus().insertContent(content).run();
+      } else {
+        // Replace selected text
+        editor.chain().focus().deleteRange({ from, to }).insertContent(content).run();
+      }
+    },
+    [editor]
+  );
+
+  // ── File Select Handler ───────────────────────────────────────────────────
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !editor) return;
@@ -124,7 +215,7 @@ export default function DocumentEditor({
     }
   };
 
-  // ── Loading state ────────────────────────────────────────────────────────────
+  // ── Loading state ─────────────────────────────────────────────────────────
   if (isDocLoading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -136,7 +227,7 @@ export default function DocumentEditor({
     );
   }
 
-  // ── Not found ────────────────────────────────────────────────────────────────
+  // ── Not found ─────────────────────────────────────────────────────────────
   if (!doc) {
     return (
       <div className="flex h-full items-center justify-center flex-col gap-3">
@@ -148,13 +239,16 @@ export default function DocumentEditor({
     );
   }
 
-  // ── Main ─────────────────────────────────────────────────────────────────────
+  // ── Main render ───────────────────────────────────────────────────────────
   return (
     <div className="h-full w-full flex flex-col overflow-hidden">
       <OfflineBanner isOffline={isOffline} />
 
-      {/* ── Top-right presence strip ─────────────────────────────────────────── */}
+      {/* ── Top-right presence strip ──────────────────────────────────────── */}
       <div className="fixed top-4 right-4 flex items-center gap-3 z-50">
+        {/* AI Usage Badge */}
+        <AIUsageBadge />
+
         <div className="flex items-center gap-2 text-xs text-neutral-400 mr-2">
           {!isConnected && !isOffline && (
             <span className="flex items-center gap-1 text-amber-500">
@@ -179,7 +273,7 @@ export default function DocumentEditor({
         </div>
       </div>
 
-      {/* ── Scrollable document area ─────────────────────────────────────────── */}
+      {/* ── Scrollable document area ──────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto relative scrollbar-thin scrollbar-thumb-border">
         {doc?.cover && (
           <div className="w-full h-48 sm:h-64 object-cover">
@@ -216,7 +310,12 @@ export default function DocumentEditor({
             />
           </div>
 
-          {/* Formatting toolbar */}
+          {/* AI Assistant Toolbar strip */}
+          <div className="flex items-center gap-2 mb-4">
+            <AIAssistantButton editor={editor} onAction={handleAIAction} />
+          </div>
+
+          {/* Floating bubble menu (shown on text selection) */}
           <FloatingBubbleMenu editor={editor} />
 
           {/* Editor content */}
@@ -235,6 +334,24 @@ export default function DocumentEditor({
           />
         </div>
       </div>
+
+      {/* ── AI Modals ─────────────────────────────────────────────────────── */}
+      <AIPromptModal
+        isOpen={aiModal.open && aiModal.action !== "translate"}
+        action={aiModal.action}
+        initialContent={aiModal.selectedText}
+        onClose={() => setAIModal((prev) => ({ ...prev, open: false }))}
+        onInsert={handleAIInsert}
+        onReplace={handleAIReplace}
+      />
+
+      <AITranslateModal
+        isOpen={translateModalOpen}
+        selectedText={translateSelectedText}
+        onClose={() => setTranslateModalOpen(false)}
+        onInsert={handleAIInsert}
+        onReplace={handleAIReplace}
+      />
     </div>
   );
 }

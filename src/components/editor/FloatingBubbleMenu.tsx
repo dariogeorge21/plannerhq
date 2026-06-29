@@ -12,6 +12,10 @@ import {
   Heading2,
   Heading3,
   Quote,
+  Wand2,
+  FileText,
+  Languages,
+  Sparkles,
 } from "lucide-react";
 
 interface FloatingBubbleMenuProps {
@@ -24,12 +28,14 @@ function ToolbarBtn({
   icon,
   label,
   disabled = false,
+  variant = "default",
 }: {
   isActive?: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
   disabled?: boolean;
+  variant?: "default" | "ai";
 }) {
   return (
     <button
@@ -42,7 +48,11 @@ function ToolbarBtn({
         relative flex items-center justify-center w-8 h-8 rounded-lg text-sm
         transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-primary/60
         disabled:opacity-40 disabled:cursor-not-allowed
-        ${isActive
+        ${variant === "ai"
+          ? isActive
+            ? "bg-violet-500/20 text-violet-600 dark:text-violet-400"
+            : "text-violet-500 hover:text-violet-600 hover:bg-violet-500/10"
+          : isActive
           ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:text-foreground hover:bg-accent"
         }
@@ -54,7 +64,13 @@ function ToolbarBtn({
 }
 
 function Separator() {
-  return <div className="w-px h-5 bg-border mx-1 shrink-0" />;
+  return <div className="w-px h-5 bg-border mx-0.5 shrink-0" />;
+}
+
+function dispatchAIModal(action: string) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("open-ai-modal", { detail: { action } }));
+  }
 }
 
 export default function FloatingBubbleMenu({ editor }: FloatingBubbleMenuProps) {
@@ -64,12 +80,13 @@ export default function FloatingBubbleMenu({ editor }: FloatingBubbleMenuProps) 
     <BubbleMenu
       editor={editor}
       className="
-        flex items-center gap-1 p-1.5
+        flex items-center gap-0.5 p-1.5
         rounded-2xl border border-border
         bg-card/95 backdrop-blur-xl
         shadow-2xl shadow-black/10
       "
     >
+      {/* Heading toggles */}
       <ToolbarBtn
         isActive={editor.isActive("heading", { level: 1 })}
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -89,6 +106,8 @@ export default function FloatingBubbleMenu({ editor }: FloatingBubbleMenuProps) 
         label="Heading 3"
       />
       <Separator />
+
+      {/* Inline formatting */}
       <ToolbarBtn
         isActive={editor.isActive("bold")}
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -108,6 +127,8 @@ export default function FloatingBubbleMenu({ editor }: FloatingBubbleMenuProps) 
         label="Strikethrough"
       />
       <Separator />
+
+      {/* Block types */}
       <ToolbarBtn
         isActive={editor.isActive("code")}
         onClick={() => editor.chain().focus().toggleCode().run()}
@@ -120,6 +141,28 @@ export default function FloatingBubbleMenu({ editor }: FloatingBubbleMenuProps) 
         icon={<Quote className="w-4 h-4" />}
         label="Quote"
       />
+      <Separator />
+
+      {/* AI Actions */}
+      <ToolbarBtn
+        onClick={() => dispatchAIModal("rewrite")}
+        icon={<Wand2 className="w-4 h-4" />}
+        label="AI Rewrite"
+        variant="ai"
+      />
+      <ToolbarBtn
+        onClick={() => dispatchAIModal("summarize")}
+        icon={<FileText className="w-4 h-4" />}
+        label="AI Summarize"
+        variant="ai"
+      />
+      <ToolbarBtn
+        onClick={() => dispatchAIModal("translate")}
+        icon={<Languages className="w-4 h-4" />}
+        label="AI Translate"
+        variant="ai"
+      />
     </BubbleMenu>
   );
 }
+

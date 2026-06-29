@@ -17,6 +17,7 @@ interface SlashCommandMenuProps {
 }
 
 const GROUP_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  ai: { bg: "bg-violet-500/10", text: "text-violet-500", border: "border-violet-500/20" },
   text: { bg: "bg-primary/10", text: "text-primary", border: "border-primary/20" },
   lists: { bg: "bg-sky-500/10", text: "text-sky-500", border: "border-sky-500/20" },
   advanced: { bg: "bg-amber-500/10", text: "text-amber-500", border: "border-amber-500/20" },

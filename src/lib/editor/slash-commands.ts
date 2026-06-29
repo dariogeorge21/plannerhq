@@ -14,6 +14,10 @@ import {
   Table2,
   Image,
   Paperclip,
+  Sparkles,
+  Wand2,
+  FileText,
+  Languages,
 } from "lucide-react";
 
 export interface CommandItem {
@@ -21,17 +25,70 @@ export interface CommandItem {
   description: string;
   icon: React.ElementType;
   keywords?: string[];
-  group: "text" | "lists" | "advanced";
+  group: "text" | "lists" | "advanced" | "ai";
   command: ({ editor, range }: { editor: Editor; range: Range }) => void;
 }
 
 export const COMMAND_GROUPS: { key: CommandItem["group"]; label: string }[] = [
+  { key: "ai", label: "AI" },
   { key: "text", label: "Text" },
   { key: "lists", label: "Lists" },
   { key: "advanced", label: "Advanced" },
 ];
 
+// ─── AI Command Event Dispatcher ──────────────────────────────────────────────
+function dispatchAICommand(action: string) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("open-ai-modal", { detail: { action } }));
+  }
+}
+
 const ALL_ITEMS: CommandItem[] = [
+  // ── AI Commands ─────────────────────────────────────────────────────────────
+  {
+    title: "AI Generate",
+    description: "Generate new content with AI",
+    icon: Sparkles,
+    keywords: ["ai", "generate", "write", "create", "gpt", "llm"],
+    group: "ai",
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).run();
+      dispatchAICommand("generate");
+    },
+  },
+  {
+    title: "AI Rewrite",
+    description: "Rewrite selected text with AI",
+    icon: Wand2,
+    keywords: ["ai", "rewrite", "improve", "edit", "rephrase"],
+    group: "ai",
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).run();
+      dispatchAICommand("rewrite");
+    },
+  },
+  {
+    title: "AI Summarize",
+    description: "Summarize selected text with AI",
+    icon: FileText,
+    keywords: ["ai", "summarize", "condense", "shorten", "brief"],
+    group: "ai",
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).run();
+      dispatchAICommand("summarize");
+    },
+  },
+  {
+    title: "AI Translate",
+    description: "Translate selected text with AI",
+    icon: Languages,
+    keywords: ["ai", "translate", "language", "convert"],
+    group: "ai",
+    command: ({ editor, range }) => {
+      editor.chain().focus().deleteRange(range).run();
+      dispatchAICommand("translate");
+    },
+  },
   {
     title: "Heading 1",
     description: "Big section heading.",

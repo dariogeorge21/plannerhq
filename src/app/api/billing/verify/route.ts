@@ -1,30 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
+import { RAZORPAY_KEY_SECRET } from "@/features/billing/config";
+
+const VerifySchema = z.object({
+  razorpay_payment_id: z.string().min(1),
+  razorpay_subscription_id: z.string().min(1),
+  razorpay_signature: z.string().min(1),
+});
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = body;
+    const parsed = VerifySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, message: "Invalid request body" }, { status: 400 });
+    }
+    const { razorpay_payment_id, razorpay_subscription_id, razorpay_signature } = parsed.data;
 
-    if (!razorpay_payment_id || !razorpay_subscription_id || !razorpay_signature) {
-      return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 });
+    if (!RAZORPAY_KEY_SECRET) {
+      return NextResponse.json({ success: false, message: "Server configuration error" }, { status: 500 });
     }
 
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET!;
+    const secret = RAZORPAY_KEY_SECRET;
+
     const generatedSignature = crypto
       .createHmac("sha256", secret)
       .update(razorpay_payment_id + "|" + razorpay_subscription_id)
       .digest("hex");
 
-    if (generatedSignature !== razorpay_signature) {
+    const a = Buffer.from(generatedSignature);
+    const b = Buffer.from(razorpay_signature);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
       return NextResponse.json({ success: false, message: "Invalid signature" }, { status: 400 });
     }
 
-    // Optionally, we could update the subscription status here, but we rely on webhook.
-    // Just return success.
+    // Optimistic activation — webhook will confirm later
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      await supabase
+        .from("subscriptions")
+        .update({ status: "active", razorpay_subscription_id })
+        .eq("user_id", user.id)
+        .in("status", ["trialing", "past_due"]);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Verification error:", error);
+    const message = error instanceof Error ? error.message : "Verification failed";
+    console.error("Verification error:", message);
     return NextResponse.json({ success: false, message: "Verification failed" }, { status: 500 });
   }
 }

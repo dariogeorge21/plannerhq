@@ -39,7 +39,7 @@ export async function POST(req: Request) {
             console.error("Failed to log webhook event:", logError);
             // We continue processing even if logging fails
         }
-        
+
         switch (event.event) {
             case "subscription.activated":
             case "subscription.charged":
@@ -66,11 +66,11 @@ async function handleSubscriptionEvent(event: any) {
     const payload = event.payload.subscription.entity;
     const subscriptionId = payload.id;
     const customerId = payload.customer_id;
-    const status = payload.status; 
+    const status = payload.status;
     const currentPeriodStart = payload.current_start ? new Date(payload.current_start * 1000).toISOString() : null;
     const currentPeriodEnd = payload.current_end ? new Date(payload.current_end * 1000).toISOString() : null;
     const notes = payload.notes || {};
-    
+
     // Notes contain user_id, plan_key, billing_cycle from checkout creation
     const userId = notes.user_id;
     const planKey = notes.plan_key;
@@ -84,7 +84,7 @@ async function handleSubscriptionEvent(event: any) {
         .select("id")
         .eq("key", planKey)
         .single();
-        
+
     if (!plan) return;
 
     // We map razorpay status (created, authenticated, active, pending, halted, cancelled, completed, expired)
@@ -134,7 +134,7 @@ async function handleSubscriptionEvent(event: any) {
 
 async function handlePaymentCaptured(event: any) {
     const payload = event.payload.payment.entity;
-    
+
     // Use idempotency check by attempting to insert the payment.
     // If razorpay_payment_id already exists, it will fail (which is good)
     const paymentData = {
@@ -146,7 +146,7 @@ async function handlePaymentCaptured(event: any) {
         invoice_reference: payload.invoice_id,
         user_id: payload.notes?.user_id,
     };
-    
+
     if (!paymentData.user_id) return;
 
     await supabaseAdmin.from("payments").insert(paymentData);
@@ -154,7 +154,7 @@ async function handlePaymentCaptured(event: any) {
 
 async function handlePaymentFailed(event: any) {
     const payload = event.payload.payment.entity;
-    
+
     const paymentData = {
         razorpay_payment_id: payload.id,
         razorpay_order_id: payload.order_id,
@@ -164,7 +164,7 @@ async function handlePaymentFailed(event: any) {
         invoice_reference: payload.invoice_id,
         user_id: payload.notes?.user_id,
     };
-    
+
     if (!paymentData.user_id) return;
 
     await supabaseAdmin.from("payments").insert(paymentData);

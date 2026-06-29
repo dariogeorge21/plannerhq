@@ -19,8 +19,8 @@ export const PLAN_CONFIG = {
         maxStorageBytes: 2147483648, // 2GB
         maxAiTokens: 500000, // per day
         maxCollaborators: 10,
-        razorpayPlanIdMonthly: process.env.NEXT_PUBLIC_RAZORPAY_PRO_MONTHLY_PLAN_ID,
-        razorpayPlanIdYearly: process.env.NEXT_PUBLIC_RAZORPAY_PRO_YEARLY_PLAN_ID,
+        razorpayPlanIdMonthly: process.env.RAZORPAY_PRO_MONTHLY_PLAN_ID,
+        razorpayPlanIdYearly: process.env.RAZORPAY_PRO_YEARLY_PLAN_ID,
     },
     ultra: {
         id: "ultra",
@@ -29,8 +29,8 @@ export const PLAN_CONFIG = {
         maxStorageBytes: 10737418240, // 10GB
         maxAiTokens: 20000000, // per day
         maxCollaborators: 999999, // unlimited
-        razorpayPlanIdMonthly: process.env.NEXT_PUBLIC_RAZORPAY_ULTRA_MONTHLY_PLAN_ID,
-        razorpayPlanIdYearly: process.env.NEXT_PUBLIC_RAZORPAY_ULTRA_YEARLY_PLAN_ID,
+        razorpayPlanIdMonthly: process.env.RAZORPAY_ULTRA_MONTHLY_PLAN_ID,
+        razorpayPlanIdYearly: process.env.RAZORPAY_ULTRA_YEARLY_PLAN_ID,
     },
     enterprise: {
         id: "enterprise",
@@ -44,6 +44,6 @@ export const PLAN_CONFIG = {
     }
 } as Record<PlanKey, BillingPlan>;
 
-export const NEXT_PUBLIC_RAZORPAY_KEY_ID = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+export const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
 export const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 export const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;

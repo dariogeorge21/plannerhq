@@ -12,8 +12,14 @@ export async function POST() {
 
     await cancelSubscription(user.id);
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("Cancel error:", error);
-    return NextResponse.json({ success: false, message: error.message || "Cancellation failed" }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Cancellation failed";
+    console.error("Cancel error:", message);
+    
+    if (message.includes("already scheduled") || message.includes("No active paid subscription")) {
+        return NextResponse.json({ success: false, message }, { status: 409 });
+    }
+    
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }

@@ -1,4 +1,3 @@
-import React from "react";
 import { redirect } from "next/navigation";
 import { CheckoutClient } from "./components/checkout-client";
 import { BILLING_PLANS } from "@/data/data";
@@ -29,7 +28,7 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
   const planData = BILLING_PLANS.find((p) => p.key === planKey);
   if (!planData) redirect("/billing");
 
-  const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 
   return (
     <div className="min-h-screen bg-background font-sans">

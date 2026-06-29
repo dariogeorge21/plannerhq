@@ -50,8 +50,8 @@ function usagePct(used: number, limit: number): number {
 }
 
 function usageBarColor(pct: number) {
-  if (pct >= 90) return "dark:bg-red-9500";
-  if (pct >= 70) return "dark:bg-amber-9500";
+  if (pct >= 90) return "dark:bg-red-950";
+  if (pct >= 70) return "dark:bg-amber-950";
   return "bg-indigo-500";
 }
 
@@ -271,15 +271,14 @@ export function BillingClient() {
         >
           <div className={`h-1 w-full ${isPaid
             ? "bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-600"
-            : "bg-neutral-200"}`}
+            : "bg-border"}`}
           />
 
           <div className="p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5">
               <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
-                  isPaid ? "dark:bg-indigo-950" : "bg-muted"
-                }`}>
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${isPaid ? "dark:bg-indigo-950" : "bg-muted"
+                  }`}>
                   {isPaid
                     ? <Zap className="w-6 h-6 dark:text-indigo-300" />
                     : <Sparkles className="w-6 h-6 text-muted-foreground" />}
@@ -289,12 +288,11 @@ export function BillingClient() {
                   <div className="flex items-center gap-2.5 flex-wrap">
                     <h2 className="text-2xl font-extrabold text-foreground">{dbPlan?.name as string || "Free Starter"}</h2>
                     {isPaid && (
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                        isCancelling
-                          ? "dark:bg-amber-950 dark:text-amber-300"
-                          : "dark:bg-emerald-950 dark:text-emerald-300"
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${isCancelling ? "dark:bg-amber-9500" : "bg-emerald-500"}`} />
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isCancelling
+                        ? "dark:bg-amber-950 dark:text-amber-300"
+                        : "dark:bg-emerald-950 dark:text-emerald-300"
+                        }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isCancelling ? "dark:bg-amber-950" : "bg-emerald-500"}`} />
                         {isCancelling ? "Cancels at period end" : "Active"}
                       </span>
                     )}
@@ -311,14 +309,13 @@ export function BillingClient() {
                 {canUpgrade && (
                   <button
                     onClick={() => router.push(`/billing/checkout?plan=${availablePlans[0].key}&cycle=${cycle}`)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${
-                      !isPaid
-                        ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/25"
-                        : "border border-border text-foreground hover:bg-muted"
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${!isPaid
+                      ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/25"
+                      : "border border-border text-foreground hover:bg-muted"
+                      }`}
                   >
                     {!isPaid
-                      ? <><Zap className="w-4 h-4" /> Upgrade plan</>
+                      ? <><Zap className="w-4 h-4" /> Upgrade to Pro</>
                       : <><ArrowRight className="w-4 h-4" /> Change plan</>}
                   </button>
                 )}
@@ -363,15 +360,13 @@ export function BillingClient() {
                 ].map((item) => (
                   <div
                     key={item.label}
-                    className={`rounded-xl p-4 border ${
-                      item.accent
-                        ? "dark:bg-amber-950 border-amber-100"
-                        : "bg-muted border-border"
-                    }`}
+                    className={`rounded-xl p-4 border ${item.accent
+                      ? "dark:bg-amber-950 border-amber-100"
+                      : "bg-muted border-border"
+                      }`}
                   >
-                    <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider mb-1.5 ${
-                      item.accent ? "text-amber-500" : "text-muted-foreground"
-                    }`}>
+                    <div className={`flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider mb-1.5 ${item.accent ? "text-amber-500" : "text-muted-foreground"
+                      }`}>
                       {item.icon}
                       {item.label}
                     </div>
@@ -394,9 +389,9 @@ export function BillingClient() {
             )}
 
             {!isPaid && (
-              <div className="mt-6 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="mt-6 rounded-xl border border-muted bg-muted p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-bold text-indigo-900 mb-1">Unlock the full PlannerHQ experience</p>
+                  <p className="text-sm font-bold text-foreground mb-1">Unlock the full PlannerHQ experience</p>
                   <p className="text-xs dark:text-indigo-300/80">
                     Pro from <strong>₹299/mo</strong> billed yearly — 10 workspaces, 2 GB storage, 500K AI tokens/day
                   </p>
@@ -429,11 +424,10 @@ export function BillingClient() {
                 <button
                   key={c}
                   onClick={() => setCycle(c)}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                    cycle === c
-                      ? "bg-card shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${cycle === c
+                    ? "bg-card shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {c.charAt(0).toUpperCase() + c.slice(1)}
                   {c === "yearly" && <span className="ml-1 text-[10px] text-emerald-600 font-black">(Save 25%)</span>}
@@ -453,11 +447,10 @@ export function BillingClient() {
               return (
                 <div
                   key={plan.key}
-                  className={`relative rounded-2xl border p-6 transition-all ${
-                    isCurrent
-                      ? "border-indigo-300 bg-indigo-50/50 ring-2 ring-indigo-400"
-                      : "border-border hover:border-indigo-200 hover:shadow-md"
-                  }`}
+                  className={`relative rounded-2xl border p-6 transition-all ${isCurrent
+                    ? "border-indigo-300 bg-indigo-50/50 ring-2 ring-indigo-400"
+                    : "border-border hover:border-indigo-200 hover:shadow-md"
+                    }`}
                 >
                   {plan.ribbon && !isCurrent && (
                     <span className="absolute -top-2 right-4 px-3 py-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white text-[10px] font-black uppercase tracking-widest shadow">
@@ -632,18 +625,17 @@ export function BillingClient() {
                     <p className="text-sm font-extrabold text-foreground">{paise(p.amount_paise)}</p>
                   </div>
                   <div className="sm:flex sm:items-center sm:justify-center">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                      p.status === "captured"
-                        ? "dark:bg-emerald-950 dark:text-emerald-300"
-                        : p.status === "failed"
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${p.status === "captured"
+                      ? "dark:bg-emerald-950 dark:text-emerald-300"
+                      : p.status === "failed"
                         ? "dark:bg-red-950 dark:text-red-300"
                         : "bg-muted text-muted-foreground"
-                    }`}>
+                      }`}>
                       {p.status === "captured"
                         ? <CheckCircle2 className="w-3 h-3" />
                         : p.status === "failed"
-                        ? <XCircle className="w-3 h-3" />
-                        : <Clock className="w-3 h-3" />}
+                          ? <XCircle className="w-3 h-3" />
+                          : <Clock className="w-3 h-3" />}
                       <span className="capitalize">{p.status === "captured" ? "Paid" : p.status}</span>
                     </span>
                   </div>

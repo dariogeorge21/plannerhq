@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -36,6 +36,12 @@ interface RazorpayErrorResponse {
   error?: {
     description?: string;
   };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+  on: (event: string, cb: (r: RazorpayErrorResponse) => void) => void;
+  close?: () => void;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -136,7 +142,7 @@ function SuccessOverlay({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="text-3xl font-extrabold text-foreground mb-2">You're all set! 🎉</h2>
+          <h2 className="text-3xl font-extrabold text-foreground mb-2">You're all set! </h2>
           <p className="text-muted-foreground mb-8 text-base">
             Your <strong className="text-foreground">{data.planName}</strong> subscription is now active.
           </p>
@@ -249,86 +255,16 @@ export function CheckoutClient({
   const [step, setStep] = useState<PaymentStep>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
+  const [sdkReady, setSdkReady] = useState(false);
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rzpRef = useRef<RazorpayInstance | null>(null);
+  // stepRef tracks the latest step value so stale closures (e.g. ondismiss) can read it.
+  const stepRef = useRef<PaymentStep>("idle");
 
-  // Stub Razorpay lumberjack telemetry requests to prevent CORS errors in browser console
+  // Keep stepRef in sync with step state.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    // 1. Intercept XMLHttpRequest
-    const originalOpen = XMLHttpRequest.prototype.open;
-    type OpenSignature = (
-      this: XMLHttpRequest,
-      method: string,
-      url: string | URL,
-      async?: boolean,
-      username?: string | null,
-      password?: string | null
-    ) => void;
-
-    XMLHttpRequest.prototype.open = function (
-      this: XMLHttpRequest & { isLumberjack?: boolean },
-      method: string,
-      url: string | URL,
-      async?: boolean,
-      username?: string | null,
-      password?: string | null
-    ) {
-      if (typeof url === "string" && url.includes("lumberjack.razorpay.com")) {
-        this.isLumberjack = true;
-      }
-      return (originalOpen as OpenSignature).call(this, method, url, async, username, password);
-    } as typeof originalOpen;
-
-    const originalSend = XMLHttpRequest.prototype.send;
-    XMLHttpRequest.prototype.send = function (
-      this: XMLHttpRequest & { isLumberjack?: boolean },
-      body?: Document | XMLHttpRequestBodyInit | null
-    ) {
-      if (this.isLumberjack) {
-        Object.defineProperty(this, "readyState", { writable: true, value: 4 });
-        Object.defineProperty(this, "status", { writable: true, value: 200 });
-        Object.defineProperty(this, "responseText", { writable: true, value: '{"success":true}' });
-        if (this.onreadystatechange) {
-          this.onreadystatechange(new Event("readystatechange"));
-        }
-        if (this.onload) {
-          this.onload(new ProgressEvent("load"));
-        }
-        return;
-      }
-      return originalSend.call(this, body);
-    } as typeof originalSend;
-
-    // 2. Intercept window.fetch
-    const originalFetch = window.fetch;
-    window.fetch = async function (input, init) {
-      const url =
-        typeof input === "string"
-          ? input
-          : input instanceof URL
-            ? input.toString()
-            : input?.url;
-      if (url && url.includes("lumberjack.razorpay.com")) {
-        return new Response(JSON.stringify({ success: true }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-      return originalFetch.call(this, input, init);
-    };
-
-    // 3. Intercept navigator.sendBeacon
-    if (navigator && navigator.sendBeacon) {
-      const originalSendBeacon = navigator.sendBeacon;
-      navigator.sendBeacon = function (url, data) {
-        if (typeof url === "string" && url.includes("lumberjack.razorpay.com")) {
-          return true;
-        }
-        return originalSendBeacon.call(this, url, data);
-      };
-    }
-  }, []);
+    stepRef.current = step;
+  }, [step]);
 
   const plan = BILLING_PLANS.find((p) => p.key === planKey)!;
   const monthlyRate = cycle === "monthly" ? plan.monthlyDisplay : plan.yearlyDisplay;
@@ -369,6 +305,13 @@ export function CheckoutClient({
     }
 
     try {
+      // Guard: don't open a second Razorpay window if one is already open.
+      if (rzpRef.current) {
+        rzpRef.current.open();
+        setStep("gateway_open");
+        return;
+      }
+
       // 1. Create Razorpay subscription on the server
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
@@ -376,9 +319,32 @@ export function CheckoutClient({
         body: JSON.stringify({ planKey, billingCycle: cycle }),
       });
       const json = await res.json();
-      if (!json.success) throw new Error(json.message || "Failed to initiate checkout.");
+
+      if (!res.ok || !json.success) {
+        // Surface meaningful error messages to the developer/user.
+        if (res.status === 409) {
+          // User already has an active subscription.
+          setErrorMessage(json.message || "You already have an active subscription.");
+        } else if (res.status === 500) {
+          setErrorMessage(
+            json.message ||
+              "A server error occurred while creating your subscription. Please try again or contact support."
+          );
+        } else {
+          setErrorMessage(json.message || "Failed to initiate checkout.");
+        }
+        setStep("error");
+        return;
+      }
 
       const { subscriptionId } = json.data;
+
+      if (!subscriptionId) {
+        setErrorMessage("Server returned an invalid subscription ID. Please contact support.");
+        setStep("error");
+        return;
+      }
+
       setStep("gateway_open");
 
       // 2. Open Razorpay gateway
@@ -411,7 +377,7 @@ export function CheckoutClient({
             });
             const verifyJson = await verifyRes.json();
             if (!verifyJson.success) {
-              throw new Error("Signature verification failed.");
+              throw new Error(verifyJson.message || "Signature verification failed.");
             }
           } catch (err: unknown) {
             const message = err instanceof Error ? err.message : "Verification failed";
@@ -420,34 +386,25 @@ export function CheckoutClient({
             return;
           }
 
-          // 4. Poll for webhook-confirmed activation
-          const activated = await pollForActivation(planKey);
+          rzpRef.current = null;
 
-          if (activated) {
-            setSuccessData({
-              paymentId: response.razorpay_payment_id,
-              subscriptionId: response.razorpay_subscription_id,
-              planName: plan.name,
-              cycle,
-              amountDisplay: billedAs,
-            });
-            setStep("success");
-          } else {
-            // Webhook may be delayed — still show success as payment was verified
-            setSuccessData({
-              paymentId: response.razorpay_payment_id,
-              subscriptionId: response.razorpay_subscription_id,
-              planName: plan.name,
-              cycle,
-              amountDisplay: billedAs,
-            });
-            setStep("success");
-          }
+          // 4. Show success — webhook will confirm final activation
+          setSuccessData({
+            paymentId: response.razorpay_payment_id,
+            subscriptionId: response.razorpay_subscription_id,
+            planName: plan.name,
+            cycle,
+            amountDisplay: billedAs,
+          });
+          setStep("success");
         },
 
         modal: {
           ondismiss: () => {
-            if (step === "gateway_open") {
+            rzpRef.current = null;
+            // Use stepRef (not step) to avoid stale closure — the state value
+            // captured at function creation time would always be 'idle'.
+            if (stepRef.current === "gateway_open") {
               setStep("idle");
             }
           },
@@ -455,15 +412,16 @@ export function CheckoutClient({
       };
 
       const rzp = new (window as unknown as {
-        Razorpay: new (opts: unknown) => {
-          open: () => void;
-          on: (event: string, cb: (r: RazorpayErrorResponse) => void) => void;
-        };
+        Razorpay: new (opts: unknown) => RazorpayInstance;
       }).Razorpay(rzpOptions);
 
+      rzpRef.current = rzp;
+
       rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
+        rzpRef.current = null;
         setErrorMessage(
-          response?.error?.description || "Payment failed. Please try again or use a different payment method."
+          response?.error?.description ||
+            "Payment failed. Please try again or use a different payment method."
         );
         setStep("error");
       });
@@ -495,7 +453,11 @@ export function CheckoutClient({
 
   return (
     <>
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="afterInteractive"
+        onLoad={() => setSdkReady(true)}
+      />
 
       {/* Overlays */}
       <AnimatePresence>
@@ -686,7 +648,7 @@ export function CheckoutClient({
             {/* Pay button */}
             <button
               onClick={handlePayNow}
-              disabled={isProcessing}
+              disabled={isProcessing || !sdkReady}
               className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-extrabold shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2.5"
             >
               {step === "creating" ? (

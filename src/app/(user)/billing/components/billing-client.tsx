@@ -178,8 +178,8 @@ export function BillingClient() {
     setError(null);
     try {
       const [subRes, payRes] = await Promise.all([
-        fetch("/api/billing/subscription"),
-        fetch("/api/billing/payments"),
+        fetch("/api/billing/subscription", { cache: "no-store" }),
+        fetch("/api/billing/payments", { cache: "no-store" }),
       ]);
       if (!subRes.ok) throw new Error(`Server error ${subRes.status}`);
       const subJson = await subRes.json();

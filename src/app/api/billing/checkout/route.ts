@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createRazorpaySubscription } from "@/features/billing/service";
 import { z } from "zod";
 import { PlanKey, BillingCycle } from "@/types/types";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 const CheckoutSchema = z.object({
   planKey: z.enum(["pro", "ultra"]),
@@ -55,12 +56,45 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Always create a fresh Razorpay subscription for checkout.
     const result = await createRazorpaySubscription(
       user.id,
       planKey as PlanKey,
       billingCycle as BillingCycle
     );
+
+    const { data: planRow } = await supabase
+      .from("plans")
+      .select("id")
+      .eq("key", planKey)
+      .single();
+
+    if (planRow) {
+      const supabaseAdmin = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      await supabaseAdmin.from("subscriptions").insert({
+        user_id: user.id,
+        plan_id: planRow.id,
+        status: "created",
+        billing_cycle: billingCycle,
+        razorpay_subscription_id: result.subscriptionId,
+      });
+
+      await supabaseAdmin.from("subscription_usage").upsert(
+        {
+          user_id: user.id,
+          workspaces_count: 0,
+          collaborators_count: 0,
+          sections_count: 0,
+          storage_used_bytes: 0,
+          ai_tokens_used: 0,
+          events_current_month: 0,
+        },
+        { onConflict: "user_id", ignoreDuplicates: true }
+      );
+    }
 
     console.info("[billing/checkout] Created new subscription", {
       userId: user.id,

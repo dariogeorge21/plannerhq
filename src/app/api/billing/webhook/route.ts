@@ -22,7 +22,9 @@ export async function POST(req: Request) {
             .update(body)
             .digest("hex");
 
-        if (expectedSignature !== signature) {
+        const a = Buffer.from(expectedSignature);
+        const b = Buffer.from(signature);
+        if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
             return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
         }
 
@@ -130,13 +132,64 @@ async function handleSubscriptionEvent(event: any) {
                 current_period_end: currentPeriodEnd,
             });
     }
+
+    // Determine the user's actual current plan by checking the database for an active subscription.
+    // This prevents race conditions (e.g., an old subscription expiring shouldn't downgrade a user 
+    // if they just purchased a new active one).
+    const { data: activeSub } = await supabaseAdmin
+        .from("subscriptions")
+        .select("plan_id, plans(key)")
+        .eq("user_id", userId)
+        .in("status", ["active", "trialing", "created"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    let newCurrentPlan = "free";
+    if (activeSub && activeSub.plans) {
+        newCurrentPlan = (activeSub.plans as any).key || "free";
+    }
+
+    await supabaseAdmin
+        .from("profiles")
+        .update({ current_plan: newCurrentPlan })
+        .eq("id", userId);
 }
 
 async function handlePaymentCaptured(event: any) {
     const payload = event.payload.payment.entity;
 
-    // Use idempotency check by attempting to insert the payment.
-    // If razorpay_payment_id already exists, it will fail (which is good)
+    let userId = payload.notes?.user_id;
+    let subscriptionId = null;
+
+    if (payload.customer_id) {
+        const { data: sub } = await supabaseAdmin
+            .from("subscriptions")
+            .select("id, user_id")
+            .eq("razorpay_customer_id", payload.customer_id)
+            .limit(1)
+            .maybeSingle();
+        
+        if (sub) {
+            userId = userId || sub.user_id;
+            subscriptionId = sub.id;
+        }
+    }
+
+    if (!userId && payload.email) {
+        const { data: profile } = await supabaseAdmin
+            .from("profiles")
+            .select("id")
+            .eq("email", payload.email)
+            .maybeSingle();
+        if (profile) userId = profile.id;
+    }
+
+    if (!userId) {
+        console.warn("Could not determine user_id for payment captured:", payload.id);
+        return;
+    }
+
     const paymentData = {
         razorpay_payment_id: payload.id,
         razorpay_order_id: payload.order_id,
@@ -144,16 +197,46 @@ async function handlePaymentCaptured(event: any) {
         currency: payload.currency,
         status: payload.status,
         invoice_reference: payload.invoice_id,
-        user_id: payload.notes?.user_id,
+        user_id: userId,
+        subscription_id: subscriptionId,
     };
-
-    if (!paymentData.user_id) return;
 
     await supabaseAdmin.from("payments").insert(paymentData);
 }
 
 async function handlePaymentFailed(event: any) {
     const payload = event.payload.payment.entity;
+
+    let userId = payload.notes?.user_id;
+    let subscriptionId = null;
+
+    if (payload.customer_id) {
+        const { data: sub } = await supabaseAdmin
+            .from("subscriptions")
+            .select("id, user_id")
+            .eq("razorpay_customer_id", payload.customer_id)
+            .limit(1)
+            .maybeSingle();
+        
+        if (sub) {
+            userId = userId || sub.user_id;
+            subscriptionId = sub.id;
+        }
+    }
+
+    if (!userId && payload.email) {
+        const { data: profile } = await supabaseAdmin
+            .from("profiles")
+            .select("id")
+            .eq("email", payload.email)
+            .maybeSingle();
+        if (profile) userId = profile.id;
+    }
+
+    if (!userId) {
+        console.warn("Could not determine user_id for payment failed:", payload.id);
+        return;
+    }
 
     const paymentData = {
         razorpay_payment_id: payload.id,
@@ -162,10 +245,9 @@ async function handlePaymentFailed(event: any) {
         currency: payload.currency,
         status: "failed",
         invoice_reference: payload.invoice_id,
-        user_id: payload.notes?.user_id,
+        user_id: userId,
+        subscription_id: subscriptionId,
     };
-
-    if (!paymentData.user_id) return;
 
     await supabaseAdmin.from("payments").insert(paymentData);
 }

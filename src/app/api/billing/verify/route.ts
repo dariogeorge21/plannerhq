@@ -41,11 +41,31 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
-      await supabase
+      const supabaseAdmin = require("@supabase/supabase-js").createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+
+      const { data: sub } = await supabaseAdmin
         .from("subscriptions")
-        .update({ status: "active", razorpay_subscription_id })
-        .eq("user_id", user.id)
-        .in("status", ["trialing", "past_due"]);
+        .select("id, plan_id, plans(key)")
+        .eq("razorpay_subscription_id", razorpay_subscription_id)
+        .single();
+
+      if (sub) {
+        await supabaseAdmin
+          .from("subscriptions")
+          .update({ status: "active" })
+          .eq("id", sub.id);
+
+        const planKey = (sub.plans as any)?.key;
+        if (planKey) {
+          await supabaseAdmin
+            .from("profiles")
+            .update({ current_plan: planKey })
+            .eq("id", user.id);
+        }
+      }
     }
 
     return NextResponse.json({ success: true });

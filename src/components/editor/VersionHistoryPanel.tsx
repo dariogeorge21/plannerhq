@@ -94,6 +94,7 @@ export default function VersionHistoryPanel({ documentId }: { documentId: string
                           onClick={() => {
                             setSelectedVersion(v);
                             setRestoreOpen(true);
+                            setOpen(false);
                           }}
                         >
                           View & Restore

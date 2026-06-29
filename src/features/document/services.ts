@@ -177,30 +177,15 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
   },
 
   async createVersion(documentId: string, userId: string, label?: string): Promise<any> {
-    const { data: docData } = await supabase
-      .from("documents")
-      .select("workspace_id")
-      .eq("id", documentId)
-      .single();
-
-    if (!docData) throw new Error("Document not found");
-
-    const room = `doc:${docData.workspace_id}:${documentId}`;
-
-    const { data: yjsData } = await supabase
-      .from("yjs_document_state")
-      .select("state")
-      .eq("room", room)
-      .single();
-
+    // Fetch the current JSON snapshot of the document
     const { data: contentData } = await supabase
       .from("document_content")
       .select("*")
       .eq("document_id", documentId)
       .single();
 
-    if (!contentData && !yjsData) {
-      throw new Error("No document content found to version");
+    if (!contentData || !contentData.content) {
+      throw new Error("No document content found to version. Save your document first.");
     }
 
     const { data: maxVersionData } = await supabase
@@ -213,16 +198,15 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
 
     const versionNumber = maxVersionData ? maxVersionData.version_number + 1 : 1;
 
-    const yjsStateStr = yjsData?.state || "";
-    const contentBuffer = Buffer.from(yjsStateStr, "utf-8");
-
+    // Store only the Tiptap JSON snapshot. The BYTEA column gets a minimal
+    // placeholder to satisfy the NOT NULL constraint on the column.
     const { data, error } = await supabase
       .from("document_versions")
       .insert({
         document_id: documentId,
         version_number: versionNumber,
-        content: contentBuffer,
-        content_json: contentData?.content || {},
+        content: Buffer.from("snapshot", "utf-8"),
+        content_json: contentData.content,
         created_by: userId,
         label: label || `Version ${versionNumber}`,
       })
@@ -241,6 +225,7 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
       .single();
 
     if (!versionData) throw new Error("Version not found");
+    if (!versionData.content_json) throw new Error("This version has no restorable JSON content.");
 
     const { data: docData } = await supabase
       .from("documents")
@@ -250,34 +235,23 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
 
     if (!docData) throw new Error("Document not found");
 
-    if (versionData.content_json) {
-      await supabase
-        .from("document_content")
-        .upsert({ document_id: documentId, content: versionData.content_json, updated_at: new Date().toISOString() });
-    }
+    // 1. Restore the JSON snapshot into document_content.
+    //    This is the source of truth the editor seeds from on fresh load.
+    const { error: contentErr } = await supabase
+      .from("document_content")
+      .upsert({ document_id: documentId, content: versionData.content_json, updated_at: new Date().toISOString() });
 
-    if (versionData.content) {
-      let restoredYjsState = "";
-      if (typeof versionData.content === "string") {
-        if (versionData.content.startsWith("\\x")) {
-          const hex = versionData.content.slice(2);
-          const bytes = new Uint8Array(hex.length / 2);
-          for (let i = 0; i < hex.length; i += 2) {
-            bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
-          }
-          restoredYjsState = new TextDecoder().decode(bytes);
-        } else {
-          restoredYjsState = versionData.content;
-        }
-      }
+    if (contentErr) throw new Error(contentErr.message);
 
-      if (restoredYjsState) {
-        const room = `doc:${docData.workspace_id}:${documentId}`;
-        await supabase
-          .from("yjs_document_state")
-          .upsert({ room, state: restoredYjsState, updated_at: new Date().toISOString() });
-      }
-    }
+    // 2. Delete the stale Yjs state for this document's room.
+    //    This forces the SupabaseProvider to start a fresh Y.Doc on next
+    //    load. The DocumentEditor will detect an empty Yjs doc and seed
+    //    it from the restored document_content snapshot.
+    const room = `doc:${docData.workspace_id}:${documentId}`;
+    await supabase
+      .from("yjs_document_state")
+      .delete()
+      .eq("room", room);
   },
 
   async deleteVersion(versionId: string): Promise<void> {

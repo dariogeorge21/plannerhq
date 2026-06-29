@@ -1,12 +1,5 @@
-import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import React, { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -16,6 +9,7 @@ import Link from "@tiptap/extension-link";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { createLowlight } from "lowlight";
 import { format } from "date-fns";
+import { X, Clock } from "lucide-react";
 
 const lowlight = createLowlight();
 
@@ -35,10 +29,32 @@ export default function VersionViewerDialog({
   isRestoring,
 }: VersionViewerDialogProps) {
   
+  // Try to use content_json. If it's missing or empty, try parsing the binary content as JSON
+  // because in older versions or erroneous saves, it might be stored as hex string JSON in `content`.
+  let displayContent = version?.content_json;
+  
+  if (!displayContent || Object.keys(displayContent).length === 0) {
+    if (typeof version?.content === 'string' && version.content.startsWith('\\x')) {
+      try {
+        const hex = version.content.slice(2);
+        const bytes = new Uint8Array(hex.length / 2);
+        for (let i = 0; i < hex.length; i += 2) {
+          bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
+        }
+        const decoded = new TextDecoder().decode(bytes);
+        if (decoded.startsWith('{')) {
+           displayContent = JSON.parse(decoded);
+        }
+      } catch (e) {
+        console.error("Failed to parse fallback content", e);
+      }
+    }
+  }
+
   // Use a simple Tiptap instance for read-only viewing
   const editor = useEditor({
     editable: false,
-    content: version?.content || {},
+    content: displayContent || {},
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
@@ -69,7 +85,18 @@ export default function VersionViewerDialog({
         ].join(" "),
       },
     },
-  }, [version?.id]); // Re-init when version changes
+  }, [version?.id, displayContent]); // Re-init when version or parsed content changes
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) {
+        onOpenChange(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onOpenChange]);
 
   if (!version) return null;
 
@@ -77,45 +104,81 @@ export default function VersionViewerDialog({
   const versionTitle = version.label || `Version ${version.version_number}`;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[800px] w-full max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-background">
-        
-        {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b border-border bg-muted/30">
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-xl flex items-center gap-2">
-                {versionTitle}
-                <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                  v{version.version_number}
-                </span>
-              </DialogTitle>
-              <DialogDescription className="mt-1">
-                Saved on {versionDate}
-              </DialogDescription>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={isRestoring}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={onRestore} disabled={isRestoring}>
-                {isRestoring ? "Restoring..." : "Restore Version"}
-              </Button>
-            </div>
-          </div>
-        </DialogHeader>
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998]"
+            onClick={() => !isRestoring && onOpenChange(false)}
+          />
 
-        {/* Scrollable Document Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:px-12 bg-background scrollbar-thin scrollbar-thumb-border">
-          {/* We assume the title of the document isn't part of the Yjs/Tiptap content, 
-              so we can optionally render a placeholder for the title if needed, 
-              but the version content is the main focus here. */}
-          <div className="opacity-90">
-             <EditorContent editor={editor} />
-          </div>
-        </div>
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed top-[5vh] left-1/2 -translate-x-1/2 z-[9999] w-[95vw] max-w-7xl h-[90vh] flex flex-col rounded-2xl border border-border bg-background shadow-2xl overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold flex items-center gap-2">
+                    {versionTitle}
+                    <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                      v{version.version_number}
+                    </span>
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    Saved on {versionDate}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => onOpenChange(false)} 
+                  disabled={isRestoring}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={onRestore} 
+                  disabled={isRestoring}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  {isRestoring ? "Restoring..." : "Restore Version"}
+                </Button>
+                <button
+                  onClick={() => !isRestoring && onOpenChange(false)}
+                  disabled={isRestoring}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors ml-2"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
 
-      </DialogContent>
-    </Dialog>
+            {/* Scrollable Document Content */}
+            <div className="flex-1 overflow-y-auto p-8 md:p-16 bg-background scrollbar-thin scrollbar-thumb-border">
+              <div className="max-w-4xl mx-auto opacity-95">
+                <EditorContent editor={editor} />
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

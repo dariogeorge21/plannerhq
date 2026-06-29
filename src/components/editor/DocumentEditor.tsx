@@ -3,8 +3,9 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import { debounce } from "lodash";
+import * as Y from "yjs";
 
-import { useDocument, useUpdateDocument, useSaveDocumentContent } from "@/features/document/hooks";
+import { useDocument, useDocumentContent, useUpdateDocument, useSaveDocumentContent } from "@/features/document/hooks";
 import { Loader2, FileText } from "lucide-react";
 
 import { useCollaborationProvider } from "@/features/collaboration/provider";
@@ -60,6 +61,23 @@ export default function DocumentEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadFile = useUploadFile(workspaceId);
   const saveContent = useSaveDocumentContent(workspaceId);
+  const { data: documentContent } = useDocumentContent(documentId);
+
+  // ── Seed Y.Doc from document_content when Yjs state is empty ──────────────
+  // This handles the version restore case: restoreVersion deletes the Yjs
+  // state row so the provider starts with a blank doc. We then seed it from
+  // the document_content JSON snapshot (which restoreVersion already updated).
+  useEffect(() => {
+    if (!isConnected || !editor || !documentContent?.content || !ydoc) return;
+
+    // Check if the Y.Doc's shared 'default' fragment (used by Tiptap's
+    // Collaboration extension) has any content yet.
+    const sharedDoc = ydoc.getXmlFragment("default");
+    if (sharedDoc.length === 0) {
+      // The doc is empty — seed it from the saved JSON snapshot.
+      editor.commands.setContent(documentContent.content, false);
+    }
+  }, [isConnected, editor, documentContent, ydoc]);
 
   // ── AI State ───────────────────────────────────────────────────────────────
   const [aiModal, setAIModal] = useState<AIModalState>({

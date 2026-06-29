@@ -177,13 +177,29 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
   },
 
   async createVersion(documentId: string, userId: string, label?: string): Promise<any> {
+    const { data: docData } = await supabase
+      .from("documents")
+      .select("workspace_id")
+      .eq("id", documentId)
+      .single();
+
+    if (!docData) throw new Error("Document not found");
+
+    const room = `doc:${docData.workspace_id}:${documentId}`;
+
+    const { data: yjsData } = await supabase
+      .from("yjs_document_state")
+      .select("state")
+      .eq("room", room)
+      .single();
+
     const { data: contentData } = await supabase
       .from("document_content")
       .select("*")
       .eq("document_id", documentId)
       .single();
 
-    if (!contentData || !contentData.content) {
+    if (!contentData && !yjsData) {
       throw new Error("No document content found to version");
     }
 
@@ -197,12 +213,16 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
 
     const versionNumber = maxVersionData ? maxVersionData.version_number + 1 : 1;
 
+    const yjsStateStr = yjsData?.state || "";
+    const contentBuffer = Buffer.from(yjsStateStr, "utf-8");
+
     const { data, error } = await supabase
       .from("document_versions")
       .insert({
         document_id: documentId,
         version_number: versionNumber,
-        content: contentData.content,
+        content: contentBuffer,
+        content_json: contentData?.content || {},
         created_by: userId,
         label: label || `Version ${versionNumber}`,
       })
@@ -222,11 +242,42 @@ export const createDocumentService = (supabase: SupabaseClient) => ({
 
     if (!versionData) throw new Error("Version not found");
 
-    const { error } = await supabase
-      .from("document_content")
-      .upsert({ document_id: documentId, content: versionData.content, updated_at: new Date().toISOString() });
+    const { data: docData } = await supabase
+      .from("documents")
+      .select("workspace_id")
+      .eq("id", documentId)
+      .single();
 
-    if (error) throw new Error(error.message);
+    if (!docData) throw new Error("Document not found");
+
+    if (versionData.content_json) {
+      await supabase
+        .from("document_content")
+        .upsert({ document_id: documentId, content: versionData.content_json, updated_at: new Date().toISOString() });
+    }
+
+    if (versionData.content) {
+      let restoredYjsState = "";
+      if (typeof versionData.content === "string") {
+        if (versionData.content.startsWith("\\x")) {
+          const hex = versionData.content.slice(2);
+          const bytes = new Uint8Array(hex.length / 2);
+          for (let i = 0; i < hex.length; i += 2) {
+            bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
+          }
+          restoredYjsState = new TextDecoder().decode(bytes);
+        } else {
+          restoredYjsState = versionData.content;
+        }
+      }
+
+      if (restoredYjsState) {
+        const room = `doc:${docData.workspace_id}:${documentId}`;
+        await supabase
+          .from("yjs_document_state")
+          .upsert({ room, state: restoredYjsState, updated_at: new Date().toISOString() });
+      }
+    }
   },
 
   async deleteVersion(versionId: string): Promise<void> {

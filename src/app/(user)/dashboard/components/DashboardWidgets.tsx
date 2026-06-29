@@ -32,7 +32,6 @@ import { CreateWorkspaceModal } from '@/features/workspace/components/CreateWork
 import { CustomClock } from './CustomClock';
 
 import { useSubscription } from '@/features/billing/hooks/useSubscription';
-import { BillingPlan, DbPlanRecord } from '@/types/billing';
 import {
     useUserWorkspaces,
     useUserPendingInvitations,
@@ -43,7 +42,7 @@ import {
 } from '@/features/dashboard/hooks/UseDashboardData';
 import { useToggleTaskCompletion } from '@/features/task/hooks';
 import { AcceptInvitation, DeclineInvitation } from '@/features/workspace/invites';
-import { TrackWorkspaceTime, CreateWorkspace } from '@/features/workspace/workspace';
+import { CreateWorkspace } from '@/features/workspace/workspace';
 import { Input } from '@/components/ui/input';
 import { useWorkspaceTimeSpent } from '@/features/time-tracking/hooks';
 
@@ -1007,9 +1006,8 @@ export function SubscriptionStatus() {
                 {/* Header row */}
                 <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                            isPaid ? 'bg-indigo-100 dark:bg-indigo-500/20' : 'bg-neutral-100 dark:bg-neutral-800'
-                        }`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isPaid ? 'bg-indigo-100 dark:bg-indigo-500/20' : 'bg-neutral-100 dark:bg-neutral-800'
+                            }`}>
                             {isPaid
                                 ? <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                                 : <Sparkles className="w-5 h-5 text-neutral-500 dark:text-neutral-400" />}
@@ -1019,14 +1017,12 @@ export function SubscriptionStatus() {
                             <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-base font-extrabold text-neutral-900 dark:text-white leading-tight">{planDisplayName}</span>
                                 {isPaid && (
-                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                        isCancelling
-                                            ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                                            : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                                    }`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${
-                                            isCancelling ? 'bg-amber-500' : 'bg-emerald-500'
-                                        }`} />
+                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${isCancelling
+                                        ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                                        : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                                        }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${isCancelling ? 'bg-amber-500' : 'bg-emerald-500'
+                                            }`} />
                                         {isCancelling ? 'Cancels soon' : 'Active'}
                                     </span>
                                 )}
@@ -1059,15 +1055,12 @@ export function SubscriptionStatus() {
                             <p className="text-[9px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Cycle</p>
                             <p className="text-xs font-bold text-neutral-800 dark:text-neutral-200 capitalize">{billingCycle || '—'}</p>
                         </div>
-                        <div className={`rounded-xl p-3 ${
-                            isCancelling ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-neutral-50 dark:bg-neutral-800/60'
-                        }`}>
-                            <p className={`text-[9px] font-black uppercase tracking-wider mb-1 ${
-                                isCancelling ? 'text-amber-500' : 'text-neutral-400 dark:text-neutral-500'
-                            }`}>{isCancelling ? 'Ends' : 'Renews'}</p>
-                            <p className={`text-xs font-bold ${
-                                isCancelling ? 'text-amber-800 dark:text-amber-400' : 'text-neutral-800 dark:text-neutral-200'
-                            }`}>{renewalDate || '—'}</p>
+                        <div className={`rounded-xl p-3 ${isCancelling ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-neutral-50 dark:bg-neutral-800/60'
+                            }`}>
+                            <p className={`text-[9px] font-black uppercase tracking-wider mb-1 ${isCancelling ? 'text-amber-500' : 'text-neutral-400 dark:text-neutral-500'
+                                }`}>{isCancelling ? 'Ends' : 'Renews'}</p>
+                            <p className={`text-xs font-bold ${isCancelling ? 'text-amber-800 dark:text-amber-400' : 'text-neutral-800 dark:text-neutral-200'
+                                }`}>{renewalDate || '—'}</p>
                         </div>
                         <div className="bg-neutral-50 dark:bg-neutral-800/60 rounded-xl p-3">
                             <p className="text-[9px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-1">Last Paid</p>
@@ -1202,9 +1195,9 @@ export function TimeTracking() {
                                         {(index + 1).toString().padStart(2, '0')}.
                                     </span>
                                     <div className="flex items-center gap-3">
-                                        <WorkspaceAvatar 
-                                            workspace={{ name: wt.workspaceName, avatar_url: wt.avatarUrl }} 
-                                            className="w-8 h-8 rounded-lg shadow-sm border border-neutral-200/60 dark:border-neutral-700/60" 
+                                        <WorkspaceAvatar
+                                            workspace={{ name: wt.workspaceName, avatar_url: wt.avatarUrl }}
+                                            className="w-8 h-8 rounded-lg shadow-sm border border-neutral-200/60 dark:border-neutral-700/60"
                                         />
                                         <div className="flex flex-col">
                                             <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">

@@ -20,6 +20,9 @@ import { Workspace, WorkspaceMember } from "@/types/workspace";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { AvatarPicker } from "@/app/(user)/profile/components/ui/avatar-picker";
 
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function WorkspaceSettingsPage({
   params: paramsPromise,
 }: {
@@ -129,9 +132,44 @@ export default function WorkspaceSettingsPage({
 
   if (loading || !workspace || !currentUserRole) {
     return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <LoadingScreen messages={["Loading your workspace settings...", "Verifying permissions..."]}>
+        <div className="max-w-4xl mx-auto p-6 lg:p-10 space-y-10 animate-pulse">
+          <div>
+            <div className="flex items-center gap-3">
+               <Skeleton className="h-10 w-64" />
+               <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+            <Skeleton className="h-5 w-80 mt-2 max-w-full" />
+          </div>
+
+          <div className="space-y-8">
+            <section className="bg-card border border-border rounded-3xl shadow-sm overflow-hidden">
+              <div className="border-b border-border p-6 bg-muted/20">
+                <Skeleton className="h-6 w-48" />
+              </div>
+              <div className="p-6 md:p-8 space-y-8">
+                <Skeleton className="w-24 h-24 rounded-full" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-10 w-full rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-10 w-full rounded-xl" />
+                    <Skeleton className="h-4 w-48 mt-1" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="min-h-[100px] w-full max-w-xl rounded-xl" />
+                </div>
+                <Skeleton className="h-10 w-32 rounded-xl" />
+              </div>
+            </section>
+          </div>
+        </div>
+      </LoadingScreen>
     );
   }
 

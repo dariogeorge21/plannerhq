@@ -33,6 +33,7 @@ import { WorkspaceAvatar } from "@/components/ui/workspace-avatar";
 import { toast } from "sonner";
 import { TimeTrackerWidget } from "@/features/workspace/components/TimeTrackerWidget";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 const LOADING_MESSAGES = [
   "Connecting to your team...",
@@ -70,88 +71,68 @@ function TopProgressBar() {
 }
 
 export function WorkspaceSkeletonLoader({ userName }: { userName?: string }) {
-  const [messageIndex, setMessageIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMessageIndex((prev) => (prev + 1) % LOADING_MESSAGES.length);
-    }, 300);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div className="flex h-screen w-full flex-col bg-background">
-      <header className="flex h-14 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-8 w-8 rounded-full" />
-        </div>
-      </header>
-
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar skeleton */}
-        <aside className="w-64 border-r bg-muted/20 p-4">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-5 w-5" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Skeleton key={i} className="h-8 w-full" />
-              ))}
-            </div>
-            <Skeleton className="h-px w-full" />
-            <div className="space-y-2">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-6 w-3/4" />
-              ))}
-            </div>
+    <LoadingScreen fullScreen={true} messages={LOADING_MESSAGES} userName={userName}>
+      <div className="flex h-screen w-full flex-col bg-background">
+        <header className="flex h-14 items-center justify-between border-b px-4">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-4 w-32" />
           </div>
-        </aside>
-
-        {/* Main content skeleton */}
-        <main className="flex-1 p-6">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-9 w-24" />
-            </div>
-
-            {/* Status message with animated dots */}
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="animate-pulse">●</span>
-              <span>{LOADING_MESSAGES[messageIndex]}</span>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-32 w-full" />
-              ))}
-            </div>
-
-            <div className="space-y-3">
-              <Skeleton className="h-4 w-1/4" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-3/4" />
-            </div>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-8 w-8 rounded-full" />
           </div>
-        </main>
+        </header>
+
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar skeleton */}
+          <aside className="w-64 border-r bg-muted/20 p-4 hidden md:block">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-5 w-5" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <div className="space-y-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} className="h-8 w-full rounded-xl" />
+                ))}
+              </div>
+              <Skeleton className="h-px w-full" />
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-6 w-3/4 rounded-xl" />
+                ))}
+              </div>
+            </div>
+          </aside>
+
+          {/* Main content skeleton */}
+          <main className="flex-1 p-6 bg-background/50">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-8 w-48 rounded-md" />
+                <Skeleton className="h-9 w-24 rounded-md" />
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+                ))}
+              </div>
+
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-1/4 rounded-md" />
+                <Skeleton className="h-12 w-full rounded-2xl" />
+                <Skeleton className="h-12 w-full rounded-2xl" />
+                <Skeleton className="h-12 w-3/4 rounded-2xl" />
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
-
-      {/* Optional: subtle footer with personalized greeting */}
-      {userName && (
-        <div className="absolute bottom-4 right-6 text-xs text-muted-foreground/60">
-          Welcome back, {userName}
-        </div>
-      )}
-    </div>
+    </LoadingScreen>
   );
 }
 

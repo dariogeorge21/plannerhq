@@ -30,6 +30,7 @@ import {
 import { AllWorkspacesModal } from '@/features/workspace/components/AllWorkspacesModal';
 import { CreateWorkspaceModal } from '@/features/workspace/components/CreateWorkspaceModal';
 import { CustomClock } from './CustomClock';
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 import { useSubscription } from '@/features/billing/hooks/useSubscription';
 import {
@@ -1164,20 +1165,22 @@ export function TimeTracking() {
             </CardHeader>
             <CardContent className="p-0">
                 {isLoading ? (
-                    <div className="p-6 space-y-4">
-                        {[1, 2, 3].map(i => (
-                            <div key={i} className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <Skeleton className="w-6 h-6 rounded" />
-                                    <div className="space-y-2">
-                                        <Skeleton className="h-4 w-32" />
-                                        <Skeleton className="h-3 w-20" />
+                    <LoadingScreen fullScreen={false} messages={["Loading time tracking data..."]}>
+                        <div className="p-6 space-y-4">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <Skeleton className="w-6 h-6 rounded" />
+                                        <div className="space-y-2">
+                                            <Skeleton className="h-4 w-32" />
+                                            <Skeleton className="h-3 w-20" />
+                                        </div>
                                     </div>
+                                    <Skeleton className="h-8 w-20 rounded-full" />
                                 </div>
-                                <Skeleton className="h-8 w-20 rounded-full" />
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    </LoadingScreen>
                 ) : !workspaceTimes || workspaceTimes.length === 0 ? (
                     <div className="p-10 text-center flex flex-col items-center justify-center bg-neutral-50/30 dark:bg-neutral-900/20">
                         <div className="w-14 h-14 rounded-full bg-neutral-100 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 flex items-center justify-center mb-4 shadow-sm">

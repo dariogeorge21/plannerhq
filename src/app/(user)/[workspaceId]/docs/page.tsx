@@ -8,6 +8,9 @@ import { useDocuments, useFavoriteDocuments } from "@/features/document/hooks";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { Skeleton } from "@/components/ui/skeleton";
+
 const templates = [
   { id: 'blank', name: 'Blank Document', icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
   { id: 'meeting', name: 'Meeting Notes', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
@@ -23,6 +26,35 @@ export default function DocsDashboard() {
   // We sort by an assumed updated_at or id, for now just slice
   const recentDocs = documents ? [...documents].reverse().slice(0, 4) : [];
   const favDocs = favorites?.map(f => f.document).filter(Boolean) || [];
+
+  if (isLoading || isFavoritesLoading) {
+    return (
+      <LoadingScreen messages={["Loading your notes...", "Fetching recent documents...", "Preparing your workspace..."]}>
+        <div className="h-full w-full bg-background relative overflow-y-auto p-8 lg:p-12 animate-pulse">
+          <div className="max-w-5xl mx-auto space-y-12 relative z-10">
+            <header className="space-y-3">
+              <Skeleton className="h-6 w-32 rounded-full" />
+              <Skeleton className="h-10 w-64" />
+              <Skeleton className="h-6 w-96 max-w-full" />
+            </header>
+            <Skeleton className="w-full h-14 rounded-2xl" />
+            <section>
+              <Skeleton className="h-7 w-48 mb-6" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1,2,3,4].map(i => <Skeleton key={i} className="h-32 rounded-2xl w-full" />)}
+              </div>
+            </section>
+            <section>
+              <Skeleton className="h-7 w-40 mb-6" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[1,2,3].map(i => <Skeleton key={i} className="h-24 rounded-2xl w-full" />)}
+              </div>
+            </section>
+          </div>
+        </div>
+      </LoadingScreen>
+    );
+  }
 
   return (
     <div className="h-full w-full bg-background relative overflow-y-auto p-8 lg:p-12">
@@ -92,13 +124,7 @@ export default function DocsDashboard() {
             </h2>
           </div>
           
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="h-32 bg-accent/50 animate-pulse rounded-2xl border border-border" />
-              ))}
-            </div>
-          ) : recentDocs.length > 0 ? (
+          {recentDocs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {recentDocs.map((doc) => (
                 <Link key={doc.id} href={`/${workspaceId}/docs/${doc.id}`} className="group relative bg-card hover:bg-accent/50 border border-border rounded-2xl p-5 transition-all hover:shadow-md flex flex-col justify-between h-32">

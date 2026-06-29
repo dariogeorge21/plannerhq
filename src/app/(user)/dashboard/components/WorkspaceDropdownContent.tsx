@@ -13,6 +13,9 @@ interface WorkspaceDropdownContentProps {
   onCreateNew: () => void;
 }
 
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export function WorkspaceDropdownContent({
   workspaces,
   loading,
@@ -23,8 +26,15 @@ export function WorkspaceDropdownContent({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-6">
-        <Loader2 className="w-5 h-5 animate-spin text-neutral-400" />
+      <div className="py-2 min-h-[140px] relative">
+        <LoadingScreen fullScreen={false} messages={["Loading workspaces..."]}>
+           <div className="px-2 py-1.5 space-y-2">
+             <Skeleton className="h-3 w-24 mb-2" />
+             <Skeleton className="h-8 w-full rounded-md" />
+             <Skeleton className="h-8 w-full rounded-md" />
+             <Skeleton className="h-8 w-full rounded-md" />
+           </div>
+        </LoadingScreen>
       </div>
     );
   }

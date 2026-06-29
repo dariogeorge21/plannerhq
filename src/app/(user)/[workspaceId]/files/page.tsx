@@ -8,6 +8,9 @@ import { Progress } from "@/components/ui/progress";
 import { FolderOpen, Loader2, HardDrive } from "lucide-react";
 import { motion } from "framer-motion";
 
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function WorkspaceFilesPage({ params: paramsPromise }: { params: Promise<{ workspaceId: string }> }) {
   const params = use(paramsPromise);
   const workspaceId = params.workspaceId;
@@ -30,6 +33,44 @@ export default function WorkspaceFilesPage({ params: paramsPromise }: { params: 
 
   const percentage = getStoragePercentage();
   const isNearLimit = percentage > 90;
+
+  if (filesLoading || quotaLoading) {
+    return (
+      <LoadingScreen messages={["Loading your files...", "Calculating storage...", "Preparing your workspace..."]}>
+        <div className="flex flex-col h-full bg-background selection:bg-primary/20 animate-pulse">
+          <header className="flex items-center justify-between px-8 py-6 bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-10">
+            <div className="flex items-center gap-4">
+              <Skeleton className="w-12 h-12 rounded-2xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-7 w-32" />
+                <Skeleton className="h-4 w-64 max-w-full" />
+              </div>
+            </div>
+          </header>
+          <main className="flex-1 overflow-y-auto p-8">
+            <div className="max-w-6xl mx-auto flex flex-col gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 flex flex-col gap-4">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-48 w-full rounded-2xl" />
+                </div>
+                <div className="flex flex-col gap-4">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-48 w-full rounded-2xl" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-4 mt-4">
+                <Skeleton className="h-6 w-48" />
+                <div className="space-y-4">
+                  {[1,2,3,4].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </LoadingScreen>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-background selection:bg-primary/20">
@@ -70,12 +111,7 @@ export default function WorkspaceFilesPage({ params: paramsPromise }: { params: 
                   <HardDrive className="w-6 h-6" />
                 </div>
 
-                {quotaLoading ? (
-                  <div className="flex items-center gap-3 text-muted-foreground">
-                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                    <span className="text-sm font-medium">Calculating storage...</span>
-                  </div>
-                ) : quota ? (
+                {quota ? (
                   <>
                     <div className="flex flex-col gap-2 mt-2">
                       <div className="flex justify-between items-center text-sm font-semibold">
@@ -101,14 +137,7 @@ export default function WorkspaceFilesPage({ params: paramsPromise }: { params: 
 
           <div className="flex flex-col gap-4 mt-4">
             <h2 className="text-lg font-bold text-foreground tracking-tight">All Workspace Files</h2>
-            {filesLoading ? (
-              <div className="w-full py-20 flex flex-col items-center justify-center bg-card rounded-2xl border border-border shadow-sm">
-                <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
-                <p className="text-muted-foreground font-medium">Retrieving files...</p>
-              </div>
-            ) : (
-              <FileList files={files || []} workspaceId={workspaceId} />
-            )}
+            <FileList files={files || []} workspaceId={workspaceId} />
           </div>
         </motion.div>
       </main>

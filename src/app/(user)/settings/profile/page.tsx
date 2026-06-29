@@ -8,6 +8,7 @@ import { EditableField } from "../../profile/components/ui/editable-field";
 import { AvatarPicker } from "../../profile/components/ui/avatar-picker";
 import { ProfileData } from "@/features/user/settings";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Progress } from "@/components/ui/progress";
 
 export default function ProfileSettingsPage() {
@@ -69,16 +70,18 @@ export default function ProfileSettingsPage() {
 
     if (loading) {
         return (
-            <div className="space-y-8 animate-in fade-in duration-500">
-                <div className="flex items-start gap-4">
-                    <Skeleton className="h-12 w-12 rounded-2xl" />
-                    <div className="space-y-2">
-                        <Skeleton className="h-8 w-48" />
-                        <Skeleton className="h-4 w-72" />
+            <LoadingScreen fullScreen={false} messages={["Loading profile details...", "Fetching user data..."]}>
+                <div className="space-y-8 animate-in fade-in duration-500">
+                    <div className="flex items-start gap-4">
+                        <Skeleton className="h-12 w-12 rounded-2xl" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-8 w-48" />
+                            <Skeleton className="h-4 w-72" />
+                        </div>
                     </div>
+                    <Skeleton className="h-[400px] w-full rounded-3xl" />
                 </div>
-                <Skeleton className="h-[400px] w-full rounded-3xl" />
-            </div>
+            </LoadingScreen>
         );
     }
 

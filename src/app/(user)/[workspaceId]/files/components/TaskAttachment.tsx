@@ -29,6 +29,9 @@ const formatBytes = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function TaskAttachment({ taskId, workspaceId }: TaskAttachmentProps) {
   const { data: files, isLoading } = useFiles(workspaceId, { entity_type: "task", entity_id: taskId });
   const deleteFile = useDeleteFile(workspaceId);
@@ -56,8 +59,13 @@ export default function TaskAttachment({ taskId, workspaceId }: TaskAttachmentPr
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center p-8 bg-card border border-border border-dashed rounded-xl">
-          <Loader2 className="w-6 h-6 animate-spin text-primary/50" />
+        <div className="w-full h-32 rounded-xl overflow-hidden border border-border bg-card">
+          <LoadingScreen fullScreen={false} messages={["Loading attachments..."]}>
+            <div className="p-3 space-y-2">
+              <Skeleton className="w-full h-12 rounded-lg" />
+              <Skeleton className="w-full h-12 rounded-lg" />
+            </div>
+          </LoadingScreen>
         </div>
       ) : files && files.length > 0 ? (
         <div className="flex flex-col gap-2">

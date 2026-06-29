@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ProfileData } from "@/features/user/settings";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { cn } from "@/lib/utils";
 
 export default function NotificationsSettingsPage() {
@@ -93,16 +94,18 @@ export default function NotificationsSettingsPage() {
 
     if (loading) {
         return (
-            <div className="space-y-8 animate-in fade-in duration-500">
-                <div className="flex items-start gap-4">
-                    <Skeleton className="h-12 w-12 rounded-2xl" />
-                    <div className="space-y-2">
-                        <Skeleton className="h-8 w-48" />
-                        <Skeleton className="h-4 w-72" />
+            <LoadingScreen fullScreen={false} messages={["Loading notification settings...", "Fetching preferences..."]}>
+                <div className="space-y-8 animate-in fade-in duration-500">
+                    <div className="flex items-start gap-4">
+                        <Skeleton className="h-12 w-12 rounded-2xl" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-8 w-48" />
+                            <Skeleton className="h-4 w-72" />
+                        </div>
                     </div>
+                    <Skeleton className="h-64 w-full rounded-3xl" />
                 </div>
-                <Skeleton className="h-64 w-full rounded-3xl" />
-            </div>
+            </LoadingScreen>
         );
     }
 

@@ -6,6 +6,7 @@ import { useSession } from '@/features/auth/providers/SessionProvider';
 import { DashboardHeader } from './components/DashboardHeader';
 import { ThemeToggle } from './components/ThemeToggle';
 import { Skeleton } from '@/components/ui/skeleton';
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import {
   WelcomeHero, ProfileOverviewCard, RecentWorkspaces,
   TaskPriorityBoard, MiniCalendar, UpcomingEvents,
@@ -74,41 +75,43 @@ export default function DashboardPage() {
 // Skeleton component
 function DashboardSkeleton() {
   return (
-    <div className="min-h-screen bg-neutral-50/50 dark:bg-neutral-900/50">
-      <div className="h-16 border-b border-neutral-200 bg-white/80 dark:bg-neutral-800/80 flex items-center px-6">
-        <div className="flex-1 flex items-center gap-4">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-6 w-32" />
-        </div>
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-9 w-9 rounded-full" />
-          <Skeleton className="h-9 w-9 rounded-full" />
-          <Skeleton className="h-9 w-9 rounded-full" />
-        </div>
-      </div>
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-        <Skeleton className="h-20 w-full" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-48 w-full" />
-            <Skeleton className="h-64 w-full" />
+    <LoadingScreen fullScreen={true} messages={["Preparing dashboard...", "Loading workspaces...", "Gathering insights..."]}>
+      <div className="min-h-screen bg-neutral-50/50 dark:bg-neutral-900/50 w-full animate-pulse">
+        <div className="h-16 border-b border-neutral-200 bg-white/80 dark:bg-neutral-800/80 flex items-center px-6">
+          <div className="flex-1 flex items-center gap-4">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <Skeleton className="h-6 w-32" />
           </div>
-          <div className="space-y-6">
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-24 w-full" />
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-9 w-9 rounded-full" />
+            <Skeleton className="h-9 w-9 rounded-full" />
+            <Skeleton className="h-9 w-9 rounded-full" />
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+        <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+          <Skeleton className="h-20 w-full rounded-2xl" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-32 w-full rounded-2xl" />
+              <Skeleton className="h-48 w-full rounded-2xl" />
+              <Skeleton className="h-64 w-full rounded-2xl" />
+            </div>
+            <div className="space-y-6">
+              <Skeleton className="h-64 w-full rounded-2xl" />
+              <Skeleton className="h-32 w-full rounded-2xl" />
+              <Skeleton className="h-24 w-full rounded-2xl" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Skeleton className="h-32 w-full rounded-2xl" />
+            <Skeleton className="h-32 w-full rounded-2xl" />
+          </div>
+          <Skeleton className="h-48 w-full rounded-2xl" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-        <Skeleton className="h-48 w-full" />
       </div>
-    </div>
+    </LoadingScreen>
   );
 }

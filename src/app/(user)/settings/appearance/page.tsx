@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Sun, Moon, Laptop, Palette } from "lucide-react";
 import { SettingsCard } from "../../profile/components/ui/settings-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 import { cn } from "@/lib/utils";
 
 export default function AppearanceSettingsPage() {
@@ -53,16 +54,18 @@ export default function AppearanceSettingsPage() {
 
     if (loading) {
         return (
-            <div className="space-y-8 animate-in fade-in duration-500">
-                <div className="flex items-start gap-4">
-                    <Skeleton className="h-12 w-12 rounded-2xl" />
-                    <div className="space-y-2">
-                        <Skeleton className="h-8 w-48" />
-                        <Skeleton className="h-4 w-72" />
+            <LoadingScreen fullScreen={false} messages={["Loading appearance settings...", "Preparing themes..."]}>
+                <div className="space-y-8 animate-in fade-in duration-500">
+                    <div className="flex items-start gap-4">
+                        <Skeleton className="h-12 w-12 rounded-2xl" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-8 w-48" />
+                            <Skeleton className="h-4 w-72" />
+                        </div>
                     </div>
+                    <Skeleton className="h-48 w-full rounded-3xl" />
                 </div>
-                <Skeleton className="h-48 w-full rounded-3xl" />
-            </div>
+            </LoadingScreen>
         );
     }
 

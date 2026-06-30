@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import { TimeTrackerWidget } from "@/features/workspace/components/TimeTrackerWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingScreen } from "@/components/ui/loading-screen";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const LOADING_MESSAGES = [
   "Connecting to your team...",
@@ -291,7 +292,7 @@ export default function WorkspaceLayout({
         >
           <ChevronsLeft className={`w-3.5 h-3.5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
         </button>
-
+        {/* 
         <div className="px-3 pt-4 pb-2">
           <button className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border/50 bg-background/50 hover:bg-accent/80 transition-all text-muted-foreground hover:text-foreground group hover:shadow-sm ${isCollapsed ? 'justify-center px-0' : ''}`}>
             <Search className="w-4 h-4 shrink-0 group-hover:scale-110 transition-transform" />
@@ -304,50 +305,64 @@ export default function WorkspaceLayout({
               </div>
             )}
           </button>
-        </div>
+        </div> */}
 
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto scrollbar-none relative">
-          {navLinks.map((link) => {
-            const active = isActive(link.href, link.exact);
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => setLoadingHref(link.href)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative ${active
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-                  }`}
-              >
-                {active && (
-                  <motion.div
-                    layoutId="activeSidebarPill"
-                    className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/10 rounded-xl -z-10 shadow-sm"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                {!active && (
-                  <div className="absolute inset-0 bg-accent/50 rounded-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                )}
-                {loadingHref === link.href ? (
-                  <Loader2 className={`w-5 h-5 shrink-0 relative z-10 transition-transform duration-300 animate-spin ${active ? "text-primary" : "text-muted-foreground"}`} />
-                ) : (
-                  <link.icon className={`w-5 h-5 shrink-0 relative z-10 transition-transform duration-300 ${active ? "text-primary scale-110" : "text-muted-foreground group-hover:scale-110 group-hover:text-foreground"}`} />
-                )}
-                {!isCollapsed && (
-                  <span className={`text-sm font-semibold relative z-10 ${active ? "text-primary" : ""}`}>
-                    {link.name}
-                  </span>
-                )}
-                {isCollapsed && (
-                  <div className="absolute left-14 bg-popover border border-border text-popover-foreground text-xs font-semibold px-2.5 py-1.5 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all shadow-xl z-50 translate-x-[-10px] group-hover:translate-x-0">
-                    {link.name}
-                  </div>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        <TooltipProvider delayDuration={100}>
+          <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto scrollbar-none relative">
+            {navLinks.map((link) => {
+              const active = isActive(link.href, link.exact);
+              const linkEl = (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setLoadingHref(link.href)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 group relative ${active
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                    } ${isCollapsed ? "justify-center" : ""}`}
+                >
+                  {active && (
+                    <motion.div
+                      layoutId="activeSidebarPill"
+                      className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/10 rounded-xl -z-10 shadow-sm"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  {!active && (
+                    <div className="absolute inset-0 bg-accent/50 rounded-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                  {loadingHref === link.href ? (
+                    <Loader2 className={`w-5 h-5 shrink-0 relative z-10 transition-transform duration-300 animate-spin ${active ? "text-primary" : "text-muted-foreground"}`} />
+                  ) : (
+                    <link.icon className={`w-5 h-5 shrink-0 relative z-10 transition-transform duration-300 ${active ? "text-primary scale-110" : "text-muted-foreground group-hover:scale-110 group-hover:text-foreground"}`} />
+                  )}
+                  {!isCollapsed && (
+                    <span className={`text-sm font-semibold relative z-10 ${active ? "text-primary" : ""}`}>
+                      {link.name}
+                    </span>
+                  )}
+                </Link>
+              );
+
+              if (isCollapsed) {
+                return (
+                  <Tooltip key={link.name}>
+                    <TooltipTrigger asChild>{linkEl}</TooltipTrigger>
+                    <TooltipContent
+                      side="right"
+                      sideOffset={12}
+                      className="font-semibold text-xs"
+                    >
+                      {link.name}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
+              return linkEl;
+            })}
+          </nav>
+        </TooltipProvider>
 
         <div className="p-4 border-t border-border/50 flex flex-col gap-2 bg-sidebar/50">
           {mounted && (

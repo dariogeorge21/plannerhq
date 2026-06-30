@@ -72,7 +72,7 @@ function TopProgressBar() {
 
 export function WorkspaceSkeletonLoader({ userName }: { userName?: string }) {
   return (
-    <LoadingScreen fullScreen={true} messages={LOADING_MESSAGES} userName={userName}>
+    <LoadingScreen fullScreen={true} messages={LOADING_MESSAGES}>
       <div className="flex h-screen w-full flex-col bg-background">
         <header className="flex h-14 items-center justify-between border-b px-4">
           <div className="flex items-center gap-3">

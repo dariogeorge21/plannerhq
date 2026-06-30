@@ -41,16 +41,16 @@ function BillingSuccessContent() {
   const pct = ((AUTO_REDIRECT_SECONDS - countdown) / AUTO_REDIRECT_SECONDS) * 100;
 
   return (
-    <div className="min-h-screen bg-background font-sans flex items-center justify-center px-5 py-12">
+    <div className="flex items-center justify-center py-12">
       <div className="max-w-lg w-full">
         {/* Success icon */}
         <motion.div
           initial={{ scale: 0.4, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.05 }}
-          className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-8"
+          className="w-24 h-24 rounded-full bg-emerald-100 dark:bg-emerald-950/30 flex items-center justify-center mx-auto mb-8"
         >
-          <CheckCircle2 className="w-12 h-12 text-emerald-600" />
+          <CheckCircle2 className="w-12 h-12 text-emerald-600 dark:text-emerald-400" />
         </motion.div>
 
         <motion.div
@@ -85,7 +85,7 @@ function BillingSuccessContent() {
                     label: "Payment ID",
                     value: <span className="font-mono text-[11px] text-muted-foreground">{paymentId}</span>,
                   },
-                  { label: "Status", value: <span className="text-emerald-600 font-bold">Paid ✓</span> },
+                  { label: "Status", value: <span className="text-emerald-600 dark:text-emerald-400 font-bold">Paid ✓</span> },
                 ].map((row) => (
                   <div key={row.label} className="flex justify-between items-center text-sm border-b border-border pb-3 last:border-0 last:pb-0">
                     <span className="text-muted-foreground">{row.label}</span>
@@ -102,13 +102,15 @@ function BillingSuccessContent() {
               onClick={() => window.print()}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-border bg-card text-sm font-bold text-foreground hover:bg-muted transition-colors"
             >
-              <Printer className="w-4 h-4" /> Print Receipt
+              <Printer className="w-4 h-4" />
+              Print Receipt
             </button>
             <button
               onClick={() => router.push("/billing")}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-border bg-card text-sm font-bold text-foreground hover:bg-muted transition-colors"
             >
-              <Home className="w-4 h-4" /> View Billing
+              <Home className="w-4 h-4" />
+              View Billing
             </button>
             <button
               onClick={() => router.push("/dashboard")}
@@ -142,7 +144,7 @@ export default function BillingSuccessPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex items-center justify-center py-20">
           <div className="text-center space-y-4">
             <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-muted-foreground text-sm">Loading receipt details...</p>

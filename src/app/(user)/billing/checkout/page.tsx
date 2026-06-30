@@ -30,16 +30,5 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
 
   const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 
-  return (
-    <div className="min-h-screen bg-background font-sans">
-      <main className="max-w-4xl w-full mx-auto px-5 py-10">
-        <nav className="flex items-center gap-2 text-xs text-muted-foreground mb-8">
-          <a href="/billing" className="hover:text-foreground transition-colors font-semibold">Billing</a>
-          <span>/</span>
-          <span className="text-foreground font-semibold">Confirm Subscription</span>
-        </nav>
-        <CheckoutClient planKey={planKey} defaultCycle={billingCycle} razorpayKeyId={razorpayKeyId} />
-      </main>
-    </div>
-  );
+  return <CheckoutClient planKey={planKey} defaultCycle={billingCycle} razorpayKeyId={razorpayKeyId} />;
 }

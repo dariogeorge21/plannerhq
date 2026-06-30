@@ -10,10 +10,12 @@ import { Button } from '@/components/ui/button';
 import {
   ChevronLeft, ChevronRight, Plus, CalendarDays,
   Building2, User, CheckSquare, Layers,
-  RefreshCw,
+  RefreshCw, ArrowLeft, Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {  
   AggregatedCalendarItem,
   AggregatedWorkspaceEvent,
   AggregatedWorkspaceTask,
@@ -43,6 +45,8 @@ type ViewMode = 'month' | 'week' | 'day';
 export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeView, setActiveView] = useState<ViewMode>('month');
+  const [isNavigating, setIsNavigating] = useState(false);
+  const pathname = usePathname();
 
   // Compute date range
   const dateRange = useMemo(() => {
@@ -86,12 +90,14 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
 
   // Navigation
   const handlePrev = () => {
+    setIsNavigating(true);
     if (activeView === 'month') setCurrentDate(subMonths(currentDate, 1));
     else if (activeView === 'week') setCurrentDate(subWeeks(currentDate, 1));
     else setCurrentDate(subDays(currentDate, 1));
   };
 
   const handleNext = () => {
+    setIsNavigating(true);
     if (activeView === 'month') setCurrentDate(addMonths(currentDate, 1));
     else if (activeView === 'week') setCurrentDate(addWeeks(currentDate, 1));
     else setCurrentDate(addDays(currentDate, 1));
@@ -136,6 +142,22 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-3 mb-1">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="h-10 px-3 rounded-xl"
+                onClick={() => setIsNavigating(true)}
+              >
+                <Link href="/dashboard">
+                  {isNavigating ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                  )}
+                  Back to dashboard
+                </Link>
+              </Button>
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md">
                 <CalendarDays className="w-5 h-5 text-white" />
               </div>

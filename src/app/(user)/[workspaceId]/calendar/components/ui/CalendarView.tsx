@@ -2,8 +2,11 @@
 
 import React, { useState, useMemo } from "react";
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek } from "date-fns";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { CalendarToolbar } from "../CalendarToolbar";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, CalendarDays } from "lucide-react";
+import Link from "next/link";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { DayView } from "./DayView";
@@ -21,6 +24,8 @@ export function CalendarView({ workspaceId }: CalendarViewProps) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeView, setActiveView] = useState<'month' | 'week' | 'day'>('month');
+  const [isNavigating, setIsNavigating] = useState(false);
+  const pathname = usePathname();
 
   // Compute date range for fetching
   const dateRange = useMemo(() => {
@@ -78,6 +83,37 @@ export function CalendarView({ workspaceId }: CalendarViewProps) {
 
   return (
     <div className="flex flex-col h-full bg-muted/30 p-4 md:p-6 lg:p-8">
+      {/* Page Header */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-1">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-10 px-3 rounded-xl"
+            onClick={() => setIsNavigating(true)}
+          >
+            <Link href={`/${workspaceId}`}>
+              {isNavigating ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <ArrowLeft className="w-4 h-4 mr-2" />
+              )}
+              Back to dashboard
+            </Link>
+          </Button>
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md">
+            <CalendarDays className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Workspace Calendar</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Manage your team events and tasks
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-card text-card-foreground rounded-xl shadow-sm border border-border flex flex-col h-full">
         <CalendarToolbar
           currentDate={currentDate}

@@ -376,9 +376,15 @@ export default function WorkspaceLayout({
           )}
           <Link
             href="/dashboard"
+            onClick={() => setLoadingHref("/dashboard")}
             className={`flex items-center justify-center gap-2 w-full rounded-xl border border-transparent hover:border-destructive/30 bg-background/50 px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all shadow-sm hover:shadow ${isCollapsed ? 'px-0' : ''}`}
           >
-            {isCollapsed ? <ChevronsLeft className="w-5 h-5" /> : <span>Exit Workspace</span>}
+            {loadingHref === "/dashboard" ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : isCollapsed ? (
+              <ChevronsLeft className="w-5 h-5" />
+            ) : null}
+            {!isCollapsed && <span>{loadingHref === "/dashboard" ? "Exiting..." : "Exit Workspace"}</span>}
           </Link>
         </div>
       </motion.aside>
@@ -458,10 +464,15 @@ export default function WorkspaceLayout({
               <div className="p-5 border-t border-border bg-muted/20">
                 <Link
                   href="/dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => setLoadingHref("/dashboard")}
                   className="flex items-center justify-center gap-2 w-full rounded-xl bg-background border border-border px-4 py-3 text-sm font-bold text-foreground shadow-sm hover:shadow-md transition-shadow hover:border-destructive/30 hover:text-destructive"
                 >
-                  Exit Workspace
+                  {loadingHref === "/dashboard" ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ChevronsLeft className="w-4 h-4" />
+                  )}
+                  <span>{loadingHref === "/dashboard" ? "Exiting..." : "Exit Workspace"}</span>
                 </Link>
               </div>
             </motion.aside>

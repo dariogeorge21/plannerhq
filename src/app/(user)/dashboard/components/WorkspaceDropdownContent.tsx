@@ -1,9 +1,7 @@
 // features/dashboard/components/WorkspaceDropdownContent.tsx
 'use client';
-
-import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, FolderOpen, Loader2 } from 'lucide-react';
+import { Plus, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface WorkspaceDropdownContentProps {
@@ -28,12 +26,12 @@ export function WorkspaceDropdownContent({
     return (
       <div className="py-2 min-h-[140px] relative">
         <LoadingScreen fullScreen={false} messages={["Loading workspaces..."]}>
-           <div className="px-2 py-1.5 space-y-2">
-             <Skeleton className="h-3 w-24 mb-2" />
-             <Skeleton className="h-8 w-full rounded-md" />
-             <Skeleton className="h-8 w-full rounded-md" />
-             <Skeleton className="h-8 w-full rounded-md" />
-           </div>
+          <div className="px-2 py-1.5 space-y-2">
+            <Skeleton className="h-3 w-24 mb-2" />
+            <Skeleton className="h-8 w-full rounded-md" />
+            <Skeleton className="h-8 w-full rounded-md" />
+            <Skeleton className="h-8 w-full rounded-md" />
+          </div>
         </LoadingScreen>
       </div>
     );
@@ -68,7 +66,18 @@ export function WorkspaceDropdownContent({
             className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800 transition-colors"
             onClick={() => router.push(`/${ws.id}`)}
           >
-            <span className="text-lg">{ws.icon || '📁'}</span>
+            <span className="text-lg">
+              <img
+                src={ws.avatar_url || '/logo.png'}
+                alt={ws.name}
+                width={32}
+                height={32}
+                className="rounded-md"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/logo.png';
+                }}
+              />
+            </span>
             <span className="truncate">{ws.name}</span>
           </button>
         ))}

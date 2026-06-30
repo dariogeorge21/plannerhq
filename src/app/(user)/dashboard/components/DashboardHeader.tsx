@@ -53,7 +53,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           {/* Right controls */}
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <NotificationCenter />
+            {/* <NotificationCent er /> */}
             <UserProfileMenu user={user} />
           </div>
         </div>

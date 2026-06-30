@@ -1,5 +1,7 @@
-import { GetWorkspaceActivityLogs, GetWorkspace } from "@/features/workspace/workspace";
-import { redirect } from "next/navigation";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import {
   Table,
   TableBody,
@@ -7,44 +9,70 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import { format } from "date-fns";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from '@/components/ui/pagination';
+import { format } from 'date-fns';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default async function WorkspaceLogsPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ workspaceId: string }>;
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const { workspaceId } = await params;
-  const searchParamsResolved = await searchParams;
-  const page = searchParamsResolved.page ? parseInt(searchParamsResolved.page, 10) : 1;
+type LogItem = {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  action_type: string;
+  entity_type: string;
+  entity_id: string | null;
+  metadata: any;
+  created_at: string;
+  profiles?: {
+    display_name: string | null;
+    avatar_url: string | null;
+    email: string;
+  };
+};
+
+async function fetchLogs(
+  workspaceId: string,
+  page: number,
+  limit: number
+): Promise<{ data: LogItem[]; totalCount: number; success: boolean; message: string }> {
+  const res = await fetch(`/api/workspaces/${workspaceId}/logs?page=${page}&limit=${limit}`);
+  return res.json();
+}
+
+export default function WorkspaceLogsPage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const workspaceId = params.workspaceId as string;
+
+  const currentPage = searchParams.get('page') ? parseInt(searchParams.get('page')!, 10) : 1;
+  const [logs, setLogs] = useState<LogItem[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const limit = 20;
-
-  // Check workspace and role
-  const workspaceRes = await GetWorkspace(workspaceId);
-  if (!workspaceRes.success || !workspaceRes.data) {
-    redirect("/dashboard");
-  }
+  const totalPages = Math.ceil(totalCount / limit);
   
-  if (workspaceRes.data.role !== "owner") {
-    redirect(`/${workspaceId}`);
-  }
+  const prevPageHref = currentPage > 1 ? `/${workspaceId}/logs?page=${currentPage - 1}` : '#';
+  const nextPageHref = currentPage < totalPages ? `/${workspaceId}/logs?page=${currentPage + 1}` : '#';
 
-  // Fetch logs
-  const logsRes = await GetWorkspaceActivityLogs(workspaceId, page, limit);
-  const logs = logsRes.data || [];
-  const total = logsRes.totalCount || 0;
-  const totalPages = Math.ceil(total / limit);
+  useEffect(() => {
+    const loadLogs = async () => {
+      setIsLoading(true);
+      const res = await fetchLogs(workspaceId, currentPage, limit);
+      if (res.success && res.data) {
+        setLogs(res.data);
+        setTotalCount(res.totalCount);
+      }
+      setIsLoading(false);
+    };
+    loadLogs();
+  }, [workspaceId, currentPage]);
 
   return (
     <div className="flex-1 overflow-y-auto p-6 lg:p-10 bg-background h-full">
@@ -67,7 +95,21 @@ export default async function WorkspaceLogsPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {logs.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-6 w-6 rounded-full" />
+                        <Skeleton className="h-5 w-20" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-5 w-32 ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              ) : logs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center">
                     No logs found.
@@ -85,18 +127,18 @@ export default async function WorkspaceLogsPage({
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
-                          <AvatarImage src={log.user?.avatar_url || ""} />
+                          <AvatarImage src={log.profiles?.avatar_url || ''} />
                           <AvatarFallback>
-                            {log.user?.full_name?.charAt(0) || log.user?.email?.charAt(0) || "U"}
+                            {log.profiles?.display_name?.charAt(0) || log.profiles?.email?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <span className="text-sm">
-                          {log.user?.full_name || log.user?.email || "Unknown User"}
+                          {log.profiles?.display_name || log.profiles?.email || 'Unknown User'}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right whitespace-nowrap text-muted-foreground text-sm">
-                      {format(new Date(log.created_at), "MMM d, yyyy h:mm a")}
+                      {format(new Date(log.created_at), 'MMM d, yyyy h:mm a')}
                     </TableCell>
                   </TableRow>
                 ))
@@ -110,21 +152,21 @@ export default async function WorkspaceLogsPage({
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  href={page > 1 ? `/${workspaceId}/logs?page=${page - 1}` : "#"}
-                  className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                  href={prevPageHref}
+                  className={currentPage <= 1 || isLoading ? 'pointer-events-none opacity-50' : ''}
                 />
               </PaginationItem>
-              
+
               <PaginationItem>
                 <span className="text-sm text-muted-foreground mx-4">
-                  Page {page} of {totalPages}
+                  {isLoading ? 'Loading...' : `Page ${currentPage} of ${totalPages}`}
                 </span>
               </PaginationItem>
 
               <PaginationItem>
                 <PaginationNext
-                  href={page < totalPages ? `/${workspaceId}/logs?page=${page + 1}` : "#"}
-                  className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
+                  href={nextPageHref}
+                  className={currentPage >= totalPages || isLoading ? 'pointer-events-none opacity-50' : ''}
                 />
               </PaginationItem>
             </PaginationContent>
@@ -137,15 +179,15 @@ export default async function WorkspaceLogsPage({
 
 function formatActionType(action: string) {
   return action
-    .split("_")
+    .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .join(' ');
 }
 
 function formatEntity(entityType: string, metadata: any) {
-  let title = metadata?.title || metadata?.name || metadata?.role || "";
+  let title = metadata?.title || metadata?.name || metadata?.role || '';
   if (!title && metadata?.method) title = `via ${metadata.method}`;
-  
+
   const entityName = entityType.charAt(0).toUpperCase() + entityType.slice(1);
   return title ? `${entityName}: ${title}` : entityName;
 }

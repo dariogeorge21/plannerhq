@@ -265,7 +265,16 @@ export async function GetWorkspace(workspaceId: string): Promise<{ success: bool
     if (error) {
         return { success: false, message: "Workspace not found" };
     }
-    return { success: true, message: "Workspace fetched successfully", data: { ...data, is_archived: data.is_deleted } };
+
+    // Fetch the user's role for this workspace
+    const { data: member } = await supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', user.id)
+        .single();
+
+    return { success: true, message: "Workspace fetched successfully", data: { ...data, is_archived: data.is_deleted, role: member?.role } };
 }
 
 export async function GetWorkspaceIncludingArchived(workspaceId: string): Promise<{ success: boolean, message: string, data?: any }> {

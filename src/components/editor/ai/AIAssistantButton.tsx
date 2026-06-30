@@ -11,6 +11,8 @@ import {
   ChevronDown,
   Zap,
   CrownIcon,
+  Bot,
+  BrainCircuit
 } from "lucide-react";
 import { AIAction } from "@/types/ai";
 import { useAIUsage } from "@/features/ai/hooks";
@@ -28,38 +30,38 @@ const AI_ACTIONS: {
   requiresSelection?: boolean;
   color: string;
 }[] = [
-  {
-    id: "generate",
-    label: "Generate",
-    description: "Create new content from a prompt",
-    icon: Sparkles,
-    color: "text-violet-500",
-  },
-  {
-    id: "rewrite",
-    label: "Rewrite",
-    description: "Improve selected text",
-    icon: Wand2,
-    requiresSelection: true,
-    color: "text-indigo-500",
-  },
-  {
-    id: "summarize",
-    label: "Summarize",
-    description: "Condense selected text",
-    icon: FileText,
-    requiresSelection: true,
-    color: "text-sky-500",
-  },
-  {
-    id: "translate",
-    label: "Translate",
-    description: "Translate selected text",
-    icon: Languages,
-    requiresSelection: true,
-    color: "text-emerald-500",
-  },
-];
+    {
+      id: "generate",
+      label: "Generate",
+      description: "Create new content from a prompt",
+      icon: Sparkles,
+      color: "text-violet-500",
+    },
+    {
+      id: "rewrite",
+      label: "Rewrite",
+      description: "Improve selected text",
+      icon: Wand2,
+      requiresSelection: true,
+      color: "text-indigo-500",
+    },
+    {
+      id: "summarize",
+      label: "Summarize",
+      description: "Condense selected text",
+      icon: FileText,
+      requiresSelection: true,
+      color: "text-sky-500",
+    },
+    {
+      id: "translate",
+      label: "Translate",
+      description: "Translate selected text",
+      icon: Languages,
+      requiresSelection: true,
+      color: "text-emerald-500",
+    },
+  ];
 
 export default function AIAssistantButton({ editor, onAction }: AIAssistantButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -114,7 +116,7 @@ export default function AIAssistantButton({ editor, onAction }: AIAssistantButto
           }
         `}
       >
-        <Sparkles className="w-3.5 h-3.5" />
+        <Bot className="w-3.5 h-3.5" />
         <span className="hidden sm:inline">AI</span>
         <ChevronDown
           className={`w-3 h-3 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}

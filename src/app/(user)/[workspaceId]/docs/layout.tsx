@@ -81,14 +81,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
     setExpandedSections(prev => ({ ...prev, [id]: prev[id] === undefined ? false : !prev[id] }));
   };
 
-  // Initialize expanded state for all sections (default true)
-  React.useEffect(() => {
-    if (sections && Object.keys(expandedSections).length === 0) {
-      const initial: Record<string, boolean> = {};
-      sections.forEach(s => initial[s.id] = true);
-      setExpandedSections(initial);
-    }
-  }, [sections]);
+  // Expanded state is true by default if not explicitly set to false
 
   const handleCreateSectionSubmit = () => {
     if (sectionName.trim()) {
@@ -248,7 +241,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
               </div>
             ) : (
             sections?.map((section, sIndex) => {
-              const isExpanded = expandedSections[section.id];
+              const isExpanded = expandedSections[section.id] !== false;
               const sectionDocs = documents?.filter(d => d.section_id === section.id).sort((a,b) => a.position - b.position) || [];
               const isSectionOptimistic = section.id.startsWith("temp-");
 

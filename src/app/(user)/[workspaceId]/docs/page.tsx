@@ -1,25 +1,19 @@
 "use client";
 
 import React from "react";
-import { FileText, Sparkles, PencilLine, Clock, Zap, Plus, Search, Star } from "lucide-react";
+import { Sparkles, PencilLine, Clock, FileText, Search, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
-import { useDocuments, useFavoriteDocuments } from "@/features/document/hooks";
+import { useDocuments, useFavoriteDocuments, useSections } from "@/features/document/hooks";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-
 import { LoadingScreen } from "@/components/ui/loading-screen";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const templates = [
-  { id: 'blank', name: 'Blank Document', icon: FileText, color: 'text-primary', bg: 'bg-primary/10' },
-  { id: 'meeting', name: 'Meeting Notes', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  { id: 'prd', name: 'Product Spec', icon: Zap, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-];
+import TemplateGrid from "./components/templates/TemplateGrid";
 
 export default function DocsDashboard() {
   const params = useParams();
   const workspaceId = params?.workspaceId as string;
+  const { data: sections, isLoading: isSectionsLoading } = useSections(workspaceId);
   const { data: documents, isLoading } = useDocuments(workspaceId);
   const { data: favorites, isLoading: isFavoritesLoading } = useFavoriteDocuments(workspaceId);
 
@@ -27,7 +21,7 @@ export default function DocsDashboard() {
   const recentDocs = documents ? [...documents].reverse().slice(0, 4) : [];
   const favDocs = favorites?.map(f => f.document).filter(Boolean) || [];
 
-  if (isLoading || isFavoritesLoading) {
+  if (isLoading || isFavoritesLoading || isSectionsLoading) {
     return (
       <LoadingScreen messages={["Loading your notes...", "Fetching recent documents...", "Preparing your workspace..."]}>
         <div className="h-full w-full bg-background relative overflow-y-auto p-8 lg:p-12 animate-pulse">
@@ -149,25 +143,13 @@ export default function DocsDashboard() {
           )}
         </motion.section>
 
-        {/* Templates */}
+        {/* Templates — Quick Start */}
         <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <h2 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2 mb-6">
-            <Zap className="w-5 h-5 text-muted-foreground" />
-            Quick Start
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {templates.map((template) => (
-              <button key={template.id} className="group relative bg-card hover:bg-accent/50 border border-border rounded-2xl p-5 transition-all hover:shadow-md flex items-center gap-4 text-left">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${template.bg} ${template.color}`}>
-                  <template.icon className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">{template.name}</h3>
-                  <p className="text-sm text-muted-foreground mt-0.5">Start with a template</p>
-                </div>
-              </button>
-            ))}
-          </div>
+          <TemplateGrid
+            workspaceId={workspaceId}
+            sections={sections}
+            documents={documents}
+          />
         </motion.section>
       </div>
     </div>

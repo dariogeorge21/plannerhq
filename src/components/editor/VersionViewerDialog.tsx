@@ -9,7 +9,7 @@ import Link from "@tiptap/extension-link";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { createLowlight } from "lowlight";
 import { format } from "date-fns";
-import { X, Clock } from "lucide-react";
+import { X, Clock, Loader2 } from "lucide-react";
 
 const lowlight = createLowlight();
 
@@ -158,7 +158,14 @@ export default function VersionViewerDialog({
                   disabled={isRestoring}
                   className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
-                  {isRestoring ? "Restoring..." : "Restore Version"}
+                  {isRestoring ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Restoring...
+                    </>
+                  ) : (
+                    "Restore Version"
+                  )}
                 </Button>
                 <button
                   onClick={() => !isRestoring && onOpenChange(false)}

@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface VersionRestoreDialogProps {
   open: boolean;
@@ -38,7 +39,14 @@ export default function VersionRestoreDialog({
             Cancel
           </Button>
           <Button onClick={onConfirm} disabled={isRestoring}>
-            {isRestoring ? "Restoring..." : "Restore Version"}
+            {isRestoring ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Restoring...
+              </>
+            ) : (
+              "Restore Version"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

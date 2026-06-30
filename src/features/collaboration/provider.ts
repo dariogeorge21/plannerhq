@@ -13,6 +13,7 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
   // Y.Doc should also be created once per document
   const [doc] = useState(() => new Y.Doc());
   const [isConnected, setIsConnected] = useState(false);
+  const [isSynced, setIsSynced] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [activeUsers, setActiveUsers] = useState<AwarenessState[]>([]);
 
@@ -72,6 +73,17 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
       });
     }
 
+    const persistence = p.getPersistence();
+    if (persistence) {
+      if (persistence.synced) {
+        setIsSynced(true);
+      } else {
+        persistence.on("synced", () => setIsSynced(true));
+      }
+    } else {
+      setIsSynced(true);
+    }
+
     setProvider(p);
 
     return () => {
@@ -79,5 +91,5 @@ export function useCollaborationProvider(documentId: string, workspaceId: string
     };
   }, [documentId, workspaceId, supabase, doc]);
 
-  return { provider, doc, isConnected, isOffline, activeUsers, awareness: provider?.getAwareness() };
+  return { provider, doc, isConnected, isSynced, isOffline, activeUsers, awareness: provider?.getAwareness() };
 }

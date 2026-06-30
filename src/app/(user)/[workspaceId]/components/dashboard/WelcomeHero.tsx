@@ -61,7 +61,7 @@ export function WelcomeHero({ workspaceId }: { workspaceId: string }) {
   const createdByName = createdByMember ? createdByMember.display_name : "Unknown";
 
   return (
-    <motion.section 
+    <motion.section
       initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
       className="relative overflow-hidden rounded-[2rem] bg-white/40 dark:bg-black/40 backdrop-blur-md border border-white/40 dark:border-white/10 p-8 md:p-12 shadow-xl shadow-indigo-500/5 dark:shadow-none"
     >
@@ -69,7 +69,7 @@ export function WelcomeHero({ workspaceId }: { workspaceId: string }) {
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div className="space-y-4 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50/80 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold tracking-wide uppercase border border-indigo-100 dark:border-indigo-800/50">
-            <Sparkles className="w-3.5 h-3.5" /> Workspace Overview
+            Workspace Overview
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
             Welcome {profile.displayName} to {workspace.name}
@@ -87,9 +87,15 @@ export function WelcomeHero({ workspaceId }: { workspaceId: string }) {
             </Badge>
           </div>
         </div>
-        <div className="shrink-0 flex items-center justify-center w-24 h-24 md:w-32 md:h-32 rounded-[2rem] bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg text-white font-bold text-4xl md:text-5xl shadow-indigo-500/30">
-          {workspace.name.charAt(0).toUpperCase()}
-        </div>
+        {workspace.avatar_url && (
+          <div className="shrink-0">
+            <img
+              src={workspace.avatar_url}
+              alt={workspace.name}
+              className="w-20 h-20 md:w-24 md:h-24 rounded-[1rem] object-cover shadow-sm"
+            />
+          </div>
+        )}
       </div>
     </motion.section>
   );

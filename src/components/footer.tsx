@@ -54,26 +54,26 @@ const SocialIcons = {
 
 export default function Footer() {
   return (
-    <footer className="bg-white pt-24 pb-12 relative">
+    <footer className="bg-white dark:bg-neutral-950 pt-24 pb-12 relative">
       {/* Decorative Top Border */}
-      <div className="absolute top-0 inset-x-0 h-px w-full bg-linear-to-r from-transparent via-neutral-300 to-transparent opacity-50" />
+      <div className="absolute top-0 inset-x-0 h-px w-full bg-linear-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent opacity-50" />
 
       {/* Subtle Background Glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-250 h-100 bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-250 h-100 bg-indigo-500/5 dark:bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
         <div className="xl:grid xl:grid-cols-3 xl:gap-8 mb-16">
           {/* Brand & Mission */}
           <div className="space-y-8 xl:col-span-1">
             <Link href="/" className="flex items-center gap-2 group w-fit">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-950 text-white transition-all group-hover:scale-105 group-hover:bg-indigo-600 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.3)]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-950 dark:bg-white text-white dark:text-neutral-950 transition-all group-hover:scale-105 group-hover:bg-indigo-600 dark:group-hover:bg-indigo-500 group-hover:shadow-[0_0_20px_rgba(79,70,229,0.3)]">
                 <Image src="/logo.png" alt="PlannerHQ Logo" width={36} height={36} />
               </div>
-              <span className="text-xl font-bold tracking-tight text-neutral-900 transition-colors group-hover:text-indigo-600">
+              <span className="text-xl font-bold tracking-tight text-neutral-900 dark:text-white transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
                 PlannerHQ
               </span>
             </Link>
-            <p className="text-sm leading-relaxed text-neutral-500 max-w-xs">
+            <p className="text-sm leading-relaxed text-neutral-500 dark:text-neutral-400 max-w-xs">
               The unified workspace where ambitious teams think, write, and execute together with unparalleled velocity.
             </p>
 
@@ -92,11 +92,11 @@ export default function Footer() {
           {/* Navigation Grid */}
           <div className="mt-16 grid grid-cols-2 gap-8 sm:grid-cols-4 xl:col-span-2 xl:mt-0">
             <div>
-              <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Product</h3>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white tracking-tight">Product</h3>
               <ul className="mt-6 space-y-4">
                 {footerNav.product.map((item) => (
                   <li key={item.name}>
-                    <Link href={item.href} className="text-sm text-neutral-500 hover:text-indigo-600 transition-colors group flex items-center gap-1.5 w-fit">
+                    <Link href={item.href} className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group flex items-center gap-1.5 w-fit">
                       {item.name}
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
                     </Link>
@@ -105,11 +105,11 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Company</h3>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white tracking-tight">Company</h3>
               <ul className="mt-6 space-y-4">
                 {footerNav.company.map((item) => (
                   <li key={item.name}>
-                    <Link href={item.href} className="text-sm text-neutral-500 hover:text-indigo-600 transition-colors group flex items-center gap-1.5 w-fit">
+                    <Link href={item.href} className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group flex items-center gap-1.5 w-fit">
                       {item.name}
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
                     </Link>
@@ -118,11 +118,11 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Resources</h3>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white tracking-tight">Resources</h3>
               <ul className="mt-6 space-y-4">
                 {footerNav.resources.map((item) => (
                   <li key={item.name}>
-                    <Link href={item.href} className="text-sm text-neutral-500 hover:text-indigo-600 transition-colors group flex items-center gap-1.5 w-fit">
+                    <Link href={item.href} className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group flex items-center gap-1.5 w-fit">
                       {item.name}
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
                     </Link>
@@ -131,11 +131,11 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-neutral-900 tracking-tight">Legal</h3>
+              <h3 className="text-sm font-semibold text-neutral-900 dark:text-white tracking-tight">Legal</h3>
               <ul className="mt-6 space-y-4">
                 {footerNav.legal.map((item) => (
                   <li key={item.name}>
-                    <Link href={item.href} className="text-sm text-neutral-500 hover:text-indigo-600 transition-colors group flex items-center gap-1.5 w-fit">
+                    <Link href={item.href} className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group flex items-center gap-1.5 w-fit">
                       {item.name}
                       <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
                     </Link>
@@ -147,20 +147,20 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-neutral-200/80 flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <p className="text-sm text-neutral-500">
+        <div className="pt-8 border-t border-neutral-200/80 dark:border-neutral-800/80 flex flex-col items-center justify-between gap-6 sm:flex-row">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400">
             © {new Date().getFullYear()} PlannerHQ Inc. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
-            <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-400 transition-colors hover:bg-neutral-50 hover:text-indigo-600">
+            <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-indigo-600 dark:hover:text-indigo-400">
               <span className="sr-only">Twitter</span>
               <SocialIcons.Twitter className="h-4 w-4" />
             </Link>
-            <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-400 transition-colors hover:bg-neutral-50 hover:text-indigo-600">
+            <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-indigo-600 dark:hover:text-indigo-400">
               <span className="sr-only">LinkedIn</span>
               <SocialIcons.LinkedIn className="h-4 w-4" />
             </Link>
-            <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 text-neutral-400 transition-colors hover:bg-neutral-50 hover:text-indigo-600">
+            <Link href="#" className="flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-indigo-600 dark:hover:text-indigo-400">
               <span className="sr-only">GitHub</span>
               <SocialIcons.GitHub className="h-4 w-4" />
             </Link>

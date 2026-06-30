@@ -10,6 +10,7 @@ import { SlashCommandExtension } from "./slash-extension";
 import { getFileMentionExtension } from "@/app/(user)/[workspaceId]/files/components/editor/FileMentionExtension";
 import { EditorFileUploadPlugin } from "@/app/(user)/[workspaceId]/files/components/editor/EditorFileUploadPlugin";
 import Link from "@tiptap/extension-link";
+import { Markdown } from "@tiptap/markdown";
 
 const lowlight = createLowlight();
 
@@ -24,6 +25,7 @@ export const getEditorExtensions = (ydoc: any, awareness: any, workspaceId?: str
       // @ts-ignore - Some versions of StarterKit might not have link
       link: false,
     }),
+    Markdown,
     Placeholder.configure({
       placeholder: "Press '/' for commands, or start writing...",
       emptyEditorClass: 'is-editor-empty',

@@ -205,7 +205,7 @@ export default function DocumentEditor({
   const handleAIInsert = useCallback(
     (content: string) => {
       if (!editor) return;
-      editor.chain().focus().insertContent(content).run();
+      editor.chain().focus().insertContent(content, { contentType: 'markdown' }).run();
     },
     [editor]
   );
@@ -216,10 +216,10 @@ export default function DocumentEditor({
       const { from, to } = editor.state.selection;
       if (from === to) {
         // No selection — just insert at cursor
-        editor.chain().focus().insertContent(content).run();
+        editor.chain().focus().insertContent(content, { contentType: 'markdown' }).run();
       } else {
         // Replace selected text
-        editor.chain().focus().deleteRange({ from, to }).insertContent(content).run();
+        editor.chain().focus().deleteRange({ from, to }).insertContent(content, { contentType: 'markdown' }).run();
       }
     },
     [editor]

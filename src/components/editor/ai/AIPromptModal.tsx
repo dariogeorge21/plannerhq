@@ -186,14 +186,14 @@ export default function AIPromptModal({
               z-[101] w-full max-w-lg
               rounded-2xl border border-border bg-card
               shadow-2xl shadow-black/20
-              overflow-hidden
+              overflow-hidden flex flex-col max-h-[90vh]
             "
             role="dialog"
             aria-modal="true"
             aria-label={config.title}
           >
             {/* Header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-muted/30">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-muted/30 shrink-0">
               <div className={`w-8 h-8 rounded-xl ${colors.bg} flex items-center justify-center shadow-sm`}>
                 <Icon className="w-4 h-4 text-white" />
               </div>
@@ -210,7 +210,7 @@ export default function AIPromptModal({
               </button>
             </div>
 
-            <div className="p-5 space-y-4">
+            <div className="p-5 space-y-4 overflow-y-auto flex-1">
               {/* Content preview (for rewrite/summarize) */}
               {config.hasContentPreview && initialContent && (
                 <div className="rounded-xl bg-muted/60 border border-border p-3">

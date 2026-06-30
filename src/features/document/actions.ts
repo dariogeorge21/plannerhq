@@ -15,6 +15,8 @@ import {
   CreateVersionSchema,
   RestoreVersionSchema,
   ToggleFavoriteSchema,
+  RenameDocumentSchema,
+  RenameSectionSchema,
 } from "./validations";
 
 export async function createSectionAction(payload: unknown) {
@@ -216,6 +218,40 @@ export async function toggleFavoriteAction(payload: unknown, workspaceId: string
     await service.toggleFavoriteDocument(data.workspaceId, data.documentId, data.isFavorite, authData.user.id);
     revalidatePath(`/${workspaceId}`);
     return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+// ── Rename actions (inline sidebar rename) ────────────────────────────────────
+// These are intentionally separate from update*Action to have a single clear
+// responsibility and avoid accidentally nulling other optional fields.
+
+export async function renameDocumentAction(payload: unknown, workspaceId: string) {
+  try {
+    const data = RenameDocumentSchema.parse(payload);
+    const supabase = await createClient();
+    const service = createDocumentService(supabase);
+
+    const document = await service.updateDocument(data.documentId, { title: data.title });
+    await LogWorkspaceActivity(workspaceId, "rename_document", "document", data.documentId, { title: data.title });
+    revalidatePath(`/${workspaceId}`);
+    revalidatePath(`/${workspaceId}/docs/${data.documentId}`);
+    return { success: true, data: document };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}
+
+export async function renameSectionAction(payload: unknown, workspaceId: string) {
+  try {
+    const data = RenameSectionSchema.parse(payload);
+    const supabase = await createClient();
+    const service = createDocumentService(supabase);
+
+    const section = await service.updateSection(data.sectionId, data.name);
+    revalidatePath(`/${section.workspace_id}`);
+    return { success: true, data: section };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

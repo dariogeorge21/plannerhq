@@ -12,6 +12,8 @@ import {
   reorderDocumentsAction,
   saveDocumentContentAction,
   toggleFavoriteAction,
+  renameDocumentAction,
+  renameSectionAction,
 } from "./actions";
 
 export function useSections(workspaceId: string | undefined) {
@@ -139,6 +141,8 @@ export function useUpdateDocument(workspaceId: string) {
       updateDocumentAction(data, workspaceId),
     onMutate: async (data) => {
       await queryClient.cancelQueries({ queryKey: ["documents", workspaceId] });
+      await queryClient.cancelQueries({ queryKey: ["document", data.documentId] });
+
       const previous = queryClient.getQueryData<any[]>(["documents", workspaceId]);
       if (previous) {
         const updated = previous.map((doc) =>
@@ -146,11 +150,20 @@ export function useUpdateDocument(workspaceId: string) {
         );
         queryClient.setQueryData(["documents", workspaceId], updated);
       }
-      return { previous };
+
+      const previousDoc = queryClient.getQueryData<any>(["document", data.documentId]);
+      if (previousDoc) {
+        queryClient.setQueryData(["document", data.documentId], { ...previousDoc, ...data, section_id: data.sectionId || previousDoc.section_id });
+      }
+
+      return { previous, previousDoc };
     },
     onError: (err, variables, context) => {
       if (context?.previous) {
         queryClient.setQueryData(["documents", workspaceId], context.previous);
+      }
+      if (context?.previousDoc) {
+        queryClient.setQueryData(["document", variables.documentId], context.previousDoc);
       }
     },
     onSettled: (res, err, vars) => {
@@ -346,6 +359,87 @@ export function useToggleFavoriteDocument(workspaceId: string) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["favorite_documents", workspaceId] });
+    },
+  });
+}
+
+// ── Inline Rename Hooks ───────────────────────────────────────────────────────
+// These use fully optimistic updates: the cache is mutated before the server
+// call fires. On error the previous snapshot is restored automatically.
+
+export function useRenameDocument(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (vars: { documentId: string; title: string }) =>
+      renameDocumentAction(vars, workspaceId),
+
+    onMutate: async ({ documentId, title }) => {
+      await queryClient.cancelQueries({ queryKey: ["documents", workspaceId] });
+      await queryClient.cancelQueries({ queryKey: ["document", documentId] });
+
+      const previousList = queryClient.getQueryData<any[]>(["documents", workspaceId]);
+      const previousDoc = queryClient.getQueryData<any>(["document", documentId]);
+
+      if (previousList) {
+        queryClient.setQueryData(
+          ["documents", workspaceId],
+          previousList.map((d) => (d.id === documentId ? { ...d, title } : d))
+        );
+      }
+      if (previousDoc) {
+        queryClient.setQueryData(["document", documentId], { ...previousDoc, title });
+      }
+
+      return { previousList, previousDoc };
+    },
+
+    onError: (_err, { documentId }, context) => {
+      if (context?.previousList) {
+        queryClient.setQueryData(["documents", workspaceId], context.previousList);
+      }
+      if (context?.previousDoc) {
+        queryClient.setQueryData(["document", documentId], context.previousDoc);
+      }
+    },
+
+    onSettled: (_res, _err, { documentId }) => {
+      queryClient.invalidateQueries({ queryKey: ["documents", workspaceId] });
+      queryClient.invalidateQueries({ queryKey: ["document", documentId] });
+    },
+  });
+}
+
+export function useRenameSection(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (vars: { sectionId: string; name: string }) =>
+      renameSectionAction(vars, workspaceId),
+
+    onMutate: async ({ sectionId, name }) => {
+      await queryClient.cancelQueries({ queryKey: ["document_sections", workspaceId] });
+
+      const previousSections = queryClient.getQueryData<any[]>(["document_sections", workspaceId]);
+
+      if (previousSections) {
+        queryClient.setQueryData(
+          ["document_sections", workspaceId],
+          previousSections.map((s) => (s.id === sectionId ? { ...s, name } : s))
+        );
+      }
+
+      return { previousSections };
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context?.previousSections) {
+        queryClient.setQueryData(["document_sections", workspaceId], context.previousSections);
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["document_sections", workspaceId] });
     },
   });
 }

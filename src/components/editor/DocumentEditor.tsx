@@ -73,16 +73,41 @@ export default function DocumentEditor({
   const [translateModalOpen, setTranslateModalOpen] = useState(false);
   const [translateSelectedText, setTranslateSelectedText] = useState("");
 
+  const isTitleFocusedRef = useRef(false);
+
   useEffect(() => {
-    if (doc) setTitle(doc.title);
+    if (doc && !isTitleFocusedRef.current) setTitle(doc.title);
   }, [doc]);
 
-  const debouncedUpdateTitle = useCallback(
-    debounce((newTitle: string) => {
-      updateDocument.mutate({ documentId, title: newTitle });
-    }, 1000),
-    [documentId, updateDocument]
-  );
+  // ── Stable ref-based title debounce ───────────────────────────────────────
+  // Avoids the stale-closure / re-creation problem that caused intermediate
+  // values to be sent one-by-one. Only ONE network request fires, 3 s after
+  // the user stops typing, always carrying the final complete title.
+  const pendingTitleRef = useRef<string>("");
+  const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const updateDocumentRef = useRef(updateDocument);
+  updateDocumentRef.current = updateDocument; // keep ref fresh without re-creating timer
+
+  const scheduleTitleUpdate = useCallback((newTitle: string) => {
+    pendingTitleRef.current = newTitle;
+    if (titleTimerRef.current) clearTimeout(titleTimerRef.current);
+    titleTimerRef.current = setTimeout(() => {
+      updateDocumentRef.current.mutate({ documentId, title: pendingTitleRef.current });
+      titleTimerRef.current = null;
+    }, 3000);
+  }, [documentId]); // documentId is the only stable dep needed
+
+  // Flush immediately when component unmounts so no title is lost.
+  useEffect(() => {
+    return () => {
+      if (titleTimerRef.current) {
+        clearTimeout(titleTimerRef.current);
+        if (pendingTitleRef.current) {
+          updateDocumentRef.current.mutate({ documentId, title: pendingTitleRef.current });
+        }
+      }
+    };
+  }, [documentId]);
 
   const debouncedSaveContent = useCallback(
     debounce((content: any) => {
@@ -92,8 +117,9 @@ export default function DocumentEditor({
   );
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTitle(e.target.value);
-    debouncedUpdateTitle(e.target.value);
+    const newValue = e.target.value;
+    setTitle(newValue); // instant local update — zero lag
+    scheduleTitleUpdate(newValue); // single deferred server request
     e.target.style.height = "auto";
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
@@ -376,6 +402,8 @@ export default function DocumentEditor({
             <textarea
               value={title}
               onChange={handleTitleChange}
+              onFocus={() => isTitleFocusedRef.current = true}
+              onBlur={() => isTitleFocusedRef.current = false}
               placeholder="Untitled Document"
               rows={1}
               disabled={isOffline}

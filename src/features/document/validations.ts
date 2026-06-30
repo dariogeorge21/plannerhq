@@ -59,3 +59,15 @@ export const ToggleFavoriteSchema = z.object({
   documentId: z.string().uuid("Invalid document ID"),
   isFavorite: z.boolean(),
 });
+
+// ── Rename schemas (intentionally narrow — title/name only) ──────────────────
+
+export const RenameDocumentSchema = z.object({
+  documentId: z.string().uuid("Invalid document ID"),
+  title: z.string().min(1, "Title cannot be empty").max(200, "Title is too long").trim(),
+});
+
+export const RenameSectionSchema = z.object({
+  sectionId: z.string().uuid("Invalid section ID"),
+  name: z.string().min(1, "Name cannot be empty").max(100, "Name is too long").trim(),
+});

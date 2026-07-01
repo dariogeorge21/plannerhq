@@ -23,14 +23,6 @@ export default function HeroSection() {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Top Announcement Pill */}
-        <div className="flex justify-center mb-8">
-          <div className="group flex items-center gap-2 rounded-full border border-black/5 bg-white/50 backdrop-blur-md py-1.5 px-4 text-xs font-medium text-neutral-600 shadow-sm transition-all hover:bg-white hover:shadow-md cursor-pointer">
-            <span className="flex h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-            Introducing PlannerHQ AI 2.0
-            <ChevronRight className="w-3 h-3 text-neutral-400 group-hover:text-neutral-900 transition-colors" />
-          </div>
-        </div>
 
         {/* Headline & Subhead */}
         <div className="text-center max-w-4xl mx-auto">
@@ -63,7 +55,7 @@ export default function HeroSection() {
               Compare pricing
             </a>
           </div>
-          
+
           <p className="mt-4 text-xs font-medium text-neutral-400">
             No credit card required • Free forever plan available
           </p>
@@ -73,10 +65,10 @@ export default function HeroSection() {
         <div className="mt-20 relative mx-auto max-w-5xl">
           {/* Outer glow */}
           <div className="absolute -inset-1 bg-linear-to-b from-indigo-500/20 to-emerald-500/20 rounded-[2.5rem] blur-2xl opacity-50" />
-          
+
           <div className="relative rounded-4xl border border-neutral-200/60 bg-white/40 p-2 shadow-2xl backdrop-blur-xl">
             <div className="rounded-3xl border border-neutral-200/80 bg-white shadow-sm overflow-hidden flex flex-col h-150">
-              
+
               {/* Mockup MacOS Header */}
               <div className="flex items-center gap-2 px-4 py-3 border-b border-neutral-100 bg-neutral-50/50">
                 <div className="flex gap-1.5">
@@ -137,7 +129,7 @@ export default function HeroSection() {
                         <span>Updated 2m ago</span>
                       </div>
                     </div>
-                    
+
                     {/* Live Collaboration Avatars */}
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1 text-xs font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
@@ -183,7 +175,7 @@ export default function HeroSection() {
                     {/* Rich Text Elements */}
                     <div className="space-y-4">
                       <h3 className="text-xl font-semibold text-neutral-900 mt-8">Q2 Deliverables</h3>
-                      
+
                       {/* Task List */}
                       <div className="space-y-3">
                         <div className="group flex items-start gap-3 p-2 -mx-2 rounded-lg hover:bg-neutral-50 transition-colors cursor-pointer">
@@ -207,11 +199,11 @@ export default function HeroSection() {
                               <span className="text-xs text-neutral-400">Due Mar 15</span>
                             </div>
                           </div>
-                          
+
                           {/* Simulated active cursor */}
                           <div className="absolute top-8 left-45 z-50 animate-bounce">
                             <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <path d="M2.58046 0L0 18.2384L5.61713 14.898L9.2088 19.3496L11.8315 17.2285L8.14088 12.8711L13.8821 11.2319L2.58046 0Z" fill="#10B981" stroke="white" strokeWidth="1.5"/>
+                              <path d="M2.58046 0L0 18.2384L5.61713 14.898L9.2088 19.3496L11.8315 17.2285L8.14088 12.8711L13.8821 11.2319L2.58046 0Z" fill="#10B981" stroke="white" strokeWidth="1.5" />
                             </svg>
                             <div className="ml-2 px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-semibold rounded rounded-tl-none shadow-sm inline-block">
                               Sarah
@@ -272,7 +264,8 @@ export default function HeroSection() {
       </div>
 
       {/* Global Style for Keyframe Animation */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes float {
           0% { transform: translateY(0px); }
           100% { transform: translateY(-10px); }

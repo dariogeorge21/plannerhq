@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ArrowRight, Sparkles, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "@/features/auth/providers/SessionProvider";
+import { getCookie } from "@/utils/session";
 
 const navigation = [
   { name: "Home", href: "/" },
@@ -18,6 +20,8 @@ const navigation = [
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isLoading } = useSession();
+  const [hasRecentActivity, setHasRecentActivity] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +30,12 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    setHasRecentActivity(!!getCookie("plannerhq_last_activity"));
+  }, []);
+
+  const showDashboard = !!user || hasRecentActivity;
 
   return (
     <header
@@ -65,19 +75,33 @@ export default function Header() {
 
           {/* Desktop Auth */}
           <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-4">
-            <Link
-              href="/signin"
-              className="text-sm font-semibold text-neutral-600 hover:text-neutral-900 transition-colors px-3 py-2"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="group relative inline-flex items-center justify-center gap-2 rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-medium text-white shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] transition-all hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] active:scale-95"
-            >
-              Get Started
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
+            {isLoading && !hasRecentActivity ? (
+               <div className="w-24 h-9 animate-pulse bg-neutral-200 rounded-full" />
+            ) : showDashboard ? (
+              <Link
+                href="/dashboard"
+                className="group relative inline-flex items-center justify-center gap-2 rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-medium text-white shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] transition-all hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] active:scale-95"
+              >
+                Dashboard
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/signin"
+                  className="text-sm font-semibold text-neutral-600 hover:text-neutral-900 transition-colors px-3 py-2"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="group relative inline-flex items-center justify-center gap-2 rounded-full bg-neutral-950 px-5 py-2.5 text-sm font-medium text-white shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] transition-all hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] active:scale-95"
+                >
+                  Get Started
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -147,21 +171,34 @@ export default function Header() {
                     ))}
                   </div>
                   <div className="py-6 space-y-4">
-                    <Link
-                      href="/signin"
-                      className="-mx-3 block rounded-xl px-3 py-3 text-base font-semibold leading-7 text-neutral-900 hover:bg-neutral-50 transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Sign in
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="group flex w-full items-center justify-center gap-2 rounded-full bg-neutral-950 px-5 py-3.5 text-base font-semibold text-white shadow-md transition-all hover:bg-neutral-800 active:scale-95"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Get Started Free
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                    </Link>
+                    {showDashboard ? (
+                      <Link
+                        href="/dashboard"
+                        className="group flex w-full items-center justify-center gap-2 rounded-full bg-neutral-950 px-5 py-3.5 text-base font-semibold text-white shadow-md transition-all hover:bg-neutral-800 active:scale-95"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Dashboard
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                      </Link>
+                    ) : (
+                      <>
+                        <Link
+                          href="/signin"
+                          className="-mx-3 block rounded-xl px-3 py-3 text-base font-semibold leading-7 text-neutral-900 hover:bg-neutral-50 transition-colors"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Sign in
+                        </Link>
+                        <Link
+                          href="/signup"
+                          className="group flex w-full items-center justify-center gap-2 rounded-full bg-neutral-950 px-5 py-3.5 text-base font-semibold text-white shadow-md transition-all hover:bg-neutral-800 active:scale-95"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          Get Started Free
+                          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

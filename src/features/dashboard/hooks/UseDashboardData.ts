@@ -160,3 +160,39 @@ export function useUserProfileStats(userId: string | undefined) {
         enabled: !!userId,
     });
 }
+
+/**
+ * Computes a live productivity score = time_today / avg_daily_time.
+ * avg_daily_time = total_time_tracked / number_of_days_since_first_join.
+ * time_today is derived from a live session timer (seconds since page load today).
+ */
+export function useUserDailyProductivity(userId: string | undefined) {
+    return useQuery({
+        queryKey: ['dashboard_daily_productivity', userId],
+        queryFn: async () => {
+            if (!userId) return { avgDailySeconds: 0, totalTrackedSeconds: 0, daysActive: 1 };
+            const supabase = createClient();
+
+            const { data, error } = await supabase
+                .from('workspace_members')
+                .select('time_spent_seconds, joined_at')
+                .eq('user_id', userId);
+
+            if (error || !data || data.length === 0) {
+                return { avgDailySeconds: 0, totalTrackedSeconds: 0, daysActive: 1 };
+            }
+
+            const totalTrackedSeconds = data.reduce((acc, curr) => acc + (curr.time_spent_seconds || 0), 0);
+
+            // Find earliest joined_at date as start of user activity
+            const joinDates = data.map(d => new Date(d.joined_at).getTime()).filter(Boolean);
+            const earliestJoin = joinDates.length > 0 ? Math.min(...joinDates) : Date.now();
+            const daysActive = Math.max(1, Math.ceil((Date.now() - earliestJoin) / (1000 * 60 * 60 * 24)));
+
+            const avgDailySeconds = totalTrackedSeconds / daysActive;
+
+            return { avgDailySeconds, totalTrackedSeconds, daysActive };
+        },
+        enabled: !!userId,
+    });
+}

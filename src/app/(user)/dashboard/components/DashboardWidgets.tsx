@@ -7,7 +7,7 @@ import {
     TrendingUp, Users, FolderKanban, BellRing,
     Briefcase, Calendar as CalendarIcon, Link as LinkIcon,
     ArrowUpNarrowWide, Loader2, Plus, Search,
-    Shield, Star, Hash, Timer, Building2, UserCheck,
+    Shield, Star, Hash, Timer, Building2, Calendar,
     Zap, Sparkles, CreditCard, ArrowRight
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +39,8 @@ import {
     useUserTasks,
     useDashboardCalendarEvents,
     useUserProfileStats,
-    useUserProfileOverview
+    useUserProfileOverview,
+    useUserDailyProductivity
 } from '@/features/dashboard/hooks/UseDashboardData';
 import { useToggleTaskCompletion } from '@/features/task/hooks';
 import { AcceptInvitation, DeclineInvitation } from '@/features/workspace/invites';
@@ -926,16 +927,37 @@ export function WorkspaceInvitations() {
 export function KpiMetrics({ user }: UserProps) {
     const { data: tasks } = useUserTasks(user?.id);
     const { data: stats } = useUserProfileStats(user?.id);
+    const { data: events } = useDashboardCalendarEvents(user?.id);
+    const { data: productivity } = useUserDailyProductivity(user?.id);
+
+    // Live session timer — tracks seconds this user has been active on this page today
+    const [sessionSeconds, setSessionSeconds] = useState(0);
+    useEffect(() => {
+        const timer = setInterval(() => setSessionSeconds(s => s + 1), 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     const totalTasks = tasks?.length || 0;
     const completedTasks = tasks?.filter((t: any) => t.completed).length || 0;
-    const productivity = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const totalEvents = events?.length || 0;
+
+    const timeTrackedSeconds = stats?.timeTrackedSeconds || 0;
+    const hours = Math.floor(timeTrackedSeconds / 3600);
+    const minutes = Math.floor((timeTrackedSeconds % 3600) / 60);
+    const formattedTime = hours > 0 ? `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim() : `${minutes}m`;
+
+    // Productivity: how today's active session compares to the user's average daily time
+    const avgDailySeconds = productivity?.avgDailySeconds || 0;
+    const productivityPct = avgDailySeconds > 0
+        ? Math.min(200, Math.round((sessionSeconds / avgDailySeconds) * 100))
+        : 0;
+    const isProductivityPositive = productivityPct >= 100;
 
     const metrics = [
-        { label: 'Total Tasks', value: totalTasks.toString(), change: '', positive: true, icon: CheckCircle2 },
-        { label: 'Time Logged', value: `${Math.floor((stats?.timeTrackedSeconds || 0) / 3600)}h`, change: '', positive: true, icon: Clock },
-        { label: 'Productivity', value: `${productivity}%`, change: '', positive: productivity > 50, icon: TrendingUp },
+        { label: 'Time Logged', value: formattedTime, change: '', positive: true, icon: Clock },
+        { label: 'Productivity', value: `${productivityPct}%`, change: '', positive: isProductivityPositive, icon: TrendingUp },
         { label: 'Active Workspaces', value: (stats?.workspaceCount || 0).toString(), change: '', positive: true, icon: FolderKanban },
+        { label: 'Total Events', value: totalEvents.toString(), change: '', positive: true, icon: Calendar },
     ];
 
     return (

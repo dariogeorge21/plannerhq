@@ -4,6 +4,7 @@ import { ChatPresenceState } from "../types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users2, CircleDot } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PresenceSidebarProps {
   onlineUsers: ChatPresenceState[];
@@ -57,15 +58,23 @@ export function PresenceSidebar({ onlineUsers, typingUsers, loading = false }: P
                       className="flex items-center group p-2 -mx-2 rounded-xl hover:bg-background border border-transparent hover:border-border/60 hover:shadow-sm transition-all"
                     >
                       <div className="relative flex-shrink-0">
-                        <div className="h-9 w-9 rounded-full bg-muted border border-border flex items-center justify-center font-bold text-xs text-foreground/70">
-                          {initials}
-                        </div>
+                        <Avatar className="h-9 w-9 border border-border">
+                          <AvatarImage src={user.avatar_url || ""} />
+                          <AvatarFallback className="font-bold text-xs bg-muted text-foreground/70">
+                            {initials}
+                          </AvatarFallback>
+                        </Avatar>
                         <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-background rounded-full shadow-sm transition-colors duration-300" />
                       </div>
                       
                       <div className="ml-3 overflow-hidden flex-1">
-                        <p className="text-sm font-bold truncate text-foreground">
-                          {user.display_name}
+                        <p className="text-sm font-bold truncate text-foreground flex items-center justify-between">
+                          <span className="truncate">{user.display_name}</span>
+                          {user.hqid && (
+                            <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-md ml-2 flex-shrink-0">
+                              {user.hqid}
+                            </span>
+                          )}
                         </p>
                         {isTyping ? (
                           <p className="text-[11px] font-semibold text-primary animate-pulse truncate">

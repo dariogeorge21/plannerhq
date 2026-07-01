@@ -503,7 +503,7 @@ export function RecentWorkspaces() {
                 setLaunchingId(res.data.id);
                 // Fake a progress bar delay
                 setTimeout(() => {
-                    router.push(`/${res.data.slug || res.data.id}`);
+                    router.push(`/${res.data.id}`);
                 }, 1000);
             } else {
                 toast.error(res.message);

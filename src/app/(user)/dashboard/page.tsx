@@ -7,6 +7,7 @@ import { DashboardHeader } from './components/DashboardHeader';
 import { ThemeToggle } from './components/ThemeToggle';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LoadingScreen } from "@/components/ui/loading-screen";
+import router from 'next/router';
 import {
   WelcomeHero, ProfileOverviewCard, RecentWorkspaces,
   TaskPriorityBoard, MiniCalendar, UpcomingEvents,
@@ -22,7 +23,7 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return null; // or redirect to signin
+    router.push('/signin');
   }
 
   return (

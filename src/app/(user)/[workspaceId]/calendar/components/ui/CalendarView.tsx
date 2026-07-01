@@ -54,7 +54,7 @@ export function CalendarView({ workspaceId }: CalendarViewProps) {
   // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createDate, setCreateDate] = useState<Date | undefined>(undefined);
-  
+
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventWithDetails | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -86,22 +86,6 @@ export function CalendarView({ workspaceId }: CalendarViewProps) {
       {/* Page Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="h-10 px-3 rounded-xl"
-            onClick={() => setIsNavigating(true)}
-          >
-            <Link href={`/${workspaceId}`}>
-              {isNavigating ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <ArrowLeft className="w-4 h-4 mr-2" />
-              )}
-              Back to dashboard
-            </Link>
-          </Button>
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-md">
             <CalendarDays className="w-5 h-5 text-white" />
           </div>

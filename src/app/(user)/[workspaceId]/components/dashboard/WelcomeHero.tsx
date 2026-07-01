@@ -92,7 +92,7 @@ export function WelcomeHero({ workspaceId }: { workspaceId: string }) {
             <img
               src={workspace.avatar_url}
               alt={workspace.name}
-              className="w-20 h-20 md:w-24 md:h-24 rounded-[1rem] object-cover shadow-sm"
+              className="w-32 h-32 md:w-40 md:h-40 rounded-[1rem] object-cover shadow-sm"
             />
           </div>
         )}

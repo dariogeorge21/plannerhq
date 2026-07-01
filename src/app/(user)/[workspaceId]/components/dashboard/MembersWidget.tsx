@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "@/features/auth/providers/SessionProvider";
 import { GetWorkspaceMembers } from "@/features/workspace/workspace";
-import { Users, MessageSquareIcon } from "lucide-react";
+import { Users, MessageSquareIcon, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,7 @@ export function MembersWidgetSkeleton() {
 
 export function MembersWidget({ workspaceId }: { workspaceId: string }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { user } = useSession();
   
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["workspaceMembers", workspaceId],
@@ -84,44 +86,62 @@ export function MembersWidget({ workspaceId }: { workspaceId: string }) {
               </div>
               
               <div className="flex items-center gap-2">
-                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400" asChild onClick={(e) => e.stopPropagation()}>
-                    <Link href={`/${workspaceId}/chat/${m.hqid}`}>
-                       <MessageSquareIcon className="w-4 h-4" />
-                    </Link>
-                 </Button>
-                 
-                 <Dialog>
-                   <DialogTrigger asChild>
-                     <Button variant="outline" size="sm" className="hidden sm:flex h-8 text-xs font-semibold rounded-full border-neutral-200 dark:border-neutral-700">Profile</Button>
-                   </DialogTrigger>
-                   <DialogContent className="sm:max-w-md rounded-3xl">
-                     <DialogHeader>
-                       <DialogTitle className="text-center text-xl font-black">Member Profile</DialogTitle>
-                     </DialogHeader>
-                     <div className="flex flex-col items-center justify-center p-6 space-y-5">
-                        <Avatar className="w-28 h-28 border-4 border-indigo-50 dark:border-indigo-950 shadow-xl">
-                           <AvatarImage src={m.avatar_url} />
-                           <AvatarFallback className="text-4xl font-black bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                             {m.display_name.charAt(0).toUpperCase()}
-                           </AvatarFallback>
-                        </Avatar>
-                        <div className="text-center space-y-1">
-                           <h3 className="text-2xl font-black text-foreground">{m.display_name}</h3>
-                           <p className="text-sm font-medium text-muted-foreground">{m.email}</p>
-                           <p className="text-xs font-mono text-muted-foreground/70 bg-muted/50 px-2 py-1 rounded-md mt-2 inline-block">HQID: {m.hqid}</p>
-                        </div>
-                        <Badge variant="secondary" className={`uppercase tracking-widest px-4 py-1 text-xs font-bold rounded-full ${m.role === 'owner' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'}`}>
-                          {m.role}
-                        </Badge>
-                     </div>
-                   </DialogContent>
-                 </Dialog>
+                 {user?.hqid === m.hqid ? (
+                   <Badge variant="outline" className="bg-indigo-50/50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 font-bold border-indigo-200 dark:border-indigo-800">
+                     YOU
+                   </Badge>
+                 ) : (
+                   <>
+                     <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400" asChild onClick={(e) => e.stopPropagation()}>
+                        <Link href={`/${workspaceId}/chat/${m.hqid}`}>
+                           <MessageSquareIcon className="w-4 h-4" />
+                        </Link>
+                     </Button>
+                     
+                     <Dialog>
+                       <DialogTrigger asChild>
+                         <Button variant="outline" size="sm" className="hidden sm:flex h-8 text-xs font-semibold rounded-full border-neutral-200 dark:border-neutral-700">Profile</Button>
+                       </DialogTrigger>
+                       <DialogContent className="sm:max-w-md rounded-3xl">
+                         <DialogHeader>
+                           <DialogTitle className="text-center text-xl font-black">Member Profile</DialogTitle>
+                         </DialogHeader>
+                         <div className="flex flex-col items-center justify-center p-6 space-y-5">
+                            <Avatar className="w-28 h-28 border-4 border-indigo-50 dark:border-indigo-950 shadow-xl">
+                               <AvatarImage src={m.avatar_url} />
+                               <AvatarFallback className="text-4xl font-black bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                                 {m.display_name.charAt(0).toUpperCase()}
+                               </AvatarFallback>
+                            </Avatar>
+                            <div className="text-center space-y-1">
+                               <h3 className="text-2xl font-black text-foreground">{m.display_name}</h3>
+                               <p className="text-sm font-medium text-muted-foreground">{m.email}</p>
+                               <p className="text-xs font-mono text-muted-foreground/70 bg-muted/50 px-2 py-1 rounded-md mt-2 inline-block">HQID: {m.hqid}</p>
+                            </div>
+                            <Badge variant="secondary" className={`uppercase tracking-widest px-4 py-1 text-xs font-bold rounded-full ${m.role === 'owner' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'}`}>
+                              {m.role}
+                            </Badge>
+                         </div>
+                       </DialogContent>
+                     </Dialog>
+                   </>
+                 )}
               </div>
             </div>
           ))}
         </div>
         {!isExpanded && hasMore && (
            <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+        )}
+        {members.length <= 3 && (
+          <div className="p-4 mt-auto border-t border-neutral-100 dark:border-neutral-800/50">
+            <Button variant="outline" className="w-full border-dashed border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30" asChild>
+              <Link href={`/${workspaceId}/members`}>
+                <UserPlus className="w-4 h-4 mr-2" />
+                Invite More Members
+              </Link>
+            </Button>
+          </div>
         )}
       </CardContent>
       {!isExpanded && hasMore && (

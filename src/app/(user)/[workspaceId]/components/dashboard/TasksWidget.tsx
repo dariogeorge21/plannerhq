@@ -56,7 +56,7 @@ export function TasksWidget({ workspaceId }: { workspaceId: string }) {
           {tasks && tasks.length > 0 ? (
             <div className="divide-y divide-neutral-100 dark:divide-neutral-800/50">
                {tasks.slice(0, 4).map((task: any) => (
-                  <div key={task.id} className="p-4 hover:bg-accent/50 transition-colors flex items-center justify-between group">
+                  <Link href={`/${workspaceId}/tasks`} key={task.id} className="p-4 hover:bg-accent/50 transition-colors flex items-center justify-between group cursor-pointer block">
                      <div className="flex items-center gap-3">
                         {task.status === 'done' ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <CircleDashed className="w-5 h-5 text-neutral-300 dark:text-neutral-600 group-hover:text-indigo-400 transition-colors" />}
                         <div>
@@ -64,7 +64,7 @@ export function TasksWidget({ workspaceId }: { workspaceId: string }) {
                            {task.due_date && <div className="text-xs font-medium text-muted-foreground flex items-center"><Clock className="w-3 h-3 mr-1" /> {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(task.due_date))}</div>}
                         </div>
                      </div>
-                  </div>
+                  </Link>
                ))}
             </div>
           ) : (

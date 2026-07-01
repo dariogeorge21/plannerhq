@@ -274,10 +274,10 @@ export default function DocumentEditor({
         >
           {/* Animated gradient background */}
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5 opacity-50 pointer-events-none" />
-          
+
           {/* Glowing orb */}
           <motion.div
-            animate={{ 
+            animate={{
               scale: [1, 1.2, 1],
               opacity: [0.2, 0.4, 0.2]
             }}
@@ -297,7 +297,7 @@ export default function DocumentEditor({
             >
               <div className="absolute inset-0 rounded-3xl border border-primary/20 rotate-45" />
               <div className="absolute inset-0 rounded-3xl border border-primary/20 -rotate-12" />
-              <motion.div 
+              <motion.div
                 animate={{ rotate: -360 }}
                 transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
               >
@@ -308,7 +308,7 @@ export default function DocumentEditor({
             <h3 className="text-xl font-bold tracking-tight mb-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Preparing Document
             </h3>
-            
+
             <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium mb-8">
               <Loader2 className="w-4 h-4 animate-spin text-primary" />
               <span>Loading workspace data...</span>
@@ -388,7 +388,7 @@ export default function DocumentEditor({
         )}
 
         {/* Document inner container */}
-        <div className="max-w-[800px] mx-auto px-6 sm:px-10 md:px-14 lg:px-16 pb-32">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 md:px-14 lg:px-16 pb-32">
 
           {/* Document title */}
           <div className={`pt-16 pb-6 ${doc?.cover ? '-mt-16 relative z-10' : ''}`}>

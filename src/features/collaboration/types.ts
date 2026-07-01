@@ -3,6 +3,7 @@ export interface AwarenessUser {
   color: string;
   avatar?: string;
   clientId?: number;
+  id?: string;
 }
 
 export interface AwarenessState {

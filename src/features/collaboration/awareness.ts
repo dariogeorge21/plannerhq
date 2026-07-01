@@ -17,6 +17,7 @@ export function getRandomColor(): string {
 
 export function createAwarenessUser(user: any): AwarenessUser {
   return {
+    id: user?.id,
     name: user?.user_metadata?.full_name || user?.email || "Anonymous",
     color: getRandomColor(),
     avatar: user?.user_metadata?.avatar_url,

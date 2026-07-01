@@ -37,7 +37,7 @@ export default function WorkspaceFilesPage({ params: paramsPromise }: { params: 
   if (filesLoading || quotaLoading) {
     return (
       <LoadingScreen messages={["Loading your files...", "Calculating storage...", "Preparing your workspace..."]}>
-        <div className="flex flex-col h-full bg-background selection:bg-primary/20 animate-pulse">
+        <div className="flex max-w-9xl flex-col h-full bg-background selection:bg-primary/20 animate-pulse">
           <header className="flex items-center justify-between px-8 py-6 bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-10">
             <div className="flex items-center gap-4">
               <Skeleton className="w-12 h-12 rounded-2xl" />
@@ -62,7 +62,7 @@ export default function WorkspaceFilesPage({ params: paramsPromise }: { params: 
               <div className="flex flex-col gap-4 mt-4">
                 <Skeleton className="h-6 w-48" />
                 <div className="space-y-4">
-                  {[1,2,3,4].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+                  {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
               </div>
             </div>
@@ -86,7 +86,7 @@ export default function WorkspaceFilesPage({ params: paramsPromise }: { params: 
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-8">
+      <main className="flex-1 max-w-9xl overflow-y-auto p-8">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

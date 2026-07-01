@@ -149,7 +149,7 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto p-6 lg:p-10 min-h-full">
+      <div className="flex flex-col gap-8 w-full max-w-9xl mx-auto p-6 lg:p-10 min-h-full">
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-4">

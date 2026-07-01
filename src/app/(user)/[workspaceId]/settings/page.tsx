@@ -136,7 +136,7 @@ export default function WorkspaceSettingsPage({
   if (loading || !workspace || !currentUserRole) {
     return (
       <LoadingScreen messages={["Loading your workspace settings...", "Verifying permissions..."]}>
-        <div className="max-w-4xl mx-auto p-6 lg:p-10 space-y-10 animate-pulse">
+        <div className="max-w-9xl mx-auto p-6 lg:p-10 space-y-10 animate-pulse">
           <div>
             <div className="flex items-center gap-3">
               <Skeleton className="h-10 w-64" />
@@ -181,7 +181,7 @@ export default function WorkspaceSettingsPage({
   const canLeave = currentUserRole === 'admin' || currentUserRole === 'member';
 
   return (
-    <div className="max-w-4xl mx-auto p-6 lg:p-10 space-y-10 font-sans">
+    <div className="max-w-9xl mx-auto p-6 lg:p-10 space-y-10 font-sans">
       <div>
         <div className="flex items-center gap-3">
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Workspace Settings</h1>
@@ -222,6 +222,7 @@ export default function WorkspaceSettingsPage({
                   id="ws-name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  placeholder="Workspace Name"
                   disabled={!canEdit || isUpdatePending}
                   className="w-full rounded-xl border-input focus-visible:ring-primary bg-background"
                 />
@@ -233,6 +234,7 @@ export default function WorkspaceSettingsPage({
                   id="ws-slug"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
+                  placeholder="Workspace Slug"
                   disabled={!canEdit || isUpdatePending}
                   className="w-full rounded-xl border-input focus-visible:ring-primary bg-background font-mono text-sm"
                 />
@@ -244,6 +246,7 @@ export default function WorkspaceSettingsPage({
               <Textarea
                 id="ws-desc"
                 value={description}
+                placeholder="Add description"
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={!canEdit || isUpdatePending}
                 className="max-w-xl min-h-[100px] rounded-xl border-input focus-visible:ring-primary resize-y bg-background"

@@ -57,7 +57,7 @@ export default function WorkspaceLogsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const limit = 20;
   const totalPages = Math.ceil(totalCount / limit);
-  
+
   const prevPageHref = currentPage > 1 ? `/${workspaceId}/logs?page=${currentPage - 1}` : '#';
   const nextPageHref = currentPage < totalPages ? `/${workspaceId}/logs?page=${currentPage + 1}` : '#';
 
@@ -76,7 +76,7 @@ export default function WorkspaceLogsPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-6 lg:p-10 bg-background h-full">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-9xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Workspace Logs</h1>
           <p className="text-muted-foreground mt-2">

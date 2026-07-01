@@ -36,16 +36,16 @@ export default function MembersDashboard({
   const [members, setMembers] = useState(initialMembers);
   const [invites, setInvites] = useState(initialInvites);
   const [activities, setActivities] = useState(initialActivities);
-  
+
   // Sync state with props when router.refresh() fetches new data
   useEffect(() => {
     setMembers(initialMembers);
     setInvites(initialInvites);
     setActivities(initialActivities);
   }, [initialMembers, initialInvites, initialActivities]);
-  
+
   const [activeTab, setActiveTab] = useState<"members" | "permissions">("members");
-  
+
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<WorkspaceMember | null>(null);
 
@@ -56,17 +56,17 @@ export default function MembersDashboard({
     formData.append("workspaceId", workspace.id);
     formData.append("userId", targetUserId); // Updated from targetUserId to match UpdateMemberRole API
     formData.append("role", newRole);
-    
+
     const res = await UpdateMemberRole(formData);
     if (res.success) {
       toast.success("Role updated successfully");
-      
+
       // Optimistic update
       setMembers(members.map(m => m.user_id === targetUserId ? { ...m, role: newRole as any } : m));
-      
+
       // Log activity
       await LogWorkspaceActivity(workspace.id, 'changed_role', 'user', targetUserId, { newRole });
-      
+
       router.refresh(); // Background refresh
     } else {
       toast.error(res.message);
@@ -75,25 +75,25 @@ export default function MembersDashboard({
 
   const handleRemoveMember = async (targetUserId: string) => {
     if (!confirm("Are you sure you want to remove this member? They will lose access to the workspace immediately.")) return;
-    
+
     const formData = new FormData();
     formData.append("workspaceId", workspace.id);
     formData.append("userId", targetUserId); // Updated to match RemoveUserFromWorkspace API
-    
+
     const res = await RemoveUserFromWorkspace(formData);
     if (res.success) {
       toast.success("Member removed");
-      
+
       // Optimistic update
       setMembers(members.filter(m => m.user_id !== targetUserId));
-      
+
       // Log activity
       await LogWorkspaceActivity(workspace.id, 'removed_user', 'user', targetUserId);
 
       if (selectedMember?.user_id === targetUserId) {
         setSelectedMember(null);
       }
-      
+
       router.refresh();
     } else {
       toast.error(res.message);
@@ -108,7 +108,7 @@ export default function MembersDashboard({
     const res = await CancelInvitation(formData);
     if (res.success) {
       toast.success("Invitation revoked");
-      
+
       // Optimistic update
       setInvites(invites.filter(i => i.id !== inviteId));
 
@@ -122,7 +122,7 @@ export default function MembersDashboard({
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 lg:p-10 space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-9xl mx-auto p-6 lg:p-10 space-y-8 animate-in fade-in duration-500">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
         <div>
@@ -130,8 +130,8 @@ export default function MembersDashboard({
           <p className="text-muted-foreground mt-2 font-medium">Manage access, permissions, and team members for {workspace.name}.</p>
         </div>
         {hasAdminPrivilege && (
-          <Button 
-            onClick={() => setIsInviteOpen(true)} 
+          <Button
+            onClick={() => setIsInviteOpen(true)}
             className="rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 shadow-sm h-11 px-6 font-semibold shrink-0"
           >
             <UserPlus className="w-4 h-4 mr-2" /> Invite Member
@@ -140,7 +140,7 @@ export default function MembersDashboard({
       </div>
 
       {/* KPI Cards */}
-      <MembersOverviewCards 
+      <MembersOverviewCards
         totalMembers={members.length}
         activeToday={Math.max(1, Math.floor(members.length * 0.8))} // Mocked active today since we don't track sessions precisely
         pendingInvites={invites.length}
@@ -151,13 +151,13 @@ export default function MembersDashboard({
       <div className="space-y-6">
         {/* Tabs */}
         <div className="flex gap-2 border-b border-border pb-px">
-          <button 
+          <button
             onClick={() => setActiveTab("members")}
             className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors ${activeTab === "members" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
           >
             Members & Invites
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab("permissions")}
             className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors ${activeTab === "permissions" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
           >
@@ -168,7 +168,7 @@ export default function MembersDashboard({
         {/* Tab Content */}
         <div className="pt-2">
           {activeTab === "members" && (
-            <MembersDirectoryList 
+            <MembersDirectoryList
               members={members}
               invites={invites}
               currentUserId={currentUser.id}
@@ -187,14 +187,14 @@ export default function MembersDashboard({
       </div>
 
       {/* Dialogs & Sheets */}
-      <InviteMemberDialog 
+      <InviteMemberDialog
         isOpen={isInviteOpen}
         onOpenChange={setIsInviteOpen}
         workspaceId={workspace.id}
         onInviteSuccess={() => router.refresh()}
       />
 
-      <MemberProfileSheet 
+      <MemberProfileSheet
         isOpen={!!selectedMember}
         onOpenChange={(open) => !open && setSelectedMember(null)}
         member={selectedMember}

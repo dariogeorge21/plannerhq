@@ -116,6 +116,7 @@ export async function UpdateWorkspace(formData: FormData): Promise<{ success: bo
     const workspaceId = formData.get('workspaceId') as string;
     const workspaceDescription = formData.get('workspaceDescription') as string;
     const avatarUrl = formData.get('avatarUrl') as string | null;
+    const workspaceSlug = formData.get('workspaceSlug') as string | null;
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, message: "User not found" };
@@ -140,12 +141,20 @@ export async function UpdateWorkspace(formData: FormData): Promise<{ success: bo
         updatePayload.avatar_url = avatarUrl;
     }
 
+    if (workspaceSlug) {
+        // Enforce basic slug rules
+        updatePayload.slug = workspaceSlug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    }
+
     const { error: workspaceError } = await supabase
         .from('workspaces')
         .update(updatePayload)
         .eq('id', workspaceId);
 
     if (workspaceError) {
+        if (workspaceError.code === '23505') {
+            return { success: false, message: "Workspace slug is already taken" };
+        }
         return { success: false, message: "Failed to update workspace" }
     }
     revalidatePath('/dashboard');

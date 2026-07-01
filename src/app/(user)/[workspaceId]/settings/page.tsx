@@ -39,6 +39,7 @@ export default function WorkspaceSettingsPage({
 
   // Update state
   const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isUpdatePending, startUpdateTransition] = useTransition();
@@ -62,6 +63,7 @@ export default function WorkspaceSettingsPage({
         if (wsRes.success && wsRes.data) {
           setWorkspace(wsRes.data);
           setName(wsRes.data.name);
+          setSlug(wsRes.data.slug);
           setDescription(wsRes.data.description || "");
           setAvatarUrl(wsRes.data.avatar_url || null);
         }
@@ -87,9 +89,10 @@ export default function WorkspaceSettingsPage({
       const formData = new FormData();
       formData.append("workspaceId", workspaceId);
       formData.append("workspaceName", name);
+      formData.append("workspaceSlug", slug);
       formData.append("workspaceDescription", description);
       if (avatarUrl) {
-          formData.append("avatarUrl", avatarUrl);
+        formData.append("avatarUrl", avatarUrl);
       }
 
       const res = await UpdateWorkspace(formData);
@@ -136,8 +139,8 @@ export default function WorkspaceSettingsPage({
         <div className="max-w-4xl mx-auto p-6 lg:p-10 space-y-10 animate-pulse">
           <div>
             <div className="flex items-center gap-3">
-               <Skeleton className="h-10 w-64" />
-               <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="h-10 w-64" />
+              <Skeleton className="h-6 w-20 rounded-full" />
             </div>
             <Skeleton className="h-5 w-80 mt-2 max-w-full" />
           </div>
@@ -181,10 +184,10 @@ export default function WorkspaceSettingsPage({
     <div className="max-w-4xl mx-auto p-6 lg:p-10 space-y-10 font-sans">
       <div>
         <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Workspace Settings</h1>
-            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
-                {currentUserRole}
-            </span>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Workspace Settings</h1>
+          <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+            {currentUserRole}
+          </span>
         </div>
         <p className="text-muted-foreground mt-2 font-medium">Manage your workspace preferences and settings.</p>
       </div>
@@ -198,43 +201,42 @@ export default function WorkspaceSettingsPage({
               <h2 className="text-lg font-bold text-foreground">General Information</h2>
             </div>
             {!canEdit && (
-                <span className="text-sm text-muted-foreground font-medium bg-muted px-3 py-1 rounded-full">
-                    Read-only (Owner or Admin required)
-                </span>
+              <span className="text-sm text-muted-foreground font-medium bg-muted px-3 py-1 rounded-full">
+                Read-only (Owner or Admin required)
+              </span>
             )}
           </div>
           <form onSubmit={handleUpdate} className="p-6 md:p-8 space-y-8">
             <div className={`mb-4 ${!canEdit ? 'pointer-events-none opacity-80' : ''}`}>
-              <AvatarPicker 
-                value={avatarUrl} 
-                onChange={(url) => setAvatarUrl(url)} 
+              <AvatarPicker
+                value={avatarUrl}
+                onChange={(url) => setAvatarUrl(url)}
                 displayName={name || workspace?.name || "?"}
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
+              <div className="space-y-2">
                 <Label htmlFor="ws-name" className="text-sm font-semibold text-foreground">Workspace Name</Label>
                 <Input
-                    id="ws-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={!canEdit || isUpdatePending}
-                    className="w-full rounded-xl border-input focus-visible:ring-primary bg-background"
+                  id="ws-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  disabled={!canEdit || isUpdatePending}
+                  className="w-full rounded-xl border-input focus-visible:ring-primary bg-background"
                 />
-                </div>
-                
-                <div className="space-y-2">
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="ws-slug" className="text-sm font-semibold text-foreground">Workspace Slug</Label>
                 <Input
-                    id="ws-slug"
-                    value={workspace.slug}
-                    readOnly
-                    disabled
-                    className="w-full rounded-xl border-input bg-muted text-muted-foreground cursor-not-allowed font-mono text-sm"
+                  id="ws-slug"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  disabled={!canEdit || isUpdatePending}
+                  className="w-full rounded-xl border-input focus-visible:ring-primary bg-background font-mono text-sm"
                 />
-                <p className="text-xs text-muted-foreground mt-1">Unique identifier used in URLs.</p>
-                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -247,34 +249,34 @@ export default function WorkspaceSettingsPage({
                 className="max-w-xl min-h-[100px] rounded-xl border-input focus-visible:ring-primary resize-y bg-background"
               />
             </div>
-            
+
             {canEdit && (
-                <div className="pt-2">
+              <div className="pt-2">
                 <Button type="submit" disabled={isUpdatePending} className="rounded-xl bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-sm h-10 px-6 transition-all active:scale-95">
-                    {isUpdatePending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Save Changes"}
+                  {isUpdatePending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Save Changes"}
                 </Button>
-                </div>
+              </div>
             )}
           </form>
         </section>
 
         {/* Member Actions */}
         {canLeave && (
-            <section className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
-                <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div>
-                    <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <LogOut className="w-5 h-5 text-muted-foreground" /> Leave Workspace
-                    </h2>
-                    <p className="text-sm text-muted-foreground mt-1 font-medium max-w-lg">
-                    You will lose access to all notes, tasks, and files. You will need a new invitation to rejoin.
-                    </p>
-                </div>
-                <Button variant="outline" onClick={() => setShowLeaveConfirm(true)} className="rounded-xl font-bold shadow-sm whitespace-nowrap hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 border-border transition-colors">
-                    Leave Workspace
-                </Button>
-                </div>
-            </section>
+          <section className="bg-card border border-border rounded-3xl overflow-hidden shadow-sm">
+            <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div>
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <LogOut className="w-5 h-5 text-muted-foreground" /> Leave Workspace
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1 font-medium max-w-lg">
+                  You will lose access to all notes, tasks, and files. You will need a new invitation to rejoin.
+                </p>
+              </div>
+              <Button variant="outline" onClick={() => setShowLeaveConfirm(true)} className="rounded-xl font-bold shadow-sm whitespace-nowrap hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 border-border transition-colors">
+                Leave Workspace
+              </Button>
+            </div>
+          </section>
         )}
 
         {/* Danger Zone */}

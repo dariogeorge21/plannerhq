@@ -15,7 +15,7 @@ import {
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {  
+import {
   AggregatedCalendarItem,
   AggregatedWorkspaceEvent,
   AggregatedWorkspaceTask,
@@ -46,6 +46,7 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeView, setActiveView] = useState<ViewMode>('month');
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isNavigatingToDashboard, setIsNavigatingToDashboard] = useState(false);
   const pathname = usePathname();
 
   // Compute date range
@@ -147,10 +148,10 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
                 variant="ghost"
                 size="sm"
                 className="h-10 px-3 rounded-xl"
-                onClick={() => setIsNavigating(true)}
+                onClick={() => setIsNavigatingToDashboard(true)}
               >
                 <Link href="/dashboard">
-                  {isNavigating ? (
+                  {isNavigatingToDashboard ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -229,11 +230,10 @@ export function PersonalCalendarView({ userId }: PersonalCalendarViewProps) {
                 <button
                   key={view}
                   onClick={() => setActiveView(view)}
-                  className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-semibold rounded-lg transition-all capitalize ${
-                    activeView === view
-                      ? 'bg-white dark:bg-neutral-700 text-indigo-700 dark:text-indigo-400 shadow-sm ring-1 ring-black/5 dark:ring-white/10'
-                      : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
-                  }`}
+                  className={`flex-1 sm:flex-none px-4 py-1.5 text-sm font-semibold rounded-lg transition-all capitalize ${activeView === view
+                    ? 'bg-white dark:bg-neutral-700 text-indigo-700 dark:text-indigo-400 shadow-sm ring-1 ring-black/5 dark:ring-white/10'
+                    : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50'
+                    }`}
                 >
                   {view}
                 </button>

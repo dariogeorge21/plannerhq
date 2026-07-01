@@ -170,6 +170,16 @@ export default function ProfileSettingsPage() {
                     />
 
                     <EditableField
+                        label="Professional Role"
+                        value={profile.role || ""}
+                        placeholder="e.g. Product Manager, Senior Developer"
+                        onSave={(val) => handleSaveField("role", val)}
+                        validator={(val) =>
+                            val.trim().length > 50 ? "Role cannot exceed 50 characters" : null
+                        }
+                    />
+
+                    <EditableField
                         label="HQID (Unique Handle)"
                         value={profile.hqid}
                         placeholder="your-unique-handle"

@@ -10,6 +10,7 @@ export interface ProfileOverviewData {
     avatarUrl: string | null;
     hqid: string;
     email: string;
+    role: string | null;
 
     /**
      * Derived role: the most-prominent role across all the user's workspaces.
@@ -53,7 +54,7 @@ export async function GetUserProfileOverview(): Promise<{
     // 1. Fetch profile
     const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, hqid, email")
+        .select("display_name, avatar_url, hqid, email, role")
         .eq("id", user.id)
         .single();
 
@@ -77,6 +78,7 @@ export async function GetUserProfileOverview(): Promise<{
                 avatarUrl: profile.avatar_url,
                 hqid: profile.hqid || "",
                 email: profile.email || "",
+                role: profile.role,
                 primaryRole: "member",
                 ownedCount: 0,
                 joinedCount: 0,
@@ -130,6 +132,7 @@ export async function GetUserProfileOverview(): Promise<{
             avatarUrl: profile.avatar_url,
             hqid: profile.hqid || "",
             email: profile.email || "",
+            role: profile.role,
             primaryRole,
             ownedCount,
             joinedCount,

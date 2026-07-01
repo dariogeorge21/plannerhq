@@ -389,13 +389,22 @@ export function ProfileOverviewCard({ user }: UserProps) {
                                         {overview?.displayName || user?.displayName || 'User'}
                                     </h2>
 
-                                    {/* HQID */}
-                                    {(overview?.hqid || user?.hqid) && (
-                                        <div className="inline-flex items-center gap-1.5 text-sm font-mono text-neutral-500 dark:text-neutral-400">
-                                            <Hash className="w-3.5 h-3.5 shrink-0" />
-                                            <span className="truncate">{overview?.hqid || user?.hqid}</span>
-                                        </div>
-                                    )}
+                                    {/* HQID & Role */}
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        {(overview?.hqid || user?.hqid) && (
+                                            <div className="inline-flex items-center gap-1.5 text-sm font-mono text-neutral-500 dark:text-neutral-400">
+                                                <Hash className="w-3.5 h-3.5 shrink-0" />
+                                                <span className="truncate">{overview?.hqid || user?.hqid}</span>
+                                            </div>
+                                        )}
+                                        
+                                        {(overview?.role || user?.role) && (
+                                            <div className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                                                <Briefcase className="w-3.5 h-3.5 shrink-0" />
+                                                <span className="truncate">{overview?.role || user?.role}</span>
+                                            </div>
+                                        )}
+                                    </div>
 
                                     {/* Badges row */}
                                     <div className="flex flex-wrap items-center gap-2 pt-0.5">

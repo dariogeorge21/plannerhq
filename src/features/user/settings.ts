@@ -13,6 +13,7 @@ export interface ProfileData {
         push: boolean;
         inApp: boolean;
     };
+    role: string | null;
 }
 
 export async function profileSettings(): Promise<{ profile: ProfileData } | { error: string }> {
@@ -26,7 +27,7 @@ export async function profileSettings(): Promise<{ profile: ProfileData } | { er
 
     const { data: profile, error } = await supabase
         .from("profiles")
-        .select("display_name, email, hqid, avatar_url, theme, notification_preferences")
+        .select("display_name, email, hqid, avatar_url, theme, notification_preferences, role")
         .eq("id", user.user.id)
         .maybeSingle();
 
@@ -50,7 +51,8 @@ export async function profileSettings(): Promise<{ profile: ProfileData } | { er
                 email: typeof savedPrefs?.email === 'boolean' ? savedPrefs.email : defaultPrefs.email,
                 push: typeof savedPrefs?.push === 'boolean' ? savedPrefs.push : defaultPrefs.push,
                 inApp: typeof savedPrefs?.inApp === 'boolean' ? savedPrefs.inApp : defaultPrefs.inApp,
-            }
+            },
+            role: profile.role
         }
     };
 }
@@ -196,6 +198,7 @@ export async function updateProfileSettings(updates: {
     theme?: string;
     avatar_url?: string;
     notification_preferences?: NotificationPreferences;
+    role?: string;
 }): Promise<{ success: boolean } | { error: string }> {
     const supabase = await createClient();
 
@@ -238,6 +241,10 @@ export async function updateProfileSettings(updates: {
 
     if (updates.notification_preferences !== undefined) {
         dbUpdates.notification_preferences = updates.notification_preferences;
+    }
+
+    if (updates.role !== undefined) {
+        dbUpdates.role = updates.role.trim();
     }
 
     if (Object.keys(dbUpdates).length === 0) {

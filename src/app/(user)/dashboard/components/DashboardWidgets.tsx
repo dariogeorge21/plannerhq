@@ -48,6 +48,7 @@ import { CreateWorkspace } from '@/features/workspace/workspace';
 import { Input } from '@/components/ui/input';
 import { useWorkspaceTimeSpent } from '@/features/time-tracking/hooks';
 
+
 interface WelcomeHeroProps {
     user: any;
 }
@@ -854,6 +855,7 @@ export function UpcomingEvents({ user }: UserProps) {
 }
 
 export function WorkspaceInvitations() {
+    const router = useRouter();
     const { data: invitations, isLoading, refetch } = useUserPendingInvitations();
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -865,6 +867,7 @@ export function WorkspaceInvitations() {
         if (res.success) {
             toast.success("Invitation accepted");
             refetch();
+            router.refresh();
         } else {
             toast.error(res.message);
         }
@@ -879,6 +882,7 @@ export function WorkspaceInvitations() {
         if (res.success) {
             toast.success("Invitation declined");
             refetch();
+            router.refresh();
         } else {
             toast.error(res.message);
         }

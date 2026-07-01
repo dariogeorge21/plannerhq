@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Workspace, WorkspaceMember, WorkspaceInvite, WorkspaceActivityLog } from "@/types/workspace";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MembersOverviewCards from "./MembersOverviewCards";
 import MembersDirectoryList from "./MembersDirectoryList";
-import PendingInvitesList from "./PendingInvitesList";
 import RolePermissionsMatrix from "./RolePermissionsMatrix";
 import InviteMemberDialog from "./InviteMemberDialog";
 import MemberProfileSheet from "./MemberProfileSheet";
@@ -38,7 +37,14 @@ export default function MembersDashboard({
   const [invites, setInvites] = useState(initialInvites);
   const [activities, setActivities] = useState(initialActivities);
   
-  const [activeTab, setActiveTab] = useState<"members" | "invites" | "permissions">("members");
+  // Sync state with props when router.refresh() fetches new data
+  useEffect(() => {
+    setMembers(initialMembers);
+    setInvites(initialInvites);
+    setActivities(initialActivities);
+  }, [initialMembers, initialInvites, initialActivities]);
+  
+  const [activeTab, setActiveTab] = useState<"members" | "permissions">("members");
   
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<WorkspaceMember | null>(null);
@@ -149,16 +155,7 @@ export default function MembersDashboard({
             onClick={() => setActiveTab("members")}
             className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors ${activeTab === "members" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
           >
-            Active Members
-          </button>
-          <button 
-            onClick={() => setActiveTab("invites")}
-            className={`pb-3 px-1 font-bold text-sm border-b-2 transition-colors flex items-center gap-2 ${activeTab === "invites" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
-          >
-            Pending Invites 
-            {invites.length > 0 && (
-              <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${activeTab === "invites" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}>{invites.length}</span>
-            )}
+            Members & Invites
           </button>
           <button 
             onClick={() => setActiveTab("permissions")}
@@ -173,19 +170,13 @@ export default function MembersDashboard({
           {activeTab === "members" && (
             <MembersDirectoryList 
               members={members}
+              invites={invites}
               currentUserId={currentUser.id}
               currentUserRole={currentUserRole}
               onUpdateRole={handleUpdateRole}
               onRemoveMember={handleRemoveMember}
+              onRevokeInvite={handleRevokeInvite}
               onViewProfile={(member) => setSelectedMember(member)}
-            />
-          )}
-
-          {activeTab === "invites" && (
-            <PendingInvitesList 
-              invites={invites}
-              onRevoke={handleRevokeInvite}
-              currentUserRole={currentUserRole}
             />
           )}
 

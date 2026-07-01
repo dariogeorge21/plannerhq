@@ -8,8 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Mail, Hash, Loader2, ShieldCheck, User } from "lucide-react";
 import { toast } from "sonner";
-// Import your actual API actions here
-// import { InviteUserToWorkspaceByEmail, InviteUserToWorkspaceByHqid } from "@/features/workspace/invites";
+import { InviteUserToWorkspaceByEmail, InviteUserToWorkspaceByHqid } from "@/features/workspace/invites";
 
 interface InviteMemberDialogProps {
   isOpen: boolean;
@@ -32,12 +31,27 @@ export default function InviteMemberDialog({ isOpen, onOpenChange, workspaceId, 
     }
 
     startTransition(async () => {
-      // Simulate API Call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("Invitation sent successfully!");
-      onInviteSuccess();
-      onOpenChange(false);
-      setInviteValue("");
+      const formData = new FormData();
+      formData.append("workspaceId", workspaceId);
+      formData.append("inviteType", inviteRole);
+
+      let result;
+      if (inviteMethod === "email") {
+        formData.append("email", inviteValue);
+        result = await InviteUserToWorkspaceByEmail(formData);
+      } else {
+        formData.append("hqid", inviteValue);
+        result = await InviteUserToWorkspaceByHqid(formData);
+      }
+
+      if (result.success) {
+        toast.success(result.message || "Invitation sent successfully!");
+        onInviteSuccess();
+        onOpenChange(false);
+        setInviteValue("");
+      } else {
+        toast.error(result.message || "Failed to send invitation");
+      }
     });
   };
 

@@ -80,8 +80,6 @@ export function WelcomeHero({ user }: WelcomeHeroProps) {
         router.push(`/calendar`);
     };
 
-    const firstWorkspace = workspaces?.[0];
-
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -134,7 +132,7 @@ export function WelcomeHero({ user }: WelcomeHeroProps) {
                     >
                         {greeting}, <br className="hidden sm:block" />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-neutral-900 to-purple-600 dark:from-indigo-300 dark:via-white dark:to-purple-300">
-                            {user?.displayName?.split(' ')[0] || 'User'}
+                            {user?.displayName || 'User'}
                         </span>
                     </motion.h1>
 

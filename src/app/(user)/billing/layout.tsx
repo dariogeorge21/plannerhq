@@ -29,9 +29,9 @@ export default function BillingLayout({
 
       {/* Main Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Sidebar */}
-          <aside className="w-full md:w-64 lg:w-72 shrink-0">
+          <aside className="w-full lg:w-64 xl:w-72 shrink-0">
             <div className="sticky top-24 space-y-8">
               <div>
                 <Link
@@ -49,7 +49,7 @@ export default function BillingLayout({
                 </p>
               </div>
 
-              <nav className="flex space-x-2 md:flex-col md:space-x-0 md:space-y-1 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+              <nav className="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1 overflow-x-auto pb-2 lg:pb-0 hide-scrollbar">
                 {sidebarNavItems.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                   return (

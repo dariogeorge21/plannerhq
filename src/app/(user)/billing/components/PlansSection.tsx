@@ -40,14 +40,14 @@ export function PlansSection({ plans, currentPlanKey, onSelectPlan }: PlansSecti
                 </CardDescription>
               </div>
             </div>
-            
-            <div className="flex items-center bg-muted rounded-xl p-1">
+
+            <div className="flex items-center bg-muted rounded-xl p-1 w-full sm:w-auto mt-4 sm:mt-0">
               {(["monthly", "yearly"] as BillingCycle[]).map((cycle) => (
                 <button
                   key={cycle}
                   onClick={() => setBillingCycle(cycle)}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-sm font-semibold transition-all",
+                    "flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-semibold transition-all",
                     billingCycle === cycle
                       ? "bg-card text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -55,7 +55,7 @@ export function PlansSection({ plans, currentPlanKey, onSelectPlan }: PlansSecti
                 >
                   {cycle.charAt(0).toUpperCase() + cycle.slice(1)}
                   {cycle === "yearly" && (
-                    <span className="ml-1.5 text-xs text-emerald-600 font-bold">
+                    <span className="ml-1.5 text-xs text-emerald-600 font-bold hidden xs:inline-block sm:inline-block">
                       Save 25%
                     </span>
                   )}
@@ -64,9 +64,9 @@ export function PlansSection({ plans, currentPlanKey, onSelectPlan }: PlansSecti
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent className="pt-6">
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-4 md:gap-4 lg:gap-6 grid-cols-1 md:grid-cols-3">
             {activePlans.map((plan, index) => (
               <PlanCard
                 key={plan.id}
@@ -113,7 +113,7 @@ function PlanCard({ plan, billingCycle, isCurrent, isPopular, index, onSelect }:
     >
       <Card
         className={cn(
-          "relative flex flex-col h-full transition-all hover:shadow-lg",
+          "relative flex flex-col h-full w-full transition-all hover:shadow-lg",
           isPopular && !isCurrent ? "ring-2 ring-indigo-500/50" : "",
           isCurrent ? "border-indigo-300 bg-indigo-50/30 dark:bg-indigo-950/20" : ""
         )}
@@ -133,8 +133,8 @@ function PlanCard({ plan, billingCycle, isCurrent, isPopular, index, onSelect }:
           </div>
         )}
 
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardHeader className="p-5 md:p-4 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
             {plan.key === "free" ? (
               <Sparkles className="h-5 w-5 text-muted-foreground" />
             ) : plan.key === "pro" ? (
@@ -146,7 +146,7 @@ function PlanCard({ plan, billingCycle, isCurrent, isPopular, index, onSelect }:
           </CardTitle>
           <CardDescription>{plan.description}</CardDescription>
           <div className="mt-4 flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-foreground">
+            <span className="text-2xl md:text-3xl font-bold text-foreground">
               {priceInfo.price}
             </span>
             <span className="text-muted-foreground">{priceInfo.suffix}</span>
@@ -158,7 +158,7 @@ function PlanCard({ plan, billingCycle, isCurrent, isPopular, index, onSelect }:
           )}
         </CardHeader>
 
-        <CardContent className="flex-1">
+        <CardContent className="flex-1 p-5 pt-0 md:p-4 md:pt-0 lg:p-6 lg:pt-0">
           <ul className="space-y-3">
             {features.map((feature) => (
               <li key={feature.label} className="flex items-start gap-2.5">
@@ -196,7 +196,7 @@ function PlanCard({ plan, billingCycle, isCurrent, isPopular, index, onSelect }:
           </ul>
         </CardContent>
 
-        <CardFooter className="pt-0">
+        <CardFooter className="pt-0 p-5 md:p-4 md:pt-0 lg:p-6 lg:pt-0">
           <Button
             className="w-full"
             variant={isCurrent ? "outline" : "default"}

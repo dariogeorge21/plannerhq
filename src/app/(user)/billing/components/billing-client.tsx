@@ -37,7 +37,7 @@ export function BillingClient() {
   const loadData = useCallback(async () => {
     setError(null);
     setLoading(true);
-    
+
     try {
       const [overviewRes, paymentsRes] = await Promise.all([
         fetch("/api/billing/overview", { cache: "no-store" }),
@@ -83,11 +83,11 @@ export function BillingClient() {
   const handleCancelSubscription = async () => {
     const res = await fetch("/api/billing/cancel", { method: "POST" });
     const result = await res.json();
-    
+
     if (!result.success) {
       throw new Error(result.message);
     }
-    
+
     await loadData();
   };
 
@@ -137,14 +137,14 @@ export function BillingClient() {
       <BillingOverview data={data} />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
           <PlansSection
             plans={data.availablePlans.filter((p) => p.key !== "enterprise")}
             currentPlanKey={data.currentPlan.key}
             onSelectPlan={handleSelectPlan}
           />
         </div>
-        
+
         <div className="space-y-6">
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">

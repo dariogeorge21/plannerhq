@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import FilePreviewModal from "./modals/FilePreviewModal";
+import { ConfirmDeleteModal } from "@/components/ui/confirm-delete-modal";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import {
@@ -67,22 +68,27 @@ const itemVariants: Variants = {
 
 export default function FileList({ files, workspaceId }: FileListProps) {
   const [selectedFile, setSelectedFile] = useState<FileUpload | null>(null);
+  const [fileToDelete, setFileToDelete] = useState<FileUpload | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("date-desc");
 
   const deleteFile = useDeleteFile(workspaceId);
 
-  const handleDelete = async (e: React.MouseEvent, fileId: string) => {
-    e.stopPropagation();
-    if (confirm("Are you sure you want to delete this file? This action cannot be undone.")) {
-      setDeletingId(fileId);
-      try {
-        await deleteFile.mutateAsync(fileId);
-      } finally {
-        setDeletingId(null);
-      }
+  const confirmDelete = async () => {
+    if (!fileToDelete) return;
+    setDeletingId(fileToDelete.id);
+    try {
+      await deleteFile.mutateAsync(fileToDelete.id);
+    } finally {
+      setDeletingId(null);
+      setFileToDelete(null);
     }
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, file: FileUpload) => {
+    e.stopPropagation();
+    setFileToDelete(file);
   };
 
   // Process sorting and searching metrics efficiently using useMemo
@@ -217,7 +223,7 @@ export default function FileList({ files, workspaceId }: FileListProps) {
 
                   <div className="pl-4 shrink-0 opacity-0 group-hover:opacity-100 transition-all duration-200">
                     <button
-                      onClick={(e) => handleDelete(e, file.id)}
+                      onClick={(e) => handleDeleteClick(e, file)}
                       disabled={deletingId === file.id}
                       className="w-9 h-9 rounded-full flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors disabled:opacity-50"
                       title="Delete File"
@@ -265,6 +271,15 @@ export default function FileList({ files, workspaceId }: FileListProps) {
         file={selectedFile}
         isOpen={!!selectedFile}
         onClose={() => setSelectedFile(null)}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={!!fileToDelete}
+        onClose={() => setFileToDelete(null)}
+        onConfirm={confirmDelete}
+        title="Delete File"
+        description={`Are you sure you want to delete "${fileToDelete?.file_name}"? This action cannot be undone.`}
+        isLoading={!!deletingId}
       />
     </>
   );

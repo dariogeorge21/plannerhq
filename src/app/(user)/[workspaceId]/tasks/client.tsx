@@ -8,6 +8,7 @@ import {
   useReorderTaskSections,
   useReorderTasks,
   useCreateTaskSection,
+  useCreateTask,
 } from "@/features/task/hooks";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
@@ -36,6 +37,7 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
   const reorderSections = useReorderTaskSections(workspaceId);
   const reorderTasks = useReorderTasks(workspaceId);
   const createSection = useCreateTaskSection(workspaceId);
+  const createTask = useCreateTask(workspaceId);
 
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [searchQuery, setSearchQuery] = useState("");
@@ -362,8 +364,33 @@ export function TasksClient({ workspaceId, initialSections, initialTasks, initia
         </div>
 
         {/* Board Content */}
-        <div className="flex-1 min-h-[500px]">
-          {viewMode === 'list' ? (
+        <div className="flex-1 min-h-[500px] flex flex-col">
+          {tasks.length === 0 && sections.length === 0 ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-border rounded-3xl bg-card/30 mt-8">
+              <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-6 border border-primary/20">
+                <ListTodo className="w-10 h-10 text-primary" />
+              </div>
+              <h3 className="text-2xl font-extrabold mb-2 text-foreground">No tasks yet</h3>
+              <p className="text-muted-foreground mb-8 max-w-sm">Get started by creating your first task or adding a section to organize your work.</p>
+              <div className="flex items-center gap-4">
+                <Button onClick={() => createTask.mutate({ title: "My first task" })} className="h-11 px-8 rounded-xl shadow-md bg-primary hover:bg-primary/90 font-bold">
+                  <Plus className="w-5 h-5 mr-2" /> Create First Task
+                </Button>
+                <Button onClick={() => setIsCreateModalOpen(true)} variant="outline" className="h-11 px-8 rounded-xl font-bold border-border">
+                  Add Section
+                </Button>
+              </div>
+            </motion.div>
+          ) : tasks.length > 0 && filteredTasks.length === 0 ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex-1 flex flex-col items-center justify-center p-8 text-center border border-border rounded-3xl bg-card/30 mt-8">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                <Search className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">No tasks found</h3>
+              <p className="text-muted-foreground mb-6">No tasks match your current filters.</p>
+              <Button onClick={clearFilters} variant="outline" className="rounded-xl">Clear Filters</Button>
+            </motion.div>
+          ) : viewMode === 'list' ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-6">
               <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
                 <TaskSectionList

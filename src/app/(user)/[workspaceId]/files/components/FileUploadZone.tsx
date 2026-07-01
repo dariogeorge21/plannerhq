@@ -8,6 +8,7 @@ import { FileEntityType } from "@/features/file/types";
 import { ALLOWED_MIME_TYPES } from "@/features/file/services";
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 interface FileUploadZoneProps {
   workspaceId: string;
@@ -35,6 +36,11 @@ export default function FileUploadZone({
 
       for (const file of filesToUpload) {
         if (!file) continue;
+
+        if (file.size > 1048576) {
+          toast.error(`File "${file.name}" exceeds the 1MB limit. Please choose a smaller file.`);
+          continue;
+        }
 
         const tempId = crypto.randomUUID();
         setUploadingFiles((prev) => [...prev, { id: tempId, name: file.name, progress: 10 }]);
@@ -74,9 +80,20 @@ export default function FileUploadZone({
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } = useDropzone({
     onDrop,
+    onDropRejected: (fileRejections) => {
+      fileRejections.forEach((rejection) => {
+        rejection.errors.forEach((error) => {
+          if (error.code === 'file-too-large') {
+            toast.error(`File "${rejection.file.name}" exceeds the 1MB limit. Please choose a smaller file.`);
+          } else {
+            toast.error(error.message);
+          }
+        });
+      });
+    },
     multiple,
     accept: ALLOWED_MIME_TYPES.reduce((acc, curr) => ({ ...acc, [curr]: [] }), {}),
-    maxSize: 52428800,
+    maxSize: 1048576, // 1MB limit
   });
 
   return (
@@ -102,7 +119,7 @@ export default function FileUploadZone({
           {isDragActive ? "Drop files to upload" : "Click or drag files here"}
         </h3>
         <p className="text-sm text-muted-foreground max-w-sm">
-          {multiple ? "Upload multiple files." : "Upload a single file."} Max 50MB per file.
+          {multiple ? "Upload multiple files." : "Upload a single file."} Max 1MB per file.
         </p>
       </div>
 

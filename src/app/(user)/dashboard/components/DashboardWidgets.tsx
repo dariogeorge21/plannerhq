@@ -239,7 +239,7 @@ export function WelcomeHero({ user }: WelcomeHeroProps) {
                                 <Button
                                     onClick={handleViewSchedule}
                                     variant="outline"
-                                    disabled={!firstWorkspace || isNavigating}
+                                    disabled={isNavigating}
                                     className="h-12 px-6 rounded-full bg-white/50 dark:bg-white/5 border-neutral-200 dark:border-white/10 text-neutral-700 dark:text-white hover:bg-neutral-100 dark:hover:bg-white/10 hover:text-neutral-900 dark:hover:text-white backdrop-blur-md transition-all hover:scale-105 active:scale-95 w-full sm:w-auto justify-center"
                                 >
                                     {isNavigating && !navigatingId ? (
@@ -397,7 +397,7 @@ export function ProfileOverviewCard({ user }: UserProps) {
                                                 <span className="truncate">{overview?.hqid || user?.hqid}</span>
                                             </div>
                                         )}
-                                        
+
                                         {(overview?.role || user?.role) && (
                                             <div className="inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400">
                                                 <Briefcase className="w-3.5 h-3.5 shrink-0" />

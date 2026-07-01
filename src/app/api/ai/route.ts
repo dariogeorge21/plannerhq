@@ -51,7 +51,7 @@ async function checkQuota(
   userId: string,
   estimatedTokens: number
 ): Promise<{ allowed: boolean; limit: number; current: number; remaining: number }> {
-  const { plan } = await getUserSubscription(userId);
+  const { dbPlan } = await getUserSubscription(userId);
   const serviceClient = createServiceClient();
 
   const { data: usage } = await serviceClient
@@ -61,7 +61,7 @@ async function checkQuota(
     .maybeSingle();
 
   const current = usage?.ai_tokens_used ?? 0;
-  const limit = plan.maxAiTokens;
+  const limit = dbPlan.max_ai_tokens;
   const remaining = Math.max(0, limit - current);
   const allowed = (current + estimatedTokens) <= limit;
 
@@ -258,7 +258,7 @@ export async function GET(): Promise<NextResponse> {
       );
     }
 
-    const { plan } = await getUserSubscription(user.id);
+    const { dbPlan } = await getUserSubscription(user.id);
     const serviceClient = createServiceClient();
 
     const { data: usage } = await serviceClient
@@ -268,7 +268,7 @@ export async function GET(): Promise<NextResponse> {
       .maybeSingle();
 
     const used = usage?.ai_tokens_used ?? 0;
-    const max = plan.maxAiTokens;
+    const max = dbPlan.max_ai_tokens;
     const remaining = Math.max(0, max - used);
 
     return NextResponse.json({

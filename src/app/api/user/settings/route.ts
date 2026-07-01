@@ -21,7 +21,7 @@ export async function PUT(request: NextRequest) {
     try {
         const body = await request.json();
         // Extract fields
-        const { hqid, theme, name, avatar, notificationPreferences } = body;
+        const { hqid, theme, name, avatar, notificationPreferences, role } = body;
         // Build unified updates object
         const updates: any = {};
         if (name !== undefined) updates.name = name;
@@ -31,6 +31,7 @@ export async function PUT(request: NextRequest) {
         if (notificationPreferences !== undefined) {
             updates.notification_preferences = notificationPreferences;
         }
+        if (role !== undefined) updates.role = role;
 
         if (Object.keys(updates).length === 0) {
             return NextResponse.json({ error: "No update data provided" }, { status: 400 });

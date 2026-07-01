@@ -1,48 +1,50 @@
-import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { getUserSubscription } from "@/features/billing/service";
+import { BillingService } from "@/server/billing/services/billing.service";
+import { BillingServiceError } from "@/server/billing/utils";
+import { createClient } from "@/lib/supabase/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET() {
     try {
         const supabase = await createClient();
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-            return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            return NextResponse.json(
+                { success: false, message: "Unauthorized" },
+                { status: 401 }
+            );
         }
 
-        const { subscription, plan, dbPlan } = await getUserSubscription(user.id);
-        // Get usage
-        const { data: usage } = await supabase
-            .from("subscription_usage")
-            .select("*")
-            .eq("user_id", user.id)
-            .maybeSingle();
+        const billingService = BillingService.getInstance();
+        const overview = await billingService.getBillingOverview(user.id);
 
-        // Get last payment
-        const { data: lastPayment } = await supabase
-            .from("payments")
-            .select("amount_paise, created_at")
-            .eq("user_id", user.id)
-            .eq("status", "captured")
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
+        // Maintain backward compatibility with existing frontend
         return NextResponse.json({
             success: true,
             data: {
-                subscription,
-                plan,
-                dbPlan,
-                usage: usage || null,
-                lastPaymentDate: lastPayment?.created_at || null,
-                lastPaymentAmount: lastPayment?.amount_paise || null,
-            }
+                subscription: overview.subscription,
+                dbPlan: overview.currentPlan,
+                allPlans: overview.availablePlans,
+                usage: overview.usage,
+                lastPaymentDate: overview.lastPaymentDate,
+                lastPaymentAmount: overview.lastPaymentAmount,
+            },
         });
     } catch (error) {
-        console.error("Subscription API error:", error);
-        return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
+        console.error("[BILLING ERROR] Subscription API error:", error);
+
+        if (error instanceof BillingServiceError) {
+            return NextResponse.json(
+                { success: false, message: error.message, code: error.code },
+                { status: 400 }
+            );
+        }
+
+        return NextResponse.json(
+            { success: false, message: "Internal server error" },
+            { status: 500 }
+        );
     }
 }

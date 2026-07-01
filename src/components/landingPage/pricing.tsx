@@ -3,10 +3,17 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Sparkles, ArrowRight, Building2 } from "lucide-react";
-import { PricingPlans } from "@/data/data";
+import { DbPlanRecord } from "@/types/billing";
 
-export default function PricingSection() {
+function paise(amount: number): string {
+  if (amount === 0) return "Free";
+  return `₹${(amount / 100).toLocaleString("en-IN")}`;
+}
+
+export default function PricingSection({ allPlans }: { allPlans: DbPlanRecord[] }) {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
+
+  const activePlans = allPlans.filter(p => p.key !== "free");
 
   return (
     <section className="relative overflow-hidden bg-white py-24 sm:py-32 selection:bg-indigo-500/30 font-sans">
@@ -89,27 +96,33 @@ export default function PricingSection() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8 max-w-7xl mx-auto items-start">
-          {PricingPlans.map((plan, idx) => (
+          {activePlans.map((plan, idx) => {
+            const isHighlighted = plan.key === "ultra";
+            const isEnterprise = plan.key === "enterprise";
+            const monthlyPrice = isEnterprise ? "Custom" : paise(plan.monthly_price_paise);
+            const yearlyPrice = isEnterprise ? "Custom" : paise(plan.yearly_price_paise / 12);
+            
+            return (
             <motion.div
               key={plan.name}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 + idx * 0.1, ease: "easeOut" }}
               className={`relative flex flex-col h-full rounded-4xl bg-white transition-all duration-300 ${
-                plan.highlighted
+                isHighlighted
                   ? "border border-indigo-200 shadow-[0_0_40px_rgba(79,70,229,0.1)] hover:shadow-[0_0_60px_rgba(79,70,229,0.15)] ring-1 ring-indigo-50 z-10 lg:-mt-4 lg:mb-4"
                   : "border border-neutral-200/80 shadow-sm hover:shadow-xl hover:shadow-neutral-200/50 hover:-translate-y-1"
               }`}
             >
-              {plan.highlighted && (
+              {isHighlighted && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1.5 bg-linear-to-r from-indigo-500 to-emerald-500 rounded-full text-xs font-bold text-white shadow-md tracking-wide uppercase">
-                  {plan.highlighted && "Most Popular"}
+                  Best Value
                 </div>
               )}
 
               <div className="p-8 xl:p-10 flex-1 flex flex-col">
                 <div className="mb-6">
-                  <h3 className={`text-xl font-bold tracking-tight mb-2 ${plan.highlighted ? "text-indigo-600" : "text-neutral-900"}`}>
+                  <h3 className={`text-xl font-bold tracking-tight mb-2 ${isHighlighted ? "text-indigo-600" : "text-neutral-900"}`}>
                     {plan.name}
                   </h3>
                   <p className="text-sm text-neutral-500 leading-relaxed h-10">
@@ -119,23 +132,22 @@ export default function PricingSection() {
 
                 <div className="mb-8 border-b border-neutral-100 pb-8">
                   <div className="flex items-end gap-2">
-                    {plan.monthlyPrice === "Custom" ? (
+                    {isEnterprise ? (
                       <span className="text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900">
                         Custom
                       </span>
                     ) : (
                       <>
                         <span className="text-4xl lg:text-5xl font-extrabold tracking-tight text-neutral-900 flex items-start">
-                          <span className="text-2xl mt-1 mr-1 text-neutral-400">$</span>
                           <AnimatePresence mode="wait">
                             <motion.span
-                              key={billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice}
+                              key={billingCycle === "yearly" ? yearlyPrice : monthlyPrice}
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: 10 }}
                               transition={{ duration: 0.2 }}
                             >
-                              {billingCycle === "yearly" ? plan.yearlyPrice : plan.monthlyPrice}
+                              {billingCycle === "yearly" ? yearlyPrice : monthlyPrice}
                             </motion.span>
                           </AnimatePresence>
                         </span>
@@ -146,7 +158,7 @@ export default function PricingSection() {
                       </>
                     )}
                   </div>
-                  {plan.monthlyPrice !== "Custom" && (
+                  {!isEnterprise && (
                     <div className="h-4 mt-2">
                       <AnimatePresence>
                         {billingCycle === "yearly" && (
@@ -165,28 +177,42 @@ export default function PricingSection() {
                 </div>
 
                 <ul className="space-y-4 flex-1 mb-10">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <div className="shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center mt-0.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                      </div>
-                      <span className="text-sm text-neutral-600 leading-snug">
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
+                  <li className="flex items-start gap-3">
+                    <div className="shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center mt-0.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    </div>
+                    <span className="text-sm text-neutral-600 leading-snug">
+                      {plan.key === "enterprise" ? "Unlimited Workspaces" : `Up to ${plan.max_workspaces} Workspaces`}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center mt-0.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    </div>
+                    <span className="text-sm text-neutral-600 leading-snug">
+                      {plan.key === "enterprise" ? "Unlimited Storage" : `${plan.max_storage_bytes / (1024 * 1024 * 1024)} GB Storage`}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <div className="shrink-0 w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center mt-0.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    </div>
+                    <span className="text-sm text-neutral-600 leading-snug">
+                      {plan.key === "enterprise" ? "Unlimited AI tokens" : `${plan.max_ai_tokens >= 1000000 ? `${plan.max_ai_tokens / 1000000}M` : `${plan.max_ai_tokens / 1000}K`} tokens/day`}
+                    </span>
+                  </li>
                 </ul>
 
                 <a
-                  href={plan.name === "Enterprise" ? "/contact" : "/signup"}
+                  href={isEnterprise ? "/contact" : "/signup"}
                   className={`group relative flex items-center justify-center gap-2 w-full rounded-full py-3.5 text-sm font-bold transition-all ${
-                    plan.highlighted
+                    isHighlighted
                       ? "bg-neutral-950 text-white shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] hover:bg-neutral-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] active:scale-95"
                       : "bg-white border-2 border-neutral-200/80 text-neutral-900 hover:border-neutral-300 hover:bg-neutral-50 active:scale-95"
                   }`}
                 >
-                  {plan.cta}
-                  {plan.name === "Enterprise" ? (
+                  {isEnterprise ? "Contact Sales" : "Get Started"}
+                  {isEnterprise ? (
                     <Building2 className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
                   ) : (
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
@@ -194,7 +220,8 @@ export default function PricingSection() {
                 </a>
               </div>
             </motion.div>
-          ))}
+          )}
+          )}
         </div>
 
         {/* Enterprise Trusted By Footer */}

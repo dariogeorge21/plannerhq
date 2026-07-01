@@ -1,119 +1,212 @@
 import { createClient } from "@/lib/supabase/server";
 import { BillingCycle, PlanKey } from "@/types/types";
 import { SubscriptionRecord, PaymentRecord } from "@/types/billing";
-import { PLAN_CONFIG, RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "./config";
+import { RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "./config";
 import Razorpay from "razorpay";
 
 export async function getUserSubscription(userId: string) {
-    const supabase = await createClient();
+  const supabase = await createClient();
 
-    const { data: subscription, error: subError } = await supabase
-        .from("subscriptions")
-        .select("*, plan:plans(*)")
-        .eq("user_id", userId)
-        .in("status", ["active", "trialing"])
-        .maybeSingle();
+  // Try to get active/trialing first, if none, check for any subscription
+  const { data: subscription, error: subError } = await supabase
+      .from("subscriptions")
+      .select("*, plan:plans(*)")
+      .eq("user_id", userId)
+      .in("status", ["active", "trialing"])
+      .maybeSingle();
 
-    if (subError || !subscription) {
-        return { subscription: null, plan: PLAN_CONFIG.free, dbPlan: null };
-    }
+  if (subError || !subscription) {
+      const { data: freePlan } = await supabase
+          .from("plans")
+          .select("*")
+          .eq("key", "free")
+          .single();
+      return { subscription: null, dbPlan: freePlan };
+  }
 
-    const planKey = subscription.plan?.key as PlanKey || "free";
-    const planConfig = PLAN_CONFIG[planKey] || PLAN_CONFIG.free;
+  return { subscription: subscription as SubscriptionRecord, dbPlan: subscription.plan };
+}
 
-    return { subscription: subscription as SubscriptionRecord, plan: planConfig, dbPlan: subscription.plan };
+export async function getRazorpayPlanId(planKey: PlanKey, billingCycle: BillingCycle) {
+  const supabase = await createClient();
+  const { data: plan, error: planError } = await supabase
+      .from("plans")
+      .select("*")
+      .eq("key", planKey)
+      .maybeSingle();
+
+  if (!plan){
+      throw new Error(`Razorpay Plan ID not configured for ${planKey} / ${billingCycle}.`);
+  }
+  if (planError) {
+      throw new Error(planError.message);
+  }
+
+  if (planKey === "pro") {
+      if (billingCycle === "yearly") {
+          return plan.razorpay_plan_id_yearly;
+      }
+      return plan.razorpay_plan_id_monthly;
+  } else if (planKey === "ultra") {
+      if (billingCycle === "yearly") {
+          return plan.razorpay_plan_id_yearly;
+      }
+      return plan.razorpay_plan_id_monthly;
+  } else {
+      throw new Error(`Razorpay Plan ID not configured for ${planKey} / ${billingCycle}.`);
+  }
 }
 
 export async function createRazorpaySubscription(userId: string, planKey: PlanKey, billingCycle: BillingCycle) {
-    if (planKey === "free" || planKey === "enterprise") {
-        throw new Error("Cannot create a Razorpay subscription for the Free or Enterprise plan.");
-    }
+  if (planKey === "free") {
+      throw new Error("Cannot create a Razorpay subscription for the Free plan.");
+  }
+  if (planKey === "enterprise") {
+      throw new Error("Cannot create a Razorpay subscription for the Enterprise plan.");
+  }
 
-    const planConfig = PLAN_CONFIG[planKey];
-    if (!planConfig) throw new Error("Invalid plan key: no config found.");
+  const supabase = await createClient();
 
-    const razorpayPlanId = billingCycle === "monthly"
-        ? planConfig.razorpayPlanIdMonthly
-        : planConfig.razorpayPlanIdYearly;
+  // Check if user has an ACTIVE or TRIALING subscription (NOT cancelled or expired)
+  const { data: activeSubscription, error: activeSubError } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", userId)
+      .in("status", ["active", "trialing"])
+      .maybeSingle();
 
-    if (!razorpayPlanId) {
-        throw new Error(`Razorpay Plan ID not configured for ${planKey} / ${billingCycle}.`);
-    }
+  if (activeSubError) {
+      throw new Error(activeSubError.message);
+  }
 
-    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
-        throw new Error("Razorpay credentials are not configured on the server.");
-    }
+  if (activeSubscription && !activeSubscription.cancel_at_period_end) {
+      throw new Error("User already has an active subscription");
+  }
 
-    const razorpay = new Razorpay({
-        key_id: RAZORPAY_KEY_ID,
-        key_secret: RAZORPAY_KEY_SECRET,
-    });
+  // Get the right plan: original code used eq("billing_cycle", billingCycle), but wait—let's check what our plans look like!
+  const { data: dbPlan, error: planError } = await supabase
+      .from("plans")
+      .select("*")
+      .eq("key", planKey)
+      .maybeSingle();
 
-    // IMPORTANT: `addons: []` overrides any plan-level addon amount (e.g. ₹5
-    // authentication/registration fee). Without this, Razorpay charges the
-    // plan's addon on first payment, so the user sees ₹5 instead of the full
-    // subscription amount (e.g. ₹3,588/yr). Passing an empty array ensures
-    // the first charge equals exactly the plan's billing amount.
-    const subscription = await razorpay.subscriptions.create({
-        plan_id: razorpayPlanId,
-        customer_notify: 1,
-        total_count: billingCycle === "yearly" ? 10 : 120,
-        addons: [],
-        notes: {
-            user_id: userId,
-            plan_key: planKey,
-            billing_cycle: billingCycle,
-        }
-    });
+  if (planError || !dbPlan) {
+      throw new Error(`Plan not found for ${planKey} / ${billingCycle}.`);
+  }
 
-    console.info("[billing/service] Created Razorpay subscription", {
-        userId,
-        planKey,
-        billingCycle,
-        subscriptionId: subscription.id,
-    });
+  const razorpayPlanId = await getRazorpayPlanId(planKey, billingCycle);
 
-    return {
-        subscriptionId: subscription.id,
-        shortUrl: subscription.short_url,
-    };
+  if (!razorpayPlanId) {
+      throw new Error(`Razorpay Plan ID not configured for ${planKey} / ${billingCycle}.`);
+  }
+
+  if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+      throw new Error("Razorpay credentials are not configured on the server.");
+  }
+
+  const razorpay = new Razorpay({
+      key_id: RAZORPAY_KEY_ID,
+      key_secret: RAZORPAY_KEY_SECRET,
+  });
+
+  const razorpaySubscription = await razorpay.subscriptions.create({
+      plan_id: razorpayPlanId,
+      customer_notify: 1,
+      total_count: billingCycle === "yearly" ? 10 : 120,
+      addons: [],
+      notes: {
+          user_id: userId,
+          plan_key: planKey,
+          billing_cycle: billingCycle,
+      },
+  });
+
+  const { data: insertedSubscription, error: subError } = await supabase
+      .from("subscriptions")
+      .insert({
+          user_id: userId,
+          plan_id: dbPlan.id,
+          status: razorpaySubscription.status,
+          billing_cycle: billingCycle,
+          razorpay_subscription_id: razorpaySubscription.id,
+          razorpay_customer_id: razorpaySubscription.customer_id,
+          cancel_at_period_end: false,
+          trial_end: null,
+          cancelled_at: null,
+      })
+      .select()
+      .single();
+
+  if (subError || !insertedSubscription) {
+      throw new Error("Failed to create subscription record.");
+  }
+
+  await supabase.from("payments").insert({
+      user_id: userId,
+      subscription_id: insertedSubscription.id,
+      razorpay_payment_id: razorpaySubscription.id,
+      razorpay_subscription_id: razorpaySubscription.id,
+      amount_paise: (razorpaySubscription as any).plan?.amount || 0,
+      currency: "INR",
+      status: razorpaySubscription.status,
+  });
+
+  await supabase
+      .from("profiles")
+      .update({
+          current_plan: planKey,
+          subscription_id: insertedSubscription.id,
+      })
+      .eq("user_id", userId);
+
+  console.info("[billing/service] Created Razorpay subscription", {
+      userId,
+      planKey,
+      billingCycle,
+      subscriptionId: razorpaySubscription.id,
+  });
+
+  return {
+      subscriptionId: razorpaySubscription.id,
+      shortUrl: razorpaySubscription.short_url,
+  };
 }
 
 export async function cancelSubscription(userId: string) {
-    const supabase = await createClient();
-    const { subscription } = await getUserSubscription(userId);
+  const supabase = await createClient();
+  const { subscription } = await getUserSubscription(userId);
 
-    if (!subscription || !subscription.razorpay_subscription_id) {
-        throw new Error("No active paid subscription found to cancel.");
-    }
+  if (!subscription || !subscription.razorpay_subscription_id) {
+      throw new Error("No active paid subscription found to cancel.");
+  }
 
-    if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
-        throw new Error("Razorpay credentials are not configured on the server.");
-    }
+  if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+      throw new Error("Razorpay credentials are not configured on the server.");
+  }
 
-    const razorpay = new Razorpay({
-        key_id: RAZORPAY_KEY_ID,
-        key_secret: RAZORPAY_KEY_SECRET,
-    });
+  const razorpay = new Razorpay({
+      key_id: RAZORPAY_KEY_ID,
+      key_secret: RAZORPAY_KEY_SECRET,
+  });
 
-    await razorpay.subscriptions.cancel(subscription.razorpay_subscription_id, false);
+  await razorpay.subscriptions.cancel(subscription.razorpay_subscription_id, false);
 
-    await supabase
-        .from("subscriptions")
-        .update({ cancel_at_period_end: true })
-        .eq("id", subscription.id);
+  await supabase
+      .from("subscriptions")
+      .update({ cancel_at_period_end: true })
+      .eq("id", subscription.id);
 
-    return { success: true };
+  return { success: true };
 }
 
 export async function getPaymentHistory(userId: string): Promise<PaymentRecord[]> {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-        .from("payments")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
+  const supabase = await createClient();
+  const { data, error } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
 
-    if (error) return [];
-    return data as PaymentRecord[];
+  if (error) return [];
+  return data as PaymentRecord[];
 }

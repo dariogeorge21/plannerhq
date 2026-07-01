@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { CheckoutClient } from "./components/checkout-client";
-import { BILLING_PLANS } from "@/data/data";
+import { createClient } from "@/lib/supabase/server";
+import { DbPlanRecord } from "@/types/billing";
 
 export const metadata = {
   title: "Confirm Subscription — PlannerHQ",
@@ -25,10 +26,16 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
     redirect("/billing");
   }
 
-  const planData = BILLING_PLANS.find((p) => p.key === planKey);
-  if (!planData) redirect("/billing");
+  const supabase = await createClient();
+  const { data: dbPlan } = await supabase
+    .from("plans")
+    .select("*")
+    .eq("key", planKey)
+    .single();
+
+  if (!dbPlan) redirect("/billing");
 
   const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 
-  return <CheckoutClient planKey={planKey} defaultCycle={billingCycle} razorpayKeyId={razorpayKeyId} />;
+  return <CheckoutClient planKey={planKey} dbPlan={dbPlan} defaultCycle={billingCycle} razorpayKeyId={razorpayKeyId} />;
 }

@@ -15,14 +15,16 @@ export async function getUserUsage(userId: string) {
 }
 
 export async function checkWorkspaceLimit(userId: string): Promise<{ allowed: boolean, limit: number, current: number }> {
-    const { plan } = await getUserSubscription(userId);
+    const { dbPlan } = await getUserSubscription(userId);
     const usage = await getUserUsage(userId);
 
-    if (!usage) return { allowed: false, limit: plan.maxWorkspaces, current: 0 };
+    const maxWorkspaces = dbPlan?.max_workspaces ?? 3;
+
+    if (!usage) return { allowed: false, limit: maxWorkspaces, current: 0 };
 
     return {
-        allowed: usage.workspaces_count < plan.maxWorkspaces,
-        limit: plan.maxWorkspaces,
+        allowed: usage.workspaces_count < maxWorkspaces,
+        limit: maxWorkspaces,
         current: usage.workspaces_count
     };
 }
@@ -39,7 +41,8 @@ export async function checkCollaboratorLimit(workspaceId: string, inviterId: str
     if (!workspace) return { allowed: false, limit: 0, current: 0 };
 
     const ownerId = workspace.created_by;
-    const { plan } = await getUserSubscription(ownerId);
+    const { dbPlan } = await getUserSubscription(ownerId);
+    const maxCollaborators = dbPlan?.max_collaborators ?? 2;
 
     // Count distinct active collaborators in the workspace
     const { count } = await supabase
@@ -50,34 +53,38 @@ export async function checkCollaboratorLimit(workspaceId: string, inviterId: str
     const current = count || 0;
 
     return {
-        allowed: current < plan.maxCollaborators,
-        limit: plan.maxCollaborators,
+        allowed: current < maxCollaborators,
+        limit: maxCollaborators,
         current
     };
 }
 
 export async function checkStorageLimit(userId: string, fileSize: number): Promise<{ allowed: boolean, limit: number, current: number }> {
-    const { plan } = await getUserSubscription(userId);
+    const { dbPlan } = await getUserSubscription(userId);
     const usage = await getUserUsage(userId);
 
-    if (!usage) return { allowed: false, limit: plan.maxStorageBytes, current: 0 };
+    const maxStorageBytes = dbPlan?.max_storage_bytes ?? 104857600;
+
+    if (!usage) return { allowed: false, limit: maxStorageBytes, current: 0 };
 
     return {
-        allowed: (usage.storage_used_bytes + fileSize) <= plan.maxStorageBytes,
-        limit: plan.maxStorageBytes,
+        allowed: (usage.storage_used_bytes + fileSize) <= maxStorageBytes,
+        limit: maxStorageBytes,
         current: usage.storage_used_bytes
     };
 }
 
 export async function checkAITokenLimit(userId: string, requestedTokens: number): Promise<{ allowed: boolean, limit: number, current: number }> {
-    const { plan } = await getUserSubscription(userId);
+    const { dbPlan } = await getUserSubscription(userId);
     const usage = await getUserUsage(userId);
 
-    if (!usage) return { allowed: false, limit: plan.maxAiTokens, current: 0 };
+    const maxAiTokens = dbPlan?.max_ai_tokens ?? 200000;
+
+    if (!usage) return { allowed: false, limit: maxAiTokens, current: 0 };
 
     return {
-        allowed: (usage.ai_tokens_used + requestedTokens) <= plan.maxAiTokens,
-        limit: plan.maxAiTokens,
+        allowed: (usage.ai_tokens_used + requestedTokens) <= maxAiTokens,
+        limit: maxAiTokens,
         current: usage.ai_tokens_used
     };
 }

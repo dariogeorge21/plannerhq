@@ -9,7 +9,7 @@ import {
   CheckCircle2, XCircle, RefreshCw, CreditCard, TrendingUp,
   Lock, AlertTriangle,
 } from "lucide-react";
-import { BILLING_PLANS } from "@/data/data";
+import { DbPlanRecord } from "@/types/billing";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -46,21 +46,8 @@ interface RazorpayInstance {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function planPrice(planKey: PlanKey, cycle: BillingCycle): string {
-  const plan = BILLING_PLANS.find((p) => p.key === planKey);
-  if (!plan) return "";
-  return cycle === "monthly" ? plan.monthlyDisplay : plan.yearlyDisplay;
-}
-
-function planTotal(planKey: PlanKey, cycle: BillingCycle): string {
-  const plan = BILLING_PLANS.find((p) => p.key === planKey);
-  if (!plan) return "";
-  return cycle === "monthly" ? plan.monthlyTotal : plan.yearlyTotal;
-}
-
-function planSaving(planKey: PlanKey): string | null {
-  const plan = BILLING_PLANS.find((p) => p.key === planKey);
-  return plan?.savingLabel ?? null;
+function paise(amount: number): string {
+  return `₹${(amount / 100).toLocaleString("en-IN")}`;
 }
 
 function sleep(ms: number) {
@@ -243,10 +230,12 @@ function ErrorOverlay({
 
 export function CheckoutClient({
   planKey,
+  dbPlan,
   defaultCycle,
   razorpayKeyId,
 }: {
   planKey: PlanKey;
+  dbPlan: DbPlanRecord;
   defaultCycle: BillingCycle;
   razorpayKeyId?: string;
 }) {
@@ -266,10 +255,9 @@ export function CheckoutClient({
     stepRef.current = step;
   }, [step]);
 
-  const plan = BILLING_PLANS.find((p) => p.key === planKey)!;
-  const monthlyRate = cycle === "monthly" ? plan.monthlyDisplay : plan.yearlyDisplay;
-  const billedAs = cycle === "monthly" ? plan.monthlyTotal : plan.yearlyTotal;
-  const saving = cycle === "yearly" ? planSaving(planKey) : null;
+  const monthlyRate = cycle === "monthly" ? paise(dbPlan.monthly_price_paise) : paise(dbPlan.yearly_price_paise / 12);
+  const billedAs = cycle === "monthly" ? paise(dbPlan.monthly_price_paise) : paise(dbPlan.yearly_price_paise);
+  const saving = cycle === "yearly" ? "Save 25%" : null;
 
   // Cleanup poll on unmount
   useEffect(() => {
@@ -328,7 +316,7 @@ export function CheckoutClient({
         } else if (res.status === 500) {
           setErrorMessage(
             json.message ||
-              "A server error occurred while creating your subscription. Please try again or contact support."
+            "A server error occurred while creating your subscription. Please try again or contact support."
           );
         } else {
           setErrorMessage(json.message || "Failed to initiate checkout.");
@@ -352,7 +340,7 @@ export function CheckoutClient({
         key: razorpayKeyId,
         subscription_id: subscriptionId,
         name: "PlannerHQ",
-        description: `${plan.name} — ${cycle}`,
+        description: `${dbPlan.name} — ${cycle}`,
         image: "/logo.png",
         prefill: {},
         theme: { color: "#4f46e5" },
@@ -392,7 +380,7 @@ export function CheckoutClient({
           setSuccessData({
             paymentId: response.razorpay_payment_id,
             subscriptionId: response.razorpay_subscription_id,
-            planName: plan.name,
+            planName: dbPlan.name,
             cycle,
             amountDisplay: billedAs,
           });
@@ -421,7 +409,7 @@ export function CheckoutClient({
         rzpRef.current = null;
         setErrorMessage(
           response?.error?.description ||
-            "Payment failed. Please try again or use a different payment method."
+          "Payment failed. Please try again or use a different payment method."
         );
         setStep("error");
       });
@@ -497,14 +485,9 @@ export function CheckoutClient({
               <div className="w-10 h-10 rounded-xl dark:bg-indigo-950 flex items-center justify-center">
                 <Zap className="w-5 h-5 dark:text-indigo-300" />
               </div>
-              <h2 className="text-2xl font-extrabold text-foreground">{plan.name}</h2>
-              {plan.ribbon && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow">
-                  {plan.ribbon}
-                </span>
-              )}
+              <h2 className="text-2xl font-extrabold text-foreground">{dbPlan.name}</h2>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
+            <p className="text-sm text-muted-foreground mt-2">{dbPlan.description}</p>
           </div>
 
           {/* Billing cycle toggle */}
@@ -521,9 +504,9 @@ export function CheckoutClient({
                     }`}
                 >
                   {c}
-                  {c === "yearly" && plan.savingLabel && (
+                  {c === "yearly" && saving && (
                     <span className="ml-1.5 text-[10px] font-black dark:text-emerald-400">
-                      ({plan.savingLabel})
+                      ({saving})
                     </span>
                   )}
                 </button>
@@ -536,7 +519,7 @@ export function CheckoutClient({
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">Pricing breakdown</p>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">{plan.name} plan</span>
+                <span className="text-sm text-muted-foreground">{dbPlan.name} plan</span>
                 <div className="text-right">
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -580,12 +563,22 @@ export function CheckoutClient({
           <div className="px-7 py-5">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-4">What's included</p>
             <ul className="space-y-2.5">
-              {plan.features.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                  <Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
-                  {f}
-                </li>
-              ))}
+              <li className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                <Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                {dbPlan.max_workspaces} Workspaces
+              </li>
+              <li className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                <Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                {dbPlan.max_storage_bytes / (1024 * 1024 * 1024)} GB Storage
+              </li>
+              <li className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                <Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                {dbPlan.max_ai_tokens >= 1000000 ? `${dbPlan.max_ai_tokens / 1000000}M` : `${dbPlan.max_ai_tokens / 1000}K`} AI tokens/day
+              </li>
+              <li className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                <Check className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" />
+                {dbPlan.max_collaborators} collaborators per workspace
+              </li>
             </ul>
           </div>
         </motion.div>
@@ -603,7 +596,7 @@ export function CheckoutClient({
 
             <div className="space-y-3 mb-5">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{plan.name} — {cycle}</span>
+                <span className="text-muted-foreground">{dbPlan.name} — {cycle}</span>
                 <span className="font-bold text-foreground">{monthlyRate}/mo</span>
               </div>
               {cycle === "yearly" && (

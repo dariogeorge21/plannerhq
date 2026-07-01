@@ -1,4 +1,4 @@
-'use client';
+import { createClient } from "@/lib/supabase/server";
 
 import Header from "@/components/header";
 import HeroSection from "@/components/landingPage/hero";
@@ -9,14 +9,20 @@ import TestimonialsSection from "@/components/landingPage/testimonials";
 import FAQSection from "@/components/landingPage/faq";
 import Footer from "@/components/footer";
 
-export default function App() {
+export default async function App() {
+  const supabase = await createClient();
+  const { data: allPlans } = await supabase
+    .from("plans")
+    .select("*")
+    .order("monthly_price_paise", { ascending: true });
+
   return (
     <div>
       <Header />
       <HeroSection />
       <ProductsSection />
       <FeaturesSection />
-      <PricingSection />
+      <PricingSection allPlans={allPlans || []} />
       <TestimonialsSection />
       <FAQSection />
       <Footer />

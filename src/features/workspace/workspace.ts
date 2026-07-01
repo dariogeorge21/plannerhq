@@ -321,7 +321,7 @@ export async function GetWorkspaceMembers(workspaceId: string): Promise<{ succes
 
     const { data, error } = await supabase
         .from('workspace_members')
-        .select('role, joined_at, profiles(id, display_name, email, hqid, avatar_url)')
+        .select('role, joined_at, profiles(id, display_name, email, hqid, avatar_url, role)')
         .eq('workspace_id', workspaceId);
 
     if (error) {
@@ -335,7 +335,8 @@ export async function GetWorkspaceMembers(workspaceId: string): Promise<{ succes
         display_name: item.profiles.display_name,
         email: item.profiles.email,
         hqid: item.profiles.hqid,
-        avatar_url: item.profiles.avatar_url
+        avatar_url: item.profiles.avatar_url,
+        profile_role: item.profiles.role
     }));
 
     return { success: true, message: "Workspace members fetched successfully", data: members };

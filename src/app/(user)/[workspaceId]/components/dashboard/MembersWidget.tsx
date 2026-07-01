@@ -46,12 +46,12 @@ export function MembersWidgetSkeleton() {
 export function MembersWidget({ workspaceId }: { workspaceId: string }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { user } = useSession();
-  
+
   const { data: membersRes, isLoading } = useQuery({
     queryKey: ["workspaceMembers", workspaceId],
     queryFn: () => GetWorkspaceMembers(workspaceId)
   });
-  
+
   if (isLoading) {
     return <MembersWidgetSkeleton />;
   }
@@ -74,64 +74,66 @@ export function MembersWidget({ workspaceId }: { workspaceId: string }) {
             <div key={m.hqid} className="flex items-center justify-between p-4 hover:bg-accent/50 transition-colors">
               <div className="flex items-center gap-3">
                 <Avatar className="h-9 w-9 border border-neutral-200 dark:border-neutral-700">
-                   <AvatarImage src={m.avatar_url} />
-                   <AvatarFallback className="font-bold text-xs bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                     {m.display_name.charAt(0).toUpperCase()}
-                   </AvatarFallback>
+                  <AvatarImage src={m.avatar_url} />
+                  <AvatarFallback className="font-bold text-xs bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                    {m.display_name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                   <div className="text-sm font-bold leading-none mb-1">{m.display_name}</div>
-                   <div className="text-xs text-muted-foreground font-medium">{m.email}</div>
+                  <div className="text-sm font-bold leading-none mb-1">{m.display_name}</div>
+                  <div className="text-sm font-bold text-muted-foreground">{m.profile_role ? `${m.profile_role} • ` : ""}{m.role == "owner" ? "Owner" : m.role == "admin" ? "Admin" : "Workspace Member"}</div>
+                  <div className="text-xs text-muted-foreground font-medium">{m.email}</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2">
-                 {user?.hqid === m.hqid ? (
-                   <Badge variant="outline" className="bg-indigo-50/50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 font-bold border-indigo-200 dark:border-indigo-800">
-                     YOU
-                   </Badge>
-                 ) : (
-                   <>
-                     <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400" asChild onClick={(e) => e.stopPropagation()}>
-                        <Link href={`/${workspaceId}/chat/${m.hqid}`}>
-                           <MessageSquareIcon className="w-4 h-4" />
-                        </Link>
-                     </Button>
-                     
-                     <Dialog>
-                       <DialogTrigger asChild>
-                         <Button variant="outline" size="sm" className="hidden sm:flex h-8 text-xs font-semibold rounded-full border-neutral-200 dark:border-neutral-700">Profile</Button>
-                       </DialogTrigger>
-                       <DialogContent className="sm:max-w-md rounded-3xl">
-                         <DialogHeader>
-                           <DialogTitle className="text-center text-xl font-black">Member Profile</DialogTitle>
-                         </DialogHeader>
-                         <div className="flex flex-col items-center justify-center p-6 space-y-5">
-                            <Avatar className="w-28 h-28 border-4 border-indigo-50 dark:border-indigo-950 shadow-xl">
-                               <AvatarImage src={m.avatar_url} />
-                               <AvatarFallback className="text-4xl font-black bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                 {m.display_name.charAt(0).toUpperCase()}
-                               </AvatarFallback>
-                            </Avatar>
-                            <div className="text-center space-y-1">
-                               <h3 className="text-2xl font-black text-foreground">{m.display_name}</h3>
-                               <p className="text-sm font-medium text-muted-foreground">{m.email}</p>
-                               <p className="text-xs font-mono text-muted-foreground/70 bg-muted/50 px-2 py-1 rounded-md mt-2 inline-block">HQID: {m.hqid}</p>
-                            </div>
-                            <Badge variant="secondary" className={`uppercase tracking-widest px-4 py-1 text-xs font-bold rounded-full ${m.role === 'owner' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'}`}>
-                              {m.role}
-                            </Badge>
-                         </div>
-                       </DialogContent>
-                     </Dialog>
-                   </>
-                 )}
+                {user?.hqid === m.hqid ? (
+                  <Badge variant="outline" className="bg-indigo-50/50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 font-bold border-indigo-200 dark:border-indigo-800">
+                    YOU
+                  </Badge>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400" asChild onClick={(e) => e.stopPropagation()}>
+                      <Link href={`/${workspaceId}/chat/`}>
+                        <MessageSquareIcon className="w-4 h-4" />
+                      </Link>
+                    </Button>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="hidden sm:flex h-8 text-xs font-semibold rounded-full border-neutral-200 dark:border-neutral-700">Profile</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md rounded-3xl">
+                        <DialogHeader>
+                          <DialogTitle className="text-center text-xl font-black">Member Profile</DialogTitle>
+                        </DialogHeader>
+                        <div className="flex flex-col items-center justify-center p-6 space-y-5">
+                          <Avatar className="w-28 h-28 border-4 border-indigo-50 dark:border-indigo-950 shadow-xl">
+                            <AvatarImage src={m.avatar_url} />
+                            <AvatarFallback className="text-4xl font-black bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                              {m.display_name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="text-center space-y-1">
+                            <h3 className="text-2xl font-black text-foreground">{m.display_name}</h3>
+                            <p className="font-bold">{m.profile_role ? `${m.profile_role} • ` : ""}{m.role == "owner" ? "Owner" : m.role == "admin" ? "Admin" : "Workspace Member"}</p>
+                            <p className="text-sm font-medium text-muted-foreground">{m.email}</p>
+                            <p className="text-xs font-mono text-muted-foreground/70 bg-muted/50 px-2 py-1 rounded-md mt-2 inline-block">HQID: {m.hqid}</p>
+                          </div>
+                          <Badge variant="secondary" className={`uppercase tracking-widest px-4 py-1 text-xs font-bold rounded-full ${m.role === 'owner' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400'}`}>
+                            {m.role}
+                          </Badge>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </>
+                )}
               </div>
             </div>
           ))}
         </div>
         {!isExpanded && hasMore && (
-           <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
         )}
         {members.length <= 3 && (
           <div className="p-4 mt-auto border-t border-neutral-100 dark:border-neutral-800/50">
@@ -145,9 +147,9 @@ export function MembersWidget({ workspaceId }: { workspaceId: string }) {
         )}
       </CardContent>
       {!isExpanded && hasMore && (
-         <div className="p-3 border-t border-neutral-100 dark:border-neutral-800/50 bg-background/80 backdrop-blur-sm z-10 flex justify-center mt-auto">
-            <Button variant="ghost" className="w-full text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl font-bold" onClick={() => setIsExpanded(true)}>View More Members</Button>
-         </div>
+        <div className="p-3 border-t border-neutral-100 dark:border-neutral-800/50 bg-background/80 backdrop-blur-sm z-10 flex justify-center mt-auto">
+          <Button variant="ghost" className="w-full text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl font-bold" onClick={() => setIsExpanded(true)}>View More Members</Button>
+        </div>
       )}
     </Card>
   );

@@ -23,21 +23,15 @@ export default function WorkspacePage({
 
       <NavigationMatrix workspaceId={workspaceId} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 space-y-8 flex flex-col">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-1">
-            <TasksWidget workspaceId={workspaceId} />
-            <MembersWidget workspaceId={workspaceId} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <NotesPresenceWidget workspaceId={workspaceId} />
-            <FilesWidget workspaceId={workspaceId} />
-          </div>
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <TasksWidget workspaceId={workspaceId} />
+          <MembersWidget workspaceId={workspaceId} />
+          <NotesPresenceWidget workspaceId={workspaceId} />
         </div>
-        <div className="lg:col-span-4 space-y-8 flex flex-col">
-          <div className="flex-1">
-            <CalendarWidget workspaceId={workspaceId} />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <FilesWidget workspaceId={workspaceId} />
+          <CalendarWidget workspaceId={workspaceId} />
         </div>
       </div>
     </div>

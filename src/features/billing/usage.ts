@@ -20,7 +20,7 @@ export async function checkWorkspaceLimit(userId: string): Promise<{ allowed: bo
 
     const maxWorkspaces = dbPlan?.max_workspaces ?? 3;
 
-    if (!usage) return { allowed: false, limit: maxWorkspaces, current: 0 };
+    if (!usage) return { allowed: true, limit: maxWorkspaces, current: 0 };
 
     return {
         allowed: usage.workspaces_count < maxWorkspaces,
@@ -92,13 +92,20 @@ export async function checkAITokenLimit(userId: string, requestedTokens: number)
 export async function incrementWorkspaceUsage(userId: string, increment: number = 1) {
     const supabase = await createClient();
 
-    // We fetch current then update. In a real highly concurrent system, an RPC function should be used.
-    // For now, doing simple read+write
-    const usage = await getUserUsage(userId);
-    if (!usage) return;
+    // Call the SECURITY DEFINER RPC to bypass RLS restrictions on subscription_usage
+    const { error: rpcError } = await supabase.rpc('increment_workspace_count', {
+        p_user_id: userId,
+        p_increment: increment
+    });
 
-    await supabase
-        .from("subscription_usage")
-        .update({ workspaces_count: usage.workspaces_count + increment })
-        .eq("id", usage.id);
+    if (rpcError) {
+        console.warn("Failed to increment workspace count via RPC, attempting direct update:", rpcError);
+        const usage = await getUserUsage(userId);
+        if (!usage) return;
+
+        await supabase
+            .from("subscription_usage")
+            .update({ workspaces_count: usage.workspaces_count + increment })
+            .eq("id", usage.id);
+    }
 }

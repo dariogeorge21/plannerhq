@@ -3,8 +3,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { checkWorkspaceLimit, incrementWorkspaceUsage } from "@/features/billing/usage";
+import { Workspace } from "@/types/workspace";
 
-export async function CreateWorkspace(formData: FormData): Promise<{ success: boolean, message: string, data?: any }> {
+export async function CreateWorkspace(formData: FormData): Promise<{ success: boolean, message: string, data?: Workspace | { id: string; name: string; slug: string } }> {
     const supabase = await createClient();
     const workspaceName = formData.get('workspaceName') as string;
     const slug = workspaceName.toLocaleLowerCase().replace(/\s+/g, '-') + '-' + Math.random().toString(36).substring(2, 7);
@@ -19,13 +20,33 @@ export async function CreateWorkspace(formData: FormData): Promise<{ success: bo
         return { success: false, message: `Workspace limit reached (${limitCheck.current}/${limitCheck.limit}). Please upgrade your plan.` };
     }
 
+    // Ensure user profile exists (self-healing for OAuth / edge-case users missing profile)
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+    if (!profile) {
+        const nameVal = user.user_metadata?.display_name || user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User';
+        const hqid = nameVal.toLowerCase().replace(/\s+/g, '-') + '-' + user.id.substring(0, 4);
+        await supabase.from('profiles').insert({
+            id: user.id,
+            display_name: nameVal,
+            email: user.email || '',
+            hqid,
+            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null
+        });
+    }
+
     const { data: workspaceId, error: workspaceError } = await supabase.rpc('create_workspace_with_owner', {
         p_workspace_name: workspaceName,
         p_workspace_slug: slug,
         p_owner_id: user.id
     });
     if (workspaceError) {
-        return { success: false, message: "Failed to create workspace" };
+        console.error("Workspace creation RPC error:", workspaceError);
+        return { success: false, message: workspaceError.message || "Failed to create workspace" };
     }
 
     // Fetch the full workspace row to ensure avatar_url and all fields are returned

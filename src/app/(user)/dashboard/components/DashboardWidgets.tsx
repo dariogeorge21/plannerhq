@@ -508,11 +508,12 @@ export function RecentWorkspaces() {
         try {
             const res = await CreateWorkspace(formData);
             if (res.success && res.data) {
+                const workspaceId = res.data.id;
                 toast.success(res.message);
-                setLaunchingId(res.data.id);
+                setLaunchingId(workspaceId);
                 // Fake a progress bar delay
                 setTimeout(() => {
-                    router.push(`/${res.data.id}`);
+                    router.push(`/${workspaceId}`);
                 }, 1000);
             } else {
                 toast.error(res.message);
